@@ -63,7 +63,7 @@
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(10,17,40,0.9) 0%, rgba(10,17,40,0.55) 50%, rgba(10,17,40,0.85) 100%); }
         
         /* ============================================================
-           LOGO INSTITUCIONAL: diseño original (arco) restaurado
+           LOGO INSTITUCIONAL: agrandado e imponente
            ============================================================ */
         .logo-arcada { 
             background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%); 
@@ -88,10 +88,10 @@
             pointer-events: none; 
         }
         .logo-arcada img { 
-            width: 95%; 
-            height: 95%; 
+            width: 92%; 
+            height: 92%; 
             object-fit: contain; 
-            padding: 4px; 
+            padding: 2px; 
             border-radius: 50%; 
             z-index: 10; 
             position: relative; 
@@ -161,18 +161,14 @@
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-wlSecondary/10 to-transparent animate-pulse"></div>
     </div>
 
-    <!-- NAVBAR -->
-    <nav class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm h-24 transition-all" id="navbar">
+    <!-- NAVBAR (logo imponente, sin nombre al lado) -->
+    <nav class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm h-28 transition-all" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
 
-            <!-- IZQUIERDA: Logo + Nombre (contenido, no empuja) -->
-            <div class="flex items-center gap-3 md:gap-4 cursor-pointer h-full min-w-0 flex-1" onclick="switchSection('seccion-inicio')">
-                <div class="logo-arcada w-16 h-20 md:w-20 md:h-28 shrink-0 relative transform translate-y-2 md:translate-y-4 z-50">
+            <!-- IZQUIERDA: SOLO LOGO, grande e imponente -->
+            <div class="flex items-center cursor-pointer h-full pl-2 md:pl-6" onclick="switchSection('seccion-inicio')">
+                <div class="logo-arcada w-24 h-28 md:w-32 md:h-40 lg:w-36 lg:h-44 relative transform translate-y-4 md:translate-y-6 z-50">
                     <img id="nav-logo" src="https://ui-avatars.com/api/?name=R+N&background=fff&color=0f172a" alt="Logo Institución">
-                </div>
-                <div class="leading-tight min-w-0 flex-1">
-                    <span class="font-title font-black text-base md:text-lg xl:text-xl tracking-tight block text-wlPrimary line-clamp-2 break-words" id="wl-institucion-nombre-nav">Cargando...</span>
-                    <span class="text-[9px] md:text-[10px] text-wlSecondary font-bold uppercase tracking-[0.2em] block truncate mt-0.5">Plataforma Oficial</span>
                 </div>
             </div>
 
@@ -832,7 +828,6 @@
                     }
                 };
 
-                // BUG FIX: se eliminó el .replace(/remaep/gi, 'remtyo') que rompía la URL del logo.
                 if (tenantConfig.logo_url) {
                     inyectarSrcSeguro('nav-logo', tenantConfig.logo_url);
                 }
@@ -1711,7 +1706,7 @@
 
         async function compartirNoticia(titulo) {
             const url = window.location.href;
-            const texto = `Mirá esta novedad en el Portal de ${document.getElementById('wl-institucion-nombre-nav')?.innerText || 'la Institución'}: ${titulo}`;
+            const texto = `Mirá esta novedad en el Portal de ${document.getElementById('wl-institucion-nombre-nav')?.innerText || document.getElementById('wl-institucion-nombre-top')?.innerText || 'la Institución'}: ${titulo}`;
 
             if (navigator.share) {
                 try {
