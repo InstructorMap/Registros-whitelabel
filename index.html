@@ -63,7 +63,7 @@
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(10,17,40,0.9) 0%, rgba(10,17,40,0.55) 50%, rgba(10,17,40,0.85) 100%); }
         
         /* ============================================================
-           LOGO INSTITUCIONAL: agrandado e imponente
+           LOGO INSTITUCIONAL: sobresale por debajo y tapa la línea dorada
            ============================================================ */
         .logo-arcada { 
             background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%); 
@@ -78,7 +78,7 @@
             transition: transform 0.3s;
             overflow: hidden;
         }
-        .logo-arcada:hover { transform: scale(1.05) translateY(8px) !important; }
+        .logo-arcada:hover { transform: scale(1.05) translateY(0); }
         .logo-arcada::before { 
             content: ''; 
             position: absolute; 
@@ -161,13 +161,13 @@
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-wlSecondary/10 to-transparent animate-pulse"></div>
     </div>
 
-    <!-- NAVBAR (logo imponente, sin nombre al lado) -->
-    <nav class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm h-28 transition-all" id="navbar">
+    <!-- NAVBAR (logo POR ENCIMA de la línea dorada, sobresale por debajo) -->
+    <nav class="bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-sm h-28 transition-all relative" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
 
-            <!-- IZQUIERDA: SOLO LOGO, grande e imponente -->
+            <!-- IZQUIERDA: SOLO LOGO, sobresale por debajo y tapa la línea -->
             <div class="flex items-center cursor-pointer h-full pl-2 md:pl-6" onclick="switchSection('seccion-inicio')">
-                <div class="logo-arcada w-24 h-28 md:w-32 md:h-40 lg:w-36 lg:h-44 relative transform translate-y-4 md:translate-y-6 z-50">
+                <div class="logo-arcada w-20 h-24 md:w-24 md:h-28 lg:w-28 lg:h-32 shrink-0 relative z-50 transform translate-y-6 md:translate-y-8">
                     <img id="nav-logo" src="https://ui-avatars.com/api/?name=R+N&background=fff&color=0f172a" alt="Logo Institución">
                 </div>
             </div>
@@ -191,6 +191,9 @@
                 <i data-lucide="menu" class="w-8 h-8"></i>
             </button>
         </div>
+
+        <!-- LÍNEA DECORATIVA: por detrás del logo (z-0) -->
+        <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-wlSecondary z-0 pointer-events-none"></div>
     </nav>
 
     <!-- Mobile Menu -->
@@ -1706,7 +1709,7 @@
 
         async function compartirNoticia(titulo) {
             const url = window.location.href;
-            const texto = `Mirá esta novedad en el Portal de ${document.getElementById('wl-institucion-nombre-nav')?.innerText || document.getElementById('wl-institucion-nombre-top')?.innerText || 'la Institución'}: ${titulo}`;
+            const texto = `Mirá esta novedad en el Portal de ${document.getElementById('wl-institucion-nombre-top')?.innerText || 'la Institución'}: ${titulo}`;
 
             if (navigator.share) {
                 try {
