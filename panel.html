@@ -4,7 +4,8 @@
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración · <span id="wl-title-institucion">Cargando...</span></title>
+    <title>Panel de Administración · Cargando...</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -12,15 +13,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@700;900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        wlPrimary: 'var(--wl-primary)',
-                        wlSecondary: 'var(--wl-secondary)',
-                        wlTertiary: 'var(--wl-tertiary)',
-                        wlBackground: 'var(--wl-background)',
+                        wlPrimary: 'rgb(var(--wl-primary) / <alpha-value>)',
+                        wlSecondary: 'rgb(var(--wl-secondary) / <alpha-value>)',
+                        wlTertiary: 'rgb(var(--wl-tertiary) / <alpha-value>)',
+                        wlBackground: 'rgb(var(--wl-background) / <alpha-value>)',
                     },
                     fontFamily: {
                         sans: ['Outfit', 'sans-serif'],
@@ -33,21 +35,23 @@
     </script>
     <style>
         :root { 
-            --wl-primary: #3b82f6; 
-            --wl-secondary: #fbbf24; 
-            --wl-tertiary: #1e3a8a; 
-            --wl-background: #030712;
+            /* Valores por defecto en formato R G B para soportar opacidades de Tailwind */
+            --wl-primary: 59 130 246; /* #3b82f6 */
+            --wl-secondary: 251 191 36; /* #fbbf24 */
+            --wl-tertiary: 30 58 138; /* #1e3a8a */
+            --wl-background: 3 7 18; /* #030712 */
+            
             --glass-bg: rgba(15, 23, 42, 0.6); 
             --glass-border: rgba(255, 255, 255, 0.08); 
         }
         body { 
             font-family: 'Outfit', sans-serif; 
-            background-color: var(--wl-background); 
+            background-color: rgb(var(--wl-background)); 
             color: #e2e8f0; 
             background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.10) 0%, transparent 50%), radial-gradient(circle at 85% 30%, rgba(217, 119, 6, 0.05) 0%, transparent 50%); 
             background-attachment: fixed; 
             opacity: 0;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.5s ease, background-color 0.5s ease;
         }
         body.ready { opacity: 1; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
@@ -56,9 +60,9 @@
         .glass-card:hover { border-color: rgba(255,255,255,0.15); }
         .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; transition: all 0.3s; color: #94a3b8; cursor: pointer; }
         .sidebar-link:hover { color: white; background: rgba(255,255,255,0.05); }
-        .sidebar-link.active { color: var(--wl-secondary); background: rgba(217, 119, 6, 0.1); border-left: 3px solid var(--wl-secondary); }
+        .sidebar-link.active { color: rgb(var(--wl-secondary)); background: rgba(var(--wl-secondary) / 0.1); border-left: 3px solid rgb(var(--wl-secondary)); }
         input[type="text"], input[type="number"], input[type="email"], input[type="url"], input[type="password"], input[type="date"], input[type="color"], input[type="tel"], select, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px 12px; color: white; outline: none; transition: all 0.3s; font-size: 0.85rem; }
-        input:focus, select:focus, textarea:focus { border-color: var(--wl-primary); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
+        input:focus, select:focus, textarea:focus { border-color: rgb(var(--wl-primary)); box-shadow: 0 0 15px rgba(var(--wl-primary) / 0.2); }
         label { display: block; font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         th { background: rgba(0,0,0,0.4); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; }
         tr { border-bottom: 1px solid var(--glass-border); }
@@ -67,11 +71,11 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #020617; } ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
         .upload-zone { border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
-        .upload-zone:hover { border-color: var(--wl-primary); background: rgba(59,130,246,0.05); }
+        .upload-zone:hover { border-color: rgb(var(--wl-primary)); background: rgba(var(--wl-primary) / 0.05); }
         .preview-img { max-width: 200px; max-height: 150px; border-radius: 8px; margin-top: 10px; }
         .editor-group { background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-        .editor-group-title { font-size: 0.75rem; font-weight: 800; color: var(--wl-secondary); text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
-        #login-screen { position: fixed; inset: 0; z-index: 100; background: var(--wl-background); display: flex; align-items: center; justify-content: center; }
+        .editor-group-title { font-size: 0.75rem; font-weight: 800; color: rgb(var(--wl-secondary)); text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
+        #login-screen { position: fixed; inset: 0; z-index: 100; background: rgb(var(--wl-background)); display: flex; align-items: center; justify-content: center; }
         .login-box { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 40px; border-radius: 20px; text-align: center; width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
         @media print {
             body * { visibility: hidden; }
@@ -729,10 +733,36 @@
 
     <script>
         // ============================================================
-        // BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
+        // 1. CONFIGURACIÓN DE SUPABASE Y VARIABLES GLOBALES
         // ============================================================
-        let currentTenantId = null;
+        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
+        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
+        let currentTenantId = null;
+        let adminUser = null;
+        let padronCompleto = [];
+        let datosExcel = [];
+        let itemDossierActual = null;
+        let bgFrenteUrl = ''; let bgDorsoUrl = ''; let rosetaUrl = ''; let currentEditorTab = 'frente';
+        let chartEvolucion = null;
+        let chartCategorias = null;
+        let whatsappRegistro = '';
+        let configGlobal = {};
+
+        // ============================================================
+        // 2. UTILIDADES CORE (Tailwind Hex -> RGB)
+        // ============================================================
+        const hexToRgb = (hex) => {
+            if (!hex) return '59 130 246'; 
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            return `${parseInt(hex.substring(0,2), 16)} ${parseInt(hex.substring(2,4), 16)} ${parseInt(hex.substring(4,6), 16)}`;
+        };
+
+        // ============================================================
+        // 3. BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
+        // ============================================================
         async function initTenantPanel() {
             try {
                 const hostname = window.location.hostname;
@@ -766,10 +796,11 @@
                 currentTenantId = tenantConfig.id;
                 localStorage.setItem('saas_current_tenant', currentTenantId);
 
-                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#3b82f6');
-                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#fbbf24');
-                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
-                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#030712');
+                // Aplicar colores convirtiéndolos a RGB para que Tailwind soporte las opacidades
+                document.documentElement.style.setProperty('--wl-primary', hexToRgb(tenantConfig.color_primario || '#3b82f6'));
+                document.documentElement.style.setProperty('--wl-secondary', hexToRgb(tenantConfig.color_secundario || '#fbbf24'));
+                document.documentElement.style.setProperty('--wl-tertiary', hexToRgb(tenantConfig.color_terciario || '#1e3a8a'));
+                document.documentElement.style.setProperty('--wl-background', hexToRgb(tenantConfig.color_background || '#030712'));
 
                 const institucionNombres = document.querySelectorAll('#wl-institucion-nombre, #wl-title-institucion, #wl-sidebar-institucion, #modal-institucion-nombre');
                 institucionNombres.forEach(el => {
@@ -780,7 +811,7 @@
                     const prefijo = document.title.split('·')[0];
                     document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
                 } else {
-                    document.title = tenantConfig.nombre_institucion;
+                    document.title = `Panel de Administración · ${tenantConfig.nombre_institucion}`;
                 }
 
                 const inyectarSrcSeguro = (id, url) => {
@@ -818,27 +849,16 @@
         }
 
         // ============================================================
-        // CONFIGURACIÓN DE SUPABASE
+        // 4. INICIALIZACIÓN
         // ============================================================
-        lucide.createIcons();
-        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
-        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+        window.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            await initTenantPanel();
+            await verificarSesion();
+        });
 
         // ==========================================
-        // VARIABLES GLOBALES
-        // ==========================================
-        let adminUser = null;
-        let padronCompleto = [];
-        let datosExcel = [];
-        let itemDossierActual = null;
-        let bgFrenteUrl = ''; let bgDorsoUrl = ''; let rosetaUrl = ''; let currentEditorTab = 'frente';
-        let chartEvolucion = null;
-        let chartCategorias = null;
-        let whatsappRegistro = '';
-
-        // ==========================================
-        // 1. AUTENTICACIÓN Y ROLES
+        // 5. AUTENTICACIÓN Y ROLES
         // ==========================================
         async function iniciarSesion(e) {
             e.preventDefault();
@@ -984,7 +1004,7 @@
         }
 
         // ==========================================
-        // 2. NAVEGACIÓN Y DASHBOARD
+        // 6. NAVEGACIÓN Y DASHBOARD
         // ==========================================
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1171,7 +1191,7 @@
         }
 
         // ==========================================
-        // 3. CRM TRÁMITES Y DOSSIER
+        // 7. CRM TRÁMITES Y DOSSIER
         // ==========================================
         async function cargarSolicitudes() {
             const tbody = document.getElementById('crm-body');
@@ -1564,7 +1584,7 @@
         }
 
         // ==========================================
-        // 4. PADRÓN GLOBAL Y EDICIÓN COMPLETA
+        // 8. PADRÓN GLOBAL Y EDICIÓN COMPLETA
         // ==========================================
         async function cargarPadron(filtro = '') {
             const tbody = document.getElementById('padron-body');
@@ -1704,7 +1724,7 @@
         }
 
         // ==========================================
-        // 5. ALIADOS (INSTITUCIONES)
+        // 9. ALIADOS (INSTITUCIONES)
         // ==========================================
         async function cargarAliadosPanel() {
             const tbody = document.getElementById('aliados-body'); tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
@@ -1769,7 +1789,7 @@
         }
 
         // ==========================================
-        // 6. COMITÉ EVALUADOR
+        // 10. COMITÉ EVALUADOR
         // ==========================================
         async function cargarComitePanel() {
             const tbody = document.getElementById('comite-body');
@@ -1872,7 +1892,6 @@
                 if (btnSubmit) {
                     btnSubmit.textContent = 'GUARDAR MIEMBRO';
                 }
-                
                 lucide.createIcons();
             }
         }
@@ -1903,7 +1922,7 @@
         }
 
         // ==========================================
-        // 7. PORTAL CIENTÍFICO Y DIVULGACIÓN
+        // 11. PORTAL CIENTÍFICO Y DIVULGACIÓN
         // ==========================================
         async function cargarNoticiasPanel() {
             const tbody = document.getElementById('campus-body'); tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center">Cargando...</td></tr>';
@@ -2009,7 +2028,7 @@
         }
 
         // ==========================================
-        // 8. GESTIÓN BIBLIOTECA
+        // 12. GESTIÓN BIBLIOTECA
         // ==========================================
         async function cargarBibliotecaPanel() {
             const tbody = document.getElementById('biblioteca-body'); tbody.innerHTML = '<tr><td colspan="3" class="text-center">Cargando...</td></tr>';
@@ -2056,7 +2075,7 @@
         }
 
         // ==========================================
-        // 9. AUDITORÍA TESIS
+        // 13. AUDITORÍA TESIS
         // ==========================================
         async function cargarTesisPanel() {
             const tbody = document.getElementById('tesis-body'); tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando...</td></tr>';
@@ -2082,7 +2101,7 @@
         }
 
         // ==========================================
-        // 10. CARGA MASIVA
+        // 14. CARGA MASIVA
         // ==========================================
         function procesarExcel() {
             const file = document.getElementById('input-excel').files[0]; if (!file) return;
@@ -2115,7 +2134,7 @@
         }
 
         // ==========================================
-        // 11. CONFIGURACIÓN CORE Y TEXTOS
+        // 15. CONFIGURACIÓN CORE Y TEXTOS
         // ==========================================
         async function cargarConfiguracionForm() {
             try {
@@ -2244,7 +2263,7 @@
         }
 
         // ==========================================
-        // 12. GESTIÓN DE USUARIOS
+        // 16. GESTIÓN DE USUARIOS Y ROLES
         // ==========================================
         async function cargarUsuarios() {
             const tbody = document.getElementById('usuarios-body');
@@ -2398,7 +2417,7 @@
         }
 
         // ==========================================
-        // 13. DISEÑO CREDENCIAL
+        // 17. DISEÑO CREDENCIAL
         // ==========================================
         const defaultStyle = {
             foto: { top: 325, left: 185, width: 230, height: 230, align: 'center', lado: 'frente' },
@@ -2559,14 +2578,6 @@
             } catch(e) { alert("Error: " + e.message); }
         }
 
-        // ==========================================
-        // INIT
-        // ==========================================
-        window.addEventListener('DOMContentLoaded', async () => {
-            await initTenantPanel();
-            await verificarSesion();
-            lucide.createIcons();
-        });
     </script>
 </body>
 </html>
