@@ -354,10 +354,11 @@
             border: 1px solid var(--border-glass);
             border-radius: 16px;
             width: 100%;
-            max-width: 500px;
+            max-width: 540px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(16, 185, 129, 0.15);
             position: relative;
-            overflow: hidden;
             transform: scale(0.95);
             transition: transform 0.3s ease;
         }
@@ -416,6 +417,22 @@
         }
         .btn-action-icon:hover {
             transform: translateY(-1px);
+        }
+
+        /* Lista de directores dentro del modal */
+        .director-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            transition: all 0.2s;
+        }
+        .director-item:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            background: rgba(6, 182, 212, 0.05);
         }
     </style>
 </head>
@@ -678,7 +695,34 @@
 
             <div class="p-6">
                 
-                <!-- Bloque informativo -->
+                <!-- SECCIÓN 1: DIRECTORES ACTIVOS -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="font-mono text-[10px] uppercase tracking-widest flex items-center gap-1.5" style="color: var(--neon-cyan);">
+                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                            Directores Activos
+                        </p>
+                        <button onclick="cargarDirectoresTenant(document.getElementById('director-tenant-id').value)" 
+                                class="text-slate-500 hover:text-cyan-400 transition-colors"
+                                title="Refrescar lista">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                    <div id="directores-lista" class="space-y-2 max-h-48 overflow-y-auto">
+                        <div class="text-center py-4">
+                            <i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto text-slate-500"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEPARADOR -->
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="flex-1 h-px" style="background: var(--border-glass);"></div>
+                    <span class="font-mono text-[9px] text-slate-600 uppercase tracking-widest">Vincular Nuevo</span>
+                    <div class="flex-1 h-px" style="background: var(--border-glass);"></div>
+                </div>
+
+                <!-- SECCIÓN 2: BLOQUE INFORMATIVO -->
                 <div class="p-4 rounded-lg mb-5" style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25);">
                     <p class="font-mono text-[10px] uppercase tracking-widest mb-2 flex items-center gap-1.5" style="color: var(--neon-cyan);">
                         <i data-lucide="info" class="w-3 h-3"></i>
@@ -691,6 +735,7 @@
                     </ol>
                 </div>
 
+                <!-- SECCIÓN 3: FORMULARIO DE VINCULACIÓN -->
                 <form onsubmit="guardarDirector(event)" class="space-y-4">
                     <input type="hidden" id="director-tenant-id">
 
@@ -760,6 +805,17 @@
                 const el = document.getElementById('footer-time');
                 if (el) el.innerText = time;
             }, 1000);
+        }
+
+        // ============================================================
+        // UTILIDAD: Extraer nombre de archivo desde URL pública de Supabase Storage
+        // ============================================================
+        function extraerNombreArchivo(url) {
+            if (!url || typeof url !== 'string') return null;
+            const marker = '/renmcycf-media/';
+            const idx = url.indexOf(marker);
+            if (idx === -1) return null;
+            return url.substring(idx + marker.length);
         }
 
         // ============================================================
@@ -885,7 +941,10 @@
                     return;
                 }
                 
-                tbody.innerHTML = tenantsCache.map(t => `
+                tbody.innerHTML = tenantsCache.map(t => {
+                    const logoUrlEscapada = (t.logo_url || '').replace(/'/g, "\\'");
+                    const nombreEscapado = (t.nombre_institucion || '').replace(/'/g, "\\'");
+                    return `
                     <tr class="animate-fade-up">
                         <td>
                             <img src="${t.logo_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(t.nombre_institucion) + '&background=fff&color=0f172a'}" 
@@ -918,10 +977,10 @@
                         </td>
                         <td style="text-align: right;">
                             <div class="flex items-center justify-end gap-1.5">
-                                <a href="https://${t.slug}.asari.com" target="_blank" rel="noopener" 
+                                <a href="panel-admin.html?tenant=${t.slug}" target="_blank" rel="noopener" 
                                    class="btn-action-icon" 
                                    style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);"
-                                   title="Visitar sitio">
+                                   title="Abrir panel de este tenant">
                                     <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                                 </a>
                                 <button onclick="editarTenantForm('${t.id}')" 
@@ -930,7 +989,7 @@
                                         title="Editar institución">
                                     <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                                 </button>
-                                <button onclick="abrirModalDirector('${t.id}', '${t.nombre_institucion.replace(/'/g, "\\'")}')" 
+                                <button onclick="abrirModalDirector('${t.id}', '${nombreEscapado}')" 
                                         class="btn-action-icon"
                                         style="background: rgba(6, 182, 212, 0.1); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3);"
                                         title="Asignar Director">
@@ -942,10 +1001,16 @@
                                         title="${t.activo ? 'Pausar servicio' : 'Activar servicio'}">
                                     <i data-lucide="${t.activo ? 'pause' : 'play'}" class="w-3.5 h-3.5"></i>
                                 </button>
+                                <button onclick="eliminarTenant('${t.id}', '${t.slug}', '${logoUrlEscapada}')" 
+                                        class="btn-action-icon"
+                                        style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);"
+                                        title="Eliminar definitivamente">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
                             </div>
                         </td>
-                    </tr>
-                `).join('');
+                    </tr>`;
+                }).join('');
                 
                 lucide.createIcons();
                 agregarLog(`${tenantsCache.length} cliente(s) cargado(s)`);
@@ -965,16 +1030,12 @@
         }
 
         // ============================================================
-        // 3. CREAR / ACTUALIZAR TENANT
+        // 3. CREAR / ACTUALIZAR TENANT (CON SEED + LIMPIEZA DE LOGO HUÉRFANO)
         // ============================================================
         async function guardarTenant(e) {
             e.preventDefault();
             
             const btn = document.getElementById('btn-guardar-tenant');
-            const btnText = document.getElementById('btn-save-text');
-            const btnIcon = document.getElementById('btn-save-icon');
-            const originalHTML = btn.innerHTML;
-            
             const tenantId = document.getElementById('tenant-id').value;
             const esEdicion = !!tenantId;
             
@@ -993,14 +1054,13 @@
             if (!esEdicion && !logoFile) { alert('El logo es obligatorio al crear una institución.'); return; }
             if (logoFile && logoFile.size > 5 * 1024 * 1024) { alert('El logo no debe superar los 5MB.'); return; }
             
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-2 animate-spin"></i> PROCESANDO...';
             btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-2 animate-spin"></i> PROCESANDO...';
             lucide.createIcons();
             
             agregarLog(`${esEdicion ? 'actualizando' : 'desplegando'} ${slug}...`);
             
             try {
-                // 1. Verificar slug único (solo si es creación)
                 if (!esEdicion) {
                     const { data: existing } = await db.from('saas_tenants').select('id').eq('slug', slug).maybeSingle();
                     if (existing) {
@@ -1008,10 +1068,28 @@
                     }
                 }
                 
-                // 2. Determinar URL del logo
                 let logoUrl = logoUrlOriginal;
                 
                 if (logoFile) {
+                    // ============================================================
+                    // LIMPIEZA DE LOGO HUÉRFANO (solo en modo edición)
+                    // ============================================================
+                    if (esEdicion && logoUrlOriginal) {
+                        const nombreArchivoViejo = extraerNombreArchivo(logoUrlOriginal);
+                        if (nombreArchivoViejo) {
+                            try {
+                                agregarLog(`purgando logo anterior → ${nombreArchivoViejo}`);
+                                const { error: rmErr } = await db.storage.from('renmcycf-media').remove([nombreArchivoViejo]);
+                                if (rmErr) throw rmErr;
+                                agregarLog(`✅ logo anterior eliminado del storage`, 'success');
+                            } catch (rmErr) {
+                                // No interrumpir la actualización del registro
+                                console.warn('Error eliminando logo anterior:', rmErr);
+                                agregarLog(`⚠️ no se pudo purgar logo anterior: ${rmErr.message}`, 'error');
+                            }
+                        }
+                    }
+                    
                     const timestamp = Date.now();
                     const ext = logoFile.name.split('.').pop().toLowerCase();
                     const fileName = `logo_${slug}_${timestamp}.${ext}`;
@@ -1032,7 +1110,6 @@
                     throw new Error('Debe subir un logo.');
                 }
                 
-                // 3. Payload
                 const payload = {
                     slug: slug,
                     nombre_institucion: nombre,
@@ -1061,36 +1138,96 @@
                     
                     agregarLog(`insertando en saas_tenants...`);
                     
-                    const { error: insErr } = await db.from('saas_tenants').insert([payload]);
+                    const { data: newTenant, error: insErr } = await db
+                        .from('saas_tenants')
+                        .insert([payload])
+                        .select()
+                        .single();
+                    
                     if (insErr) throw insErr;
                     
+                    // SEED OBLIGATORIO: Crear configuración base para que panel.html no colapse
+                    agregarLog(`inyectando configuración base → renmcycf_config`);
+                    
+                    const { error: seedErr } = await db.from('renmcycf_config').insert([{
+                        tenant_id: newTenant.id,
+                        arancel_a1: 0,
+                        arancel_a2: 0,
+                        arancel_a3: 0,
+                        arancel_a4: 0,
+                        mostrar_wpp: true,
+                        mostrar_email: true,
+                        mostrar_facebook: false,
+                        mostrar_instagram: false,
+                        logo_url: logoUrl
+                    }]);
+                    
+                    if (seedErr) throw seedErr;
+                    
+                    agregarLog(`✅ configuración base inyectada`, 'success');
                     agregarLog(`✅ ${nombre} desplegado exitosamente`, 'success');
                     mostrarToast(`✅ ${nombre} desplegado correctamente`, 'success');
                     
-                    document.getElementById('form-tenant').reset();
-                    limpiarLogo();
-                    document.getElementById('tenant-color-primary').value = '#0f172a';
-                    document.getElementById('tenant-color-secondary').value = '#d4af37';
-                    document.getElementById('tenant-color-tertiary').value = '#1e3a8a';
-                    document.getElementById('tenant-color-background').value = '#f8fafc';
+                    cancelarEdicion();
                 }
                 
-                // 4. Recargar tabla
                 await cargarTenants();
                 
             } catch (err) {
                 console.error('Error guardando tenant:', err);
                 agregarLog(`❌ ERROR: ${err.message}`, 'error');
                 mostrarToast(`Error: ${err.message}`, 'error');
+                
+                // Restaurar el botón según el modo en el que estaba
+                if (esEdicion) {
+                    btn.classList.add('btn-primary-edit');
+                    btn.innerHTML = '<i data-lucide="save" class="w-4 h-4 inline mr-2" id="btn-save-icon"></i><span id="btn-save-text">ACTUALIZAR DATOS</span>';
+                } else {
+                    btn.classList.remove('btn-primary-edit');
+                    btn.innerHTML = '<i data-lucide="rocket" class="w-4 h-4 inline mr-2" id="btn-save-icon"></i><span id="btn-save-text">DESPLEGAR INSTITUCIÓN</span>';
+                }
             } finally {
-                btn.innerHTML = originalHTML;
                 btn.disabled = false;
                 lucide.createIcons();
             }
         }
 
         // ============================================================
-        // 4. EDITAR TENANT
+        // 4. CANCELAR EDICIÓN
+        // ============================================================
+        function cancelarEdicion() {
+            editandoTenantId = null;
+            logoUrlOriginal = null;
+            
+            document.getElementById('form-tenant').reset();
+            document.getElementById('tenant-id').value = '';
+            limpiarLogo();
+            
+            document.getElementById('tenant-color-primary').value = '#0f172a';
+            document.getElementById('tenant-color-secondary').value = '#d4af37';
+            document.getElementById('tenant-color-tertiary').value = '#1e3a8a';
+            document.getElementById('tenant-color-background').value = '#f8fafc';
+            
+            document.getElementById('tenant-slug').removeAttribute('readonly');
+            document.getElementById('slug-lock-msg').classList.remove('active');
+            
+            document.getElementById('form-title').innerText = 'Desplegar Institución';
+            document.getElementById('form-icon').setAttribute('data-lucide', 'plus-circle');
+            
+            const btnGuardar = document.getElementById('btn-guardar-tenant');
+            btnGuardar.classList.remove('btn-primary-edit');
+            btnGuardar.innerHTML = '<i data-lucide="rocket" class="w-4 h-4 inline mr-2" id="btn-save-icon"></i><span id="btn-save-text">DESPLEGAR INSTITUCIÓN</span>';
+            
+            document.getElementById('edit-mode-indicator').classList.remove('active');
+            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
+            document.getElementById('tenant-logo').setAttribute('required', 'required');
+            
+            lucide.createIcons();
+            agregarLog('formulario reiniciado');
+        }
+
+        // ============================================================
+        // 5. EDITAR TENANT
         // ============================================================
         function editarTenantForm(tenantId) {
             const tenant = tenantsCache.find(t => t.id === tenantId);
@@ -1099,11 +1236,9 @@
                 return;
             }
             
-            // Guardar estado de edición
             editandoTenantId = tenantId;
             logoUrlOriginal = tenant.logo_url;
             
-            // Rellenar el formulario
             document.getElementById('tenant-id').value = tenant.id;
             document.getElementById('tenant-nombre').value = tenant.nombre_institucion || '';
             document.getElementById('tenant-slug').value = tenant.slug || '';
@@ -1112,7 +1247,6 @@
             document.getElementById('tenant-color-tertiary').value = tenant.color_terciario || '#1e3a8a';
             document.getElementById('tenant-color-background').value = tenant.color_background || '#f8fafc';
             
-            // Mostrar preview del logo existente
             if (tenant.logo_url) {
                 document.getElementById('logo-preview-img').src = tenant.logo_url;
                 document.getElementById('logo-preview-container').classList.remove('hidden');
@@ -1121,29 +1255,22 @@
                 document.getElementById('logo-preview-text').innerText = 'Cambiar Logo';
             }
             
-            // Bloquear slug
             const slugInput = document.getElementById('tenant-slug');
             slugInput.setAttribute('readonly', true);
             document.getElementById('slug-lock-msg').classList.add('active');
             
-            // Cambiar título e ícono
             document.getElementById('form-title').innerText = 'Editar Institución';
             document.getElementById('form-icon').setAttribute('data-lucide', 'edit-2');
             document.getElementById('btn-save-text').innerText = 'ACTUALIZAR DATOS';
             document.getElementById('btn-save-icon').setAttribute('data-lucide', 'save');
             document.getElementById('btn-guardar-tenant').classList.add('btn-primary-edit');
             
-            // Mostrar indicador de edición
             document.getElementById('edit-tenant-name').innerText = tenant.nombre_institucion;
             document.getElementById('edit-mode-indicator').classList.add('active');
             
-            // Mostrar botón cancelar
             document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
-            
-            // Quitar required del logo (porque puede conservar el anterior)
             document.getElementById('tenant-logo').removeAttribute('required');
             
-            // Scroll al formulario
             document.querySelector('.lg\\:col-span-4').scrollIntoView({ behavior: 'smooth', block: 'start' });
             
             lucide.createIcons();
@@ -1151,47 +1278,8 @@
             mostrarToast(`Editando: ${tenant.nombre_institucion}`, 'info');
         }
 
-        function cancelarEdicion() {
-            editandoTenantId = null;
-            logoUrlOriginal = null;
-            
-            // Limpiar formulario
-            document.getElementById('form-tenant').reset();
-            document.getElementById('tenant-id').value = '';
-            limpiarLogo();
-            
-            // Restaurar colores por defecto
-            document.getElementById('tenant-color-primary').value = '#0f172a';
-            document.getElementById('tenant-color-secondary').value = '#d4af37';
-            document.getElementById('tenant-color-tertiary').value = '#1e3a8a';
-            document.getElementById('tenant-color-background').value = '#f8fafc';
-            
-            // Desbloquear slug
-            document.getElementById('tenant-slug').removeAttribute('readonly');
-            document.getElementById('slug-lock-msg').classList.remove('active');
-            
-            // Restaurar título e ícono
-            document.getElementById('form-title').innerText = 'Desplegar Institución';
-            document.getElementById('form-icon').setAttribute('data-lucide', 'plus-circle');
-            document.getElementById('btn-save-text').innerText = 'DESPLEGAR INSTITUCIÓN';
-            document.getElementById('btn-save-icon').setAttribute('data-lucide', 'rocket');
-            document.getElementById('btn-guardar-tenant').classList.remove('btn-primary-edit');
-            
-            // Ocultar indicador de edición
-            document.getElementById('edit-mode-indicator').classList.remove('active');
-            
-            // Ocultar botón cancelar
-            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
-            
-            // Restaurar required del logo
-            document.getElementById('tenant-logo').setAttribute('required', 'required');
-            
-            lucide.createIcons();
-            agregarLog('edición cancelada');
-        }
-
         // ============================================================
-        // 5. PAUSAR / ACTIVAR TENANT
+        // 6. PAUSAR / ACTIVAR TENANT
         // ============================================================
         async function toggleEstadoTenant(tenantId, estadoActual) {
             const accion = estadoActual ? 'pausar' : 'activar';
@@ -1213,17 +1301,75 @@
         }
 
         // ============================================================
-        // 6. MODAL ASIGNAR DIRECTOR
+        // 7. ELIMINAR TENANT (PURGA COMPLETA)
+        // ============================================================
+        async function eliminarTenant(tenantId, slug, logoUrl) {
+            const confirmacion = prompt(
+                'PELIGRO: Esta acción purgará la institución y todas sus configuraciones asociadas. Escriba el slug "' + slug + '" para confirmar:'
+            );
+            
+            if (confirmacion === null) {
+                // Usuario canceló el prompt
+                return;
+            }
+            
+            if (confirmacion.trim() !== slug) {
+                mostrarToast('❌ El slug ingresado no coincide. Operación abortada.', 'error');
+                agregarLog(`purga abortada: slug incorrecto para "${slug}"`, 'error');
+                return;
+            }
+            
+            try {
+                agregarLog(`iniciando purga definitiva de "${slug}"...`, 'error');
+                
+                // 1. Eliminar logo del Storage si existe
+                if (logoUrl && logoUrl.trim() !== '' && logoUrl !== 'null') {
+                    const nombreArchivo = extraerNombreArchivo(logoUrl);
+                    if (nombreArchivo) {
+                        try {
+                            agregarLog(`purgando logo → ${nombreArchivo}`);
+                            const { error: rmErr } = await db.storage.from('renmcycf-media').remove([nombreArchivo]);
+                            if (rmErr) throw rmErr;
+                            agregarLog(`✅ logo purgado del storage`, 'success');
+                        } catch (rmErr) {
+                            console.warn('Error eliminando logo del storage:', rmErr);
+                            agregarLog(`⚠️ no se pudo purgar logo: ${rmErr.message}`, 'error');
+                        }
+                    }
+                }
+                
+                // 2. Eliminar el registro del tenant
+                agregarLog(`eliminando registro de saas_tenants...`);
+                const { error: delErr } = await db.from('saas_tenants').delete().eq('id', tenantId);
+                if (delErr) throw delErr;
+                
+                agregarLog(`✅ ${slug} purgado definitivamente del sistema`, 'success');
+                mostrarToast(`🗑️ ${slug} eliminado definitivamente`, 'success');
+                
+                // 3. Recargar tabla
+                await cargarTenants();
+                
+            } catch (err) {
+                console.error('Error eliminando tenant:', err);
+                agregarLog(`❌ ERROR EN PURGA: ${err.message}`, 'error');
+                mostrarToast(`Error al eliminar: ${err.message}`, 'error');
+            }
+        }
+
+        // ============================================================
+        // 8. MODAL ASIGNAR DIRECTOR (CON LISTADO Y REVOCACIÓN)
         // ============================================================
         function abrirModalDirector(tenantId, tenantNombre) {
             document.getElementById('director-tenant-id').value = tenantId;
             document.getElementById('modal-director-tenant').innerText = tenantNombre;
             document.getElementById('modal-director').classList.add('active');
             
-            // Limpiar campos
             document.getElementById('director-nombres').value = '';
             document.getElementById('director-email').value = '';
             document.getElementById('director-uid').value = '';
+            
+            // Cargar la lista de directores activos para este tenant
+            cargarDirectoresTenant(tenantId);
             
             lucide.createIcons();
             agregarLog(`abriendo otorgamiento de llaves → ${tenantNombre}`);
@@ -1233,6 +1379,107 @@
             document.getElementById('modal-director').classList.remove('active');
         }
 
+        // ============================================================
+        // 8.1 CARGAR DIRECTORES ACTIVOS DEL TENANT
+        // ============================================================
+        async function cargarDirectoresTenant(tenantId) {
+            const contenedor = document.getElementById('directores-lista');
+            if (!contenedor) return;
+            
+            contenedor.innerHTML = `
+                <div class="text-center py-4">
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto text-slate-500"></i>
+                </div>`;
+            lucide.createIcons();
+            
+            try {
+                const { data, error } = await db
+                    .from('renmcycf_roles')
+                    .select('*')
+                    .eq('tenant_id', tenantId)
+                    .order('created_at', { ascending: true });
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    contenedor.innerHTML = `
+                        <div class="text-center py-6 rounded-lg" style="background: rgba(0,0,0,0.2); border: 1px dashed var(--border-glass);">
+                            <i data-lucide="user-x" class="w-6 h-6 mx-auto text-slate-600 mb-2"></i>
+                            <p class="font-mono text-[10px] text-slate-500 uppercase tracking-widest">Sin directores asignados aún</p>
+                        </div>`;
+                    lucide.createIcons();
+                    return;
+                }
+                
+                contenedor.innerHTML = data.map(d => {
+                    const nombreEscapado = (d.nombres || 'Sin nombre').replace(/'/g, "\\'");
+                    return `
+                    <div class="director-item">
+                        <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.4);">
+                            <i data-lucide="user" class="w-4 h-4" style="color: var(--neon-cyan);"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-white truncate">${d.nombres || 'Sin nombre'}</p>
+                            <p class="font-mono text-[10px] text-slate-500 truncate">${d.email || 'sin email'}</p>
+                        </div>
+                        ${d.activo 
+                            ? '<span class="badge-active" style="font-size:0.55rem; padding:2px 8px;">ACTIVO</span>'
+                            : '<span class="badge-inactive" style="font-size:0.55rem; padding:2px 8px;">INACTIVO</span>'
+                        }
+                        <button onclick="revocarDirector('${d.id}', '${nombreEscapado}', '${tenantId}')" 
+                                class="btn-action-icon shrink-0"
+                                style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);"
+                                title="Revocar accesos">
+                            <i data-lucide="user-x" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>`;
+                }).join('');
+                
+                lucide.createIcons();
+                
+            } catch (err) {
+                console.error('Error cargando directores:', err);
+                contenedor.innerHTML = `
+                    <div class="text-center py-4 rounded-lg" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3);">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 mx-auto text-red-500 mb-1"></i>
+                        <p class="font-mono text-[10px] text-red-400">Error: ${err.message}</p>
+                    </div>`;
+                lucide.createIcons();
+            }
+        }
+
+        // ============================================================
+        // 8.2 REVOCAR DIRECTOR
+        // ============================================================
+        async function revocarDirector(roleId, nombreDirector, tenantId) {
+            if (!confirm(`¿Revocar accesos a este director?\n\n${nombreDirector}`)) return;
+            
+            try {
+                agregarLog(`revocando accesos de ${nombreDirector}...`);
+                
+                const { error } = await db
+                    .from('renmcycf_roles')
+                    .delete()
+                    .eq('id', roleId);
+                
+                if (error) throw error;
+                
+                agregarLog(`✅ accesos revocados: ${nombreDirector}`, 'success');
+                mostrarToast(`Accesos revocados a ${nombreDirector}`, 'success');
+                
+                // Recargar la lista de directores
+                await cargarDirectoresTenant(tenantId);
+                
+            } catch (err) {
+                console.error('Error revocando director:', err);
+                agregarLog(`❌ ERROR al revocar: ${err.message}`, 'error');
+                mostrarToast(`Error: ${err.message}`, 'error');
+            }
+        }
+
+        // ============================================================
+        // 9. GUARDAR DIRECTOR (VINCULACIÓN)
+        // ============================================================
         async function guardarDirector(e) {
             e.preventDefault();
             
@@ -1244,13 +1491,11 @@
             const email = document.getElementById('director-email').value.trim().toLowerCase();
             const uid = document.getElementById('director-uid').value.trim();
             
-            // Validaciones
             if (!tenantId) { alert('Error: No se encontró la institución.'); return; }
             if (!nombres) { alert('Los nombres son obligatorios.'); return; }
             if (!email) { alert('El email es obligatorio.'); return; }
             if (!uid) { alert('El User UID es obligatorio.'); return; }
             
-            // Validar formato UUID (básico)
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (!uuidRegex.test(uid)) {
                 alert('El UID no tiene un formato válido. Debe ser un UUID (ej: dd057f27-a081-4c3a-8810-10152c712f3a).');
@@ -1292,7 +1537,13 @@
                 agregarLog(`✅ director vinculado exitosamente`, 'success');
                 mostrarToast(`✅ Director ${nombres} vinculado correctamente`, 'success');
                 
-                cerrarModalDirector();
+                // Limpiar solo los campos del formulario (no cerrar el modal)
+                document.getElementById('director-nombres').value = '';
+                document.getElementById('director-email').value = '';
+                document.getElementById('director-uid').value = '';
+                
+                // Recargar la lista de directores inmediatamente
+                await cargarDirectoresTenant(tenantId);
                 
             } catch (err) {
                 console.error('Error guardando director:', err);
@@ -1306,10 +1557,10 @@
         }
 
         // ============================================================
-        // 7. UTILIDADES DE UI
+        // 10. UTILIDADES DE UI
         // ============================================================
         function normalizarSlug(input) {
-            if (editandoTenantId) return; // No normalizar si está bloqueado
+            if (editandoTenantId) return;
             input.value = input.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
         }
 
@@ -1334,7 +1585,6 @@
             document.getElementById('logo-preview-text').innerText = 'Seleccionar Logo';
             document.getElementById('logo-filename').innerText = '-';
             
-            // Si estamos editando y hay logo original, restaurarlo
             if (editandoTenantId && logoUrlOriginal) {
                 document.getElementById('logo-preview-img').src = logoUrlOriginal;
                 document.getElementById('logo-preview-container').classList.remove('hidden');
@@ -1385,7 +1635,9 @@
             }, 3500);
         }
 
-        // Exponer funciones globales
+        // ============================================================
+        // EXPONER FUNCIONES GLOBALES
+        // ============================================================
         window.iniciarSesion = iniciarSesion;
         window.cerrarSesion = cerrarSesion;
         window.cargarTenants = cargarTenants;
@@ -1396,6 +1648,9 @@
         window.abrirModalDirector = abrirModalDirector;
         window.cerrarModalDirector = cerrarModalDirector;
         window.guardarDirector = guardarDirector;
+        window.cargarDirectoresTenant = cargarDirectoresTenant;
+        window.revocarDirector = revocarDirector;
+        window.eliminarTenant = eliminarTenant;
         window.normalizarSlug = normalizarSlug;
         window.previewLogo = previewLogo;
         window.limpiarLogo = limpiarLogo;
