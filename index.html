@@ -254,22 +254,18 @@
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-wlSecondary/10 to-transparent animate-pulse"></div>
     </div>
 
-    <!-- NAVBAR (Restaurado, ultradelgado y con logo flotante) -->
+    <!-- NAVBAR (Logo flotante, SIN texto al lado) -->
     <nav class="bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-sm min-h-[5rem] transition-all relative flex flex-col justify-center" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 w-full relative z-10 py-3">
             
-            <!-- IZQUIERDA: Logo y Título -->
-            <div class="flex items-center gap-3 md:gap-5 cursor-pointer min-w-0 flex-1" onclick="switchSection('seccion-inicio')">
+            <!-- IZQUIERDA: Solo Logo -->
+            <div class="flex items-center cursor-pointer shrink-0" onclick="switchSection('seccion-inicio')">
                 <!-- Contenedor Fantasma: Reserva el ancho, pero ignora el alto -->
                 <div class="w-20 md:w-24 lg:w-28 shrink-0 relative">
                     <!-- Logo Absoluto: No engorda la barra, cuelga hacia la foto -->
                     <div class="logo-arcada absolute left-0 top-[-25px] md:top-[-30px] lg:top-[-35px] w-20 h-24 md:w-24 md:h-28 lg:w-28 lg:h-32 z-50">
                         <img id="nav-logo" src="https://placehold.co/200x200/fff/0f172a?text=Logo" alt="Logo Institución">
                     </div>
-                </div>
-                <div class="leading-tight min-w-0 flex-1 flex flex-col justify-center">
-                    <span class="font-title font-black text-lg md:text-xl lg:text-2xl tracking-tight text-wlPrimary break-words line-clamp-2" id="wl-institucion-nombre-nav">Cargando...</span>
-                    <span class="text-[9px] md:text-[11px] text-wlSecondary font-bold uppercase tracking-[0.2em] mt-1 block truncate">Plataforma Oficial</span>
                 </div>
             </div>
             
@@ -911,7 +907,7 @@
                 document.documentElement.style.setProperty('--wl-tertiary', hexToRgb(tenantConfig.color_terciario || '#1e3a8a'));
                 document.documentElement.style.setProperty('--wl-background', hexToRgb(tenantConfig.color_background || '#f8fafc'));
 
-                const institucionNombres = document.querySelectorAll('#wl-institucion-nombre-top, #wl-institucion-nombre-nav, #wl-institucion-nombre-footer, #wl-title-institucion');
+                const institucionNombres = document.querySelectorAll('#wl-institucion-nombre-top, #wl-institucion-nombre-footer, #wl-title-institucion');
                 institucionNombres.forEach(el => {
                     if (el) el.innerText = tenantConfig.nombre_institucion;
                 });
