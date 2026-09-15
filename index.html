@@ -52,15 +52,63 @@
             color: #334155; 
             overflow-x: hidden; 
             transition: background-color 0.5s ease;
-            opacity: 0;
-        }
-        body.ready {
+            /* FIX: sin opacity 0 — la página siempre es visible */
             opacity: 1;
         }
         
-        .hero-pattern { position: relative; overflow: hidden; background-color: rgb(var(--wl-primary)); }
-        .hero-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.35; filter: brightness(0.6) saturate(1.2); transition: all 0.5s; }
-        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(10,17,40,0.9) 0%, rgba(10,17,40,0.55) 50%, rgba(10,17,40,0.85) 100%); }
+        /* ============================================================
+           HERO FIJO GLOBAL: fondo permanente detrás de TODAS las secciones
+           ============================================================ */
+        #hero-background-global {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            background-color: rgb(var(--wl-primary));
+        }
+        #hero-background-global .hero-bg-img {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0.45;
+            filter: brightness(0.55) saturate(1.2);
+            transition: opacity 0.5s ease;
+        }
+        #hero-background-global .hero-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(10,17,40,0.92) 0%, rgba(10,17,40,0.70) 50%, rgba(10,17,40,0.90) 100%);
+        }
+
+        /* Todas las secciones van por ENCIMA del fondo fijo */
+        .page-section { 
+            display: none; opacity: 0; 
+            position: relative; 
+            z-index: 10;
+            transition: opacity 0.3s ease-in-out; 
+        }
+        .page-section.active-section { display: block; opacity: 1; }
+
+        /* Capa semitransparente para que el contenido sea legible sobre el hero */
+        .section-glass {
+            position: relative;
+            z-index: 10;
+            background: rgba(248, 250, 252, 0.92);
+            backdrop-filter: blur(2px);
+        }
+        .section-glass-dark {
+            position: relative;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(2px);
+        }
+
+        /* El header del inicio ya no necesita fondo propio */
+        .hero-pattern { 
+            position: relative; 
+            overflow: hidden; 
+            background-color: transparent; 
+        }
         
         /* ============================================================
            LOGO INSTITUCIONAL: sobresale por debajo y tapa la línea dorada
@@ -125,9 +173,6 @@
         .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
         .mobile-overlay.open { opacity: 1; pointer-events: all; }
 
-        .page-section { display: none; opacity: 0; transition: opacity 0.3s ease-in-out; }
-        .page-section.active-section { display: block; opacity: 1; }
-
         @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
         .animate-marquee { display: flex; width: max-content; animation: marquee 30s linear infinite; }
         .animate-marquee:hover { animation-play-state: paused; }
@@ -155,24 +200,30 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans">
 
+    <!-- HERO FIJO GLOBAL: fondo permanente en TODAS las secciones y modales -->
+    <div id="hero-background-global">
+        <img id="dyn-hero-bg" 
+             src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80" 
+             class="hero-bg-img" 
+             alt="Background global"
+             onerror="this.src='https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80'">
+        <div class="hero-overlay"></div>
+    </div>
+
     <!-- TOP BAR -->
     <div class="bg-wlPrimary text-white text-[9px] md:text-[11px] py-3 px-4 text-center font-black tracking-[0.18em] md:tracking-[0.25em] uppercase z-50 shadow-lg relative overflow-hidden flex justify-center">
         <span class="relative z-10 truncate max-w-full px-2" id="wl-institucion-nombre-top">Sistema de Registro Institucional</span>
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-wlSecondary/10 to-transparent animate-pulse"></div>
     </div>
 
-    <!-- NAVBAR (Restaurado y Elástico) -->
+    <!-- NAVBAR (elástico, SOLO logo, sin nombre al lado) -->
     <nav class="bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-sm min-h-[6rem] py-3 transition-all relative" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 h-full relative z-10">
             
-            <!-- IZQUIERDA: Logo y Título -->
-            <div class="flex items-center gap-4 cursor-pointer min-w-0 flex-1" onclick="switchSection('seccion-inicio')">
-                <div class="logo-arcada w-20 h-24 md:w-24 md:h-28 lg:w-28 lg:h-32 shrink-0 relative transform translate-y-4 md:translate-y-6 z-50">
+            <!-- IZQUIERDA: SOLO LOGO (elástico, sobresale por debajo) -->
+            <div class="flex items-center cursor-pointer h-full pl-2 md:pl-6" onclick="switchSection('seccion-inicio')">
+                <div class="logo-arcada w-20 h-24 md:w-24 md:h-28 lg:w-28 lg:h-32 shrink-0 relative z-50 transform translate-y-4 md:translate-y-6">
                     <img id="nav-logo" src="https://placehold.co/200x200/fff/0f172a?text=Logo" alt="Logo Institución">
-                </div>
-                <div class="leading-tight min-w-0 flex-1 flex flex-col justify-center">
-                    <span class="font-title font-black text-lg md:text-xl lg:text-2xl tracking-tight text-wlPrimary break-words line-clamp-3" id="wl-institucion-nombre-nav">Cargando...</span>
-                    <span class="text-[9px] md:text-[11px] text-wlSecondary font-bold uppercase tracking-[0.2em] mt-1 block truncate">Plataforma Oficial</span>
                 </div>
             </div>
             
@@ -219,16 +270,9 @@
     <!-- CONTENEDOR DE SECCIONES -->
     <main class="flex-grow">
 
-        <!-- 1. INICIO -->
+        <!-- 1. INICIO (transparente, deja ver el hero global) -->
         <section id="seccion-inicio" class="page-section active-section">
             <header class="hero-pattern pt-24 pb-24 md:pt-32 md:pb-36 px-4 relative flex items-center min-h-[85vh] border-b-4 border-wlSecondary">
-                <img id="dyn-hero-bg" 
-                     src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80" 
-                     class="hero-bg-img" 
-                     alt="Background"
-                     onerror="this.src='https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80'">
-                <div class="hero-overlay"></div>
-                
                 <div class="relative max-w-7xl mx-auto z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                     <div class="lg:col-span-7" data-aos="fade-right">
                         <div class="flex flex-wrap items-center gap-3 mb-6">
@@ -281,191 +325,199 @@
         </section>
 
         <!-- SECCIÓN INSTITUCIONAL Y TECNOLOGÍA ASARI -->
-        <section id="seccion-institucional" class="page-section py-16 md:py-24 bg-white min-h-[70vh]">
-            <div class="max-w-7xl mx-auto px-4">
-                
-                <div class="text-center mb-16">
-                    <h2 class="font-title text-3xl md:text-4xl font-black text-wlPrimary mb-4 uppercase tracking-tight">
-                        <i data-lucide="landmark" class="inline w-8 h-8 text-wlSecondary mr-2 mb-1"></i>Institucional & Tecnología
-                    </h2>
-                    <div class="w-24 h-1.5 bg-wlSecondary mx-auto mb-6"></div>
-                    <p class="text-slate-600 text-lg max-w-3xl mx-auto font-medium">
-                        La evolución de la identidad profesional.
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <section id="seccion-institucional" class="page-section min-h-[70vh]">
+            <div class="section-glass py-16 md:py-24">
+                <div class="max-w-7xl mx-auto px-4">
                     
-                    <div class="space-y-8" data-aos="fade-right">
-                        <div>
-                            <h3 class="text-2xl font-black text-wlPrimary uppercase tracking-widest mb-3">Nuestra Misión</h3>
-                            <p class="text-slate-600 leading-relaxed text-justify">
-                                El <strong class="text-wlPrimary" id="texto-mision-nombre">Sistema de Registro</strong> nace como una respuesta a la necesidad crítica de centralizar, transparentar y jerarquizar a los profesionales de la Criminalística, las Ciencias Forenses y la Seguridad. Somos el puente de confianza indispensable entre el experto independiente, el sistema de justicia, las entidades privadas y la sociedad civil.
-                            </p>
-                        </div>
-
-                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-inner">
-                            <h3 class="text-lg font-black text-wlPrimary uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <i data-lucide="cpu" class="w-5 h-5 text-wlSecondary"></i> Potenciado por ASARI Core
-                            </h3>
-                            <p class="text-slate-600 text-sm leading-relaxed text-justify mb-4">
-                                Hemos dejado atrás la burocracia y la vulnerabilidad de las credenciales de papel y plástico convencionales. Gracias al motor tecnológico de <strong>ASARI SaaS</strong>, implementamos un ecosistema digital de alta seguridad.
-                            </p>
-                            <ul class="space-y-3">
-                                <li class="flex items-start gap-3 text-sm text-slate-700">
-                                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
-                                    <span><strong>Matrícula Única y Correlativa:</strong> Identificación profesional estandarizada por categorías y jerarquías.</span>
-                                </li>
-                                <li class="flex items-start gap-3 text-sm text-slate-700">
-                                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
-                                    <span><strong>Auditoría en Tiempo Real (Código QR):</strong> Autoridades pueden escanear el reverso de la credencial para acceder instantáneamente al Legajo Digital del matriculado.</span>
-                                </li>
-                                <li class="flex items-start gap-3 text-sm text-slate-700">
-                                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
-                                    <span><strong>Inmutabilidad Blockchain:</strong> Cada alta genera un hash criptográfico, haciendo que la falsificación o alteración de identidades sea tecnológicamente imposible.</span>
-                                </li>
-                            </ul>
-                        </div>
+                    <div class="text-center mb-16">
+                        <h2 class="font-title text-3xl md:text-4xl font-black text-wlPrimary mb-4 uppercase tracking-tight">
+                            <i data-lucide="landmark" class="inline w-8 h-8 text-wlSecondary mr-2 mb-1"></i>Institucional & Tecnología
+                        </h2>
+                        <div class="w-24 h-1.5 bg-wlSecondary mx-auto mb-6"></div>
+                        <p class="text-slate-600 text-lg max-w-3xl mx-auto font-medium">
+                            La evolución de la identidad profesional.
+                        </p>
                     </div>
 
-                    <div class="relative bg-slate-900 rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden flex flex-col items-center justify-center min-h-[500px] border-4 border-slate-800" data-aos="fade-left">
-                        <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-wlSecondary/20 via-transparent to-transparent opacity-50"></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         
-                        <h4 class="text-white text-xs font-bold uppercase tracking-[0.25em] mb-8 relative z-10 opacity-70 border-b border-white/10 pb-2">Muestra Oficial de Credencial</h4>
+                        <div class="space-y-8" data-aos="fade-right">
+                            <div>
+                                <h3 class="text-2xl font-black text-wlPrimary uppercase tracking-widest mb-3">Nuestra Misión</h3>
+                                <p class="text-slate-600 leading-relaxed text-justify">
+                                    El <strong class="text-wlPrimary" id="texto-mision-nombre">Sistema de Registro</strong> nace como una respuesta a la necesidad crítica de centralizar, transparentar y jerarquizar a los profesionales de la Criminalística, las Ciencias Forenses y la Seguridad. Somos el puente de confianza indispensable entre el experto independiente, el sistema de justicia, las entidades privadas y la sociedad civil.
+                                </p>
+                            </div>
 
-                        <div class="relative w-full max-w-[400px] aspect-[1.58/1] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] mb-8 transform -rotate-2 hover:rotate-0 transition-transform duration-500 overflow-hidden bg-slate-800 border border-white/20">
-                            <img id="demo-credencial-frente" src="https://placehold.co/1000x630/0a1128/d4af37?text=FRENTE+CREDENCIAL+(Cargando...)" class="w-full h-full object-cover absolute inset-0">
-                            <div class="absolute inset-0 bg-black/20 flex flex-col justify-end p-5">
-                                <div class="w-12 h-16 bg-white/10 backdrop-blur-md rounded border border-white/30 absolute top-4 left-4 flex items-center justify-center">
-                                    <i data-lucide="user" class="text-white w-6 h-6"></i>
-                                </div>
-                                <div class="text-right w-full">
-                                    <span class="text-white font-black font-mono text-lg drop-shadow-md">Nº 1000/26</span>
-                                </div>
+                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-inner">
+                                <h3 class="text-lg font-black text-wlPrimary uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <i data-lucide="cpu" class="w-5 h-5 text-wlSecondary"></i> Potenciado por ASARI Core
+                                </h3>
+                                <p class="text-slate-600 text-sm leading-relaxed text-justify mb-4">
+                                    Hemos dejado atrás la burocracia y la vulnerabilidad de las credenciales de papel y plástico convencionales. Gracias al motor tecnológico de <strong>ASARI SaaS</strong>, implementamos un ecosistema digital de alta seguridad.
+                                </p>
+                                <ul class="space-y-3">
+                                    <li class="flex items-start gap-3 text-sm text-slate-700">
+                                        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                        <span><strong>Matrícula Única y Correlativa:</strong> Identificación profesional estandarizada por categorías y jerarquías.</span>
+                                    </li>
+                                    <li class="flex items-start gap-3 text-sm text-slate-700">
+                                        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                        <span><strong>Auditoría en Tiempo Real (Código QR):</strong> Autoridades pueden escanear el reverso de la credencial para acceder instantáneamente al Legajo Digital del matriculado.</span>
+                                    </li>
+                                    <li class="flex items-start gap-3 text-sm text-slate-700">
+                                        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                        <span><strong>Inmutabilidad Blockchain:</strong> Cada alta genera un hash criptográfico, haciendo que la falsificación o alteración de identidades sea tecnológicamente imposible.</span>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
 
-                        <div class="relative w-full max-w-[400px] aspect-[1.58/1] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] transform rotate-2 hover:rotate-0 transition-transform duration-500 overflow-hidden bg-slate-800 border border-white/20">
-                            <img id="demo-credencial-dorso" src="https://placehold.co/1000x630/f8fafc/0a1128?text=DORSO+CREDENCIAL+(Cargando...)" class="w-full h-full object-cover absolute inset-0">
-                            <div class="absolute inset-0 bg-black/10 flex items-center justify-center">
-                                <div class="bg-white p-2 rounded shadow-lg">
-                                    <i data-lucide="qr-code" class="w-12 h-12 text-black"></i>
+                        <div class="relative bg-slate-900 rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden flex flex-col items-center justify-center min-h-[500px] border-4 border-slate-800" data-aos="fade-left">
+                            <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-wlSecondary/20 via-transparent to-transparent opacity-50"></div>
+                            
+                            <h4 class="text-white text-xs font-bold uppercase tracking-[0.25em] mb-8 relative z-10 opacity-70 border-b border-white/10 pb-2">Muestra Oficial de Credencial</h4>
+
+                            <div class="relative w-full max-w-[400px] aspect-[1.58/1] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] mb-8 transform -rotate-2 hover:rotate-0 transition-transform duration-500 overflow-hidden bg-slate-800 border border-white/20">
+                                <img id="demo-credencial-frente" src="https://placehold.co/1000x630/0a1128/d4af37?text=FRENTE+CREDENCIAL+(Cargando...)" class="w-full h-full object-cover absolute inset-0">
+                                <div class="absolute inset-0 bg-black/20 flex flex-col justify-end p-5">
+                                    <div class="w-12 h-16 bg-white/10 backdrop-blur-md rounded border border-white/30 absolute top-4 left-4 flex items-center justify-center">
+                                        <i data-lucide="user" class="text-white w-6 h-6"></i>
+                                    </div>
+                                    <div class="text-right w-full">
+                                        <span class="text-white font-black font-mono text-lg drop-shadow-md">Nº 1000/26</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
+                            <div class="relative w-full max-w-[400px] aspect-[1.58/1] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] transform rotate-2 hover:rotate-0 transition-transform duration-500 overflow-hidden bg-slate-800 border border-white/20">
+                                <img id="demo-credencial-dorso" src="https://placehold.co/1000x630/f8fafc/0a1128?text=DORSO+CREDENCIAL+(Cargando...)" class="w-full h-full object-cover absolute inset-0">
+                                <div class="absolute inset-0 bg-black/10 flex items-center justify-center">
+                                    <div class="bg-white p-2 rounded shadow-lg">
+                                        <i data-lucide="qr-code" class="w-12 h-12 text-black"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- 2. VERIFICACIÓN PÚBLICA -->
-        <section id="seccion-verificacion" class="page-section py-16 md:py-24 bg-white min-h-[70vh]">
-            <div class="max-w-4xl mx-auto px-4">
-                <div class="text-center mb-10">
-                    <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="search" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Verificación Pública</h2>
-                    <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
-                    <p class="text-slate-500 max-w-lg mx-auto">Ingrese el DNI o la Matrícula Oficial para consultar la base de datos inmutable y verificar las credenciales del profesional en tiempo real.</p>
-                </div>
-                <div class="bg-slate-50 rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200">
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <div class="flex-1">
-                            <label class="form-label">Documento (DNI) o Matrícula</label>
-                            <input type="text" id="search-input" class="form-input text-lg font-mono" placeholder="Ej: 35123456 o 1007/26" onkeyup="if(event.key==='Enter')buscarProfesional()">
-                        </div>
-                        <div class="flex items-end">
-                            <button onclick="buscarProfesional()" id="btn-buscar-publico" class="w-full md:w-auto bg-wlPrimary hover:bg-slate-800 text-wlSecondary font-black uppercase tracking-[0.15em] text-sm px-8 py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"><i data-lucide="search" class="w-5 h-5"></i> Buscar</button>
-                        </div>
+        <section id="seccion-verificacion" class="page-section min-h-[70vh]">
+            <div class="section-glass py-16 md:py-24">
+                <div class="max-w-4xl mx-auto px-4">
+                    <div class="text-center mb-10">
+                        <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="search" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Verificación Pública</h2>
+                        <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
+                        <p class="text-slate-500 max-w-lg mx-auto">Ingrese el DNI o la Matrícula Oficial para consultar la base de datos inmutable y verificar las credenciales del profesional en tiempo real.</p>
                     </div>
-                    
-                    <div id="search-results" class="mt-8 hidden">
-                        <div class="bg-gradient-to-br from-wlPrimary to-slate-900 rounded-3xl p-8 shadow-2xl text-white border border-wlSecondary/40 relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-8 opacity-10"><i data-lucide="shield-check" class="w-48 h-48 text-wlSecondary"></i></div>
-                            <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                                <div class="w-32 h-32 rounded-2xl bg-slate-800 border-2 border-wlSecondary overflow-hidden shadow-xl shrink-0">
-                                    <img id="res-foto" src="" class="w-full h-full object-cover" alt="Foto Profesional">
-                                </div>
-                                <div class="flex-1 text-center md:text-left">
-                                    <span id="res-cat" class="bg-wlSecondary/20 text-wlSecondary text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-wlSecondary/30">---</span>
-                                    <h3 id="res-nombre" class="font-title font-black text-2xl md:text-3xl mt-3 text-white">---</h3>
-                                    <p class="text-sm font-bold text-slate-300 mt-1 uppercase" id="res-profesion">---</p>
-                                    <p class="text-sm font-mono text-slate-400 mt-1">DNI: <span id="res-dni"></span> · Matrícula: <span id="res-mat"></span></p>
-                                    
-                                    <div class="mt-3" id="res-especialidades-container">
-                                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Especialidades Avaladas</p>
-                                        <div id="res-especialidades" class="flex flex-wrap gap-2 justify-center md:justify-start"></div>
+                    <div class="bg-slate-50 rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1">
+                                <label class="form-label">Documento (DNI) o Matrícula</label>
+                                <input type="text" id="search-input" class="form-input text-lg font-mono" placeholder="Ej: 35123456 o 1007/26" onkeyup="if(event.key==='Enter')buscarProfesional()">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="buscarProfesional()" id="btn-buscar-publico" class="w-full md:w-auto bg-wlPrimary hover:bg-slate-800 text-wlSecondary font-black uppercase tracking-[0.15em] text-sm px-8 py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all"><i data-lucide="search" class="w-5 h-5"></i> Buscar</button>
+                            </div>
+                        </div>
+                        
+                        <div id="search-results" class="mt-8 hidden">
+                            <div class="bg-gradient-to-br from-wlPrimary to-slate-900 rounded-3xl p-8 shadow-2xl text-white border border-wlSecondary/40 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 p-8 opacity-10"><i data-lucide="shield-check" class="w-48 h-48 text-wlSecondary"></i></div>
+                                <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                                    <div class="w-32 h-32 rounded-2xl bg-slate-800 border-2 border-wlSecondary overflow-hidden shadow-xl shrink-0">
+                                        <img id="res-foto" src="" class="w-full h-full object-cover" alt="Foto Profesional">
                                     </div>
-                                    
-                                    <p class="text-xs text-emerald-400 mt-4 flex items-center justify-center md:justify-start gap-1 font-bold">
-                                        <i data-lucide="check-circle" class="w-4 h-4"></i> PROFESIONAL HABILITADO Y ACTIVO
-                                    </p>
+                                    <div class="flex-1 text-center md:text-left">
+                                        <span id="res-cat" class="bg-wlSecondary/20 text-wlSecondary text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-wlSecondary/30">---</span>
+                                        <h3 id="res-nombre" class="font-title font-black text-2xl md:text-3xl mt-3 text-white">---</h3>
+                                        <p class="text-sm font-bold text-slate-300 mt-1 uppercase" id="res-profesion">---</p>
+                                        <p class="text-sm font-mono text-slate-400 mt-1">DNI: <span id="res-dni"></span> · Matrícula: <span id="res-mat"></span></p>
+                                        
+                                        <div class="mt-3" id="res-especialidades-container">
+                                            <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Especialidades Avaladas</p>
+                                            <div id="res-especialidades" class="flex flex-wrap gap-2 justify-center md:justify-start"></div>
+                                        </div>
+                                        
+                                        <p class="text-xs text-emerald-400 mt-4 flex items-center justify-center md:justify-start gap-1 font-bold">
+                                            <i data-lucide="check-circle" class="w-4 h-4"></i> PROFESIONAL HABILITADO Y ACTIVO
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div id="search-empty" class="mt-8 hidden bg-red-50 border border-red-200 rounded-xl p-6 text-center text-red-800 font-bold text-sm shadow-sm flex flex-col items-center gap-2">
-                        <i data-lucide="alert-triangle" class="w-8 h-8 text-red-500"></i>
-                        No se encontraron registros activos para ese documento o matrícula.
+                        
+                        <div id="search-empty" class="mt-8 hidden bg-red-50 border border-red-200 rounded-xl p-6 text-center text-red-800 font-bold text-sm shadow-sm flex flex-col items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-8 h-8 text-red-500"></i>
+                            No se encontraron registros activos para ese documento o matrícula.
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- 3. SEGUIMIENTO DE TRÁMITE -->
-        <section id="seccion-tracking" class="page-section py-16 md:py-24 bg-slate-50 min-h-[70vh]">
-            <div class="max-w-3xl mx-auto px-4">
-                <div class="text-center mb-10">
-                    <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="package-search" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Seguimiento de Trámite</h2>
-                    <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
-                    <p class="text-slate-500">Ingrese su DNI para conocer el estado y trazabilidad de su expediente de inscripción.</p>
-                </div>
-                <div class="bg-white rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200">
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <div class="flex-1">
-                            <label class="form-label">Número de DNI</label>
-                            <input type="number" id="track-dni" class="form-input font-mono text-lg text-center md:text-left" placeholder="Ej: 35123456" onkeyup="if(event.key==='Enter')buscarTracking()">
-                        </div>
-                        <div class="flex items-end">
-                            <button onclick="buscarTracking()" id="btn-buscar-track" class="w-full md:w-auto bg-wlPrimary text-wlSecondary px-8 py-4 rounded-xl font-black uppercase text-sm shadow-lg hover:bg-slate-800 transition-all flex justify-center items-center"><i data-lucide="search" class="w-4 h-4 mr-2"></i> Rastrear</button>
-                        </div>
+        <section id="seccion-tracking" class="page-section min-h-[70vh]">
+            <div class="section-glass py-16 md:py-24">
+                <div class="max-w-3xl mx-auto px-4">
+                    <div class="text-center mb-10">
+                        <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="package-search" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Seguimiento de Trámite</h2>
+                        <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
+                        <p class="text-slate-500">Ingrese su DNI para conocer el estado y trazabilidad de su expediente de inscripción.</p>
                     </div>
-                    <div id="tracking-result" class="mt-8 hidden"></div>
+                    <div class="bg-white rounded-2xl p-6 md:p-8 shadow-lg border border-slate-200">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1">
+                                <label class="form-label">Número de DNI</label>
+                                <input type="number" id="track-dni" class="form-input font-mono text-lg text-center md:text-left" placeholder="Ej: 35123456" onkeyup="if(event.key==='Enter')buscarTracking()">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="buscarTracking()" id="btn-buscar-track" class="w-full md:w-auto bg-wlPrimary text-wlSecondary px-8 py-4 rounded-xl font-black uppercase text-sm shadow-lg hover:bg-slate-800 transition-all flex justify-center items-center"><i data-lucide="search" class="w-4 h-4 mr-2"></i> Rastrear</button>
+                            </div>
+                        </div>
+                        <div id="tracking-result" class="mt-8 hidden"></div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- 4. MAPA INTELIGENTE -->
-        <section id="seccion-mapa" class="page-section py-16 bg-wlPrimary text-white relative min-h-[70vh]">
-            <div class="max-w-7xl mx-auto px-4 relative z-10">
-                <div class="text-center mb-8">
-                    <h2 class="font-title text-2xl md:text-3xl font-black mb-3 uppercase text-white"><i data-lucide="map-pin" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Directorio Nacional de Profesionales</h2>
-                    <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
-                    <p class="text-slate-300 text-sm max-w-xl mx-auto">Encuentre profesionales habilitados por jurisdicción o especialidad.</p>
-                </div>
+        <section id="seccion-mapa" class="page-section min-h-[70vh] relative">
+            <div class="section-glass-dark py-16">
+                <div class="max-w-7xl mx-auto px-4 relative z-10 text-white">
+                    <div class="text-center mb-8">
+                        <h2 class="font-title text-2xl md:text-3xl font-black mb-3 uppercase text-white"><i data-lucide="map-pin" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Directorio Nacional de Profesionales</h2>
+                        <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
+                        <p class="text-slate-300 text-sm max-w-xl mx-auto">Encuentre profesionales habilitados por jurisdicción o especialidad.</p>
+                    </div>
 
-                <div class="bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 md:p-6 mb-6 border border-white/10 shadow-lg">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-wlSecondary mb-1 block">Filtrar por Provincia</label>
-                            <input type="text" id="map-filtro-prov" placeholder="Ej: Córdoba" class="w-full bg-black/40 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:border-wlSecondary outline-none">
-                        </div>
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-wlSecondary mb-1 block">Área o Especialidad</label>
-                            <input type="text" id="map-filtro-esp" placeholder="Ej: Balística, Técnico..." class="w-full bg-black/40 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:border-wlSecondary outline-none">
-                        </div>
-                        <div class="flex items-end">
-                            <button onclick="filtrarMapa()" class="w-full bg-wlSecondary hover:bg-yellow-500 text-wlPrimary px-6 py-3 rounded-lg font-black uppercase text-sm transition shadow-md flex items-center justify-center gap-2"><i data-lucide="filter" class="w-4 h-4"></i> Filtrar Profesionales</button>
+                    <div class="bg-slate-800/80 backdrop-blur-md rounded-2xl p-4 md:p-6 mb-6 border border-white/10 shadow-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-wlSecondary mb-1 block">Filtrar por Provincia</label>
+                                <input type="text" id="map-filtro-prov" placeholder="Ej: Córdoba" class="w-full bg-black/40 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:border-wlSecondary outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase font-bold text-wlSecondary mb-1 block">Área o Especialidad</label>
+                                <input type="text" id="map-filtro-esp" placeholder="Ej: Balística, Técnico..." class="w-full bg-black/40 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:border-wlSecondary outline-none">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="filtrarMapa()" class="w-full bg-wlSecondary hover:bg-yellow-500 text-wlPrimary px-6 py-3 rounded-lg font-black uppercase text-sm transition shadow-md flex items-center justify-center gap-2"><i data-lucide="filter" class="w-4 h-4"></i> Filtrar Profesionales</button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="bg-white/5 rounded-2xl p-2 md:p-4 border border-white/10 shadow-2xl">
-                    <div id="mapa-profesionales" class="w-full h-[500px] rounded-xl z-10 border border-white/20 relative">
-                        <div id="map-loading" class="absolute inset-0 bg-black/60 z-[400] flex items-center justify-center rounded-xl">
-                            <div class="text-center text-wlSecondary">
-                                <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2"></i>
-                                <p class="text-xs font-bold uppercase tracking-widest">Cargando Profesionales...</p>
+                    <div class="bg-white/5 rounded-2xl p-2 md:p-4 border border-white/10 shadow-2xl">
+                        <div id="mapa-profesionales" class="w-full h-[500px] rounded-xl z-10 border border-white/20 relative">
+                            <div id="map-loading" class="absolute inset-0 bg-black/60 z-[400] flex items-center justify-center rounded-xl">
+                                <div class="text-center text-wlSecondary">
+                                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2"></i>
+                                    <p class="text-xs font-bold uppercase tracking-widest">Cargando Profesionales...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -474,231 +526,243 @@
         </section>
 
         <!-- 5. CATEGORÍAS -->
-        <section id="seccion-categorias" class="page-section py-16 bg-white min-h-[70vh]">
-            <div class="max-w-7xl mx-auto px-4">
-                <div class="text-center mb-14">
-                    <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="layers" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Estructura del Padrón</h2>
-                    <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <h3 class="w-full col-span-full text-sm font-bold text-slate-400 uppercase tracking-widest mt-2 mb-2">Área Profesional y Técnica</h3>
+        <section id="seccion-categorias" class="page-section min-h-[70vh]">
+            <div class="section-glass py-16">
+                <div class="max-w-7xl mx-auto px-4">
+                    <div class="text-center mb-14">
+                        <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="layers" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Estructura del Padrón</h2>
+                        <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
+                    </div>
                     
-                    <div class="cat-card cat-a1 bg-gradient-to-b from-yellow-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
-                        <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría A1</h3>
-                        <p class="text-xs text-slate-600" id="cat-a1-desc">Licenciaturas y Títulos de Grado Universitarios.</p>
-                    </div>
-                    <div class="cat-card cat-a2 bg-gradient-to-b from-blue-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
-                        <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría A2</h3>
-                        <p class="text-xs text-slate-600" id="cat-a2-desc">Técnicos Superiores y Terciarios Especializados.</p>
-                    </div>
-                    <div class="cat-card cat-a3 bg-gradient-to-b from-emerald-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
-                        <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría A3</h3>
-                        <p class="text-xs text-slate-600" id="cat-a3-desc">Auxiliares, Peritos de Oficio y Diplomados.</p>
-                    </div>
-                    <div class="cat-card cat-a4 bg-gradient-to-b from-purple-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
-                        <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría A4</h3>
-                        <p class="text-xs text-slate-600" id="cat-a4-desc">Consultores Técnicos y Estudiantes Avanzados.</p>
-                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <h3 class="w-full col-span-full text-sm font-bold text-slate-400 uppercase tracking-widest mt-2 mb-2">Área Profesional y Técnica</h3>
+                        
+                        <div class="cat-card cat-a1 bg-gradient-to-b from-yellow-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                            <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría A1</h3>
+                            <p class="text-xs text-slate-600" id="cat-a1-desc">Licenciaturas y Títulos de Grado Universitarios.</p>
+                        </div>
+                        <div class="cat-card cat-a2 bg-gradient-to-b from-blue-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                            <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría A2</h3>
+                            <p class="text-xs text-slate-600" id="cat-a2-desc">Técnicos Superiores y Terciarios Especializados.</p>
+                        </div>
+                        <div class="cat-card cat-a3 bg-gradient-to-b from-emerald-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                            <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría A3</h3>
+                            <p class="text-xs text-slate-600" id="cat-a3-desc">Auxiliares, Peritos de Oficio y Diplomados.</p>
+                        </div>
+                        <div class="cat-card cat-a4 bg-gradient-to-b from-purple-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                            <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría A4</h3>
+                            <p class="text-xs text-slate-600" id="cat-a4-desc">Consultores Técnicos y Estudiantes Avanzados.</p>
+                        </div>
 
-                    <h3 class="w-full col-span-full text-sm font-bold text-slate-400 uppercase tracking-widest mt-6 mb-2">Área Seguridad Pública y Privada</h3>
-                    
-                    <div class="cat-card cat-b1 bg-gradient-to-b from-red-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
-                        <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría B1</h3>
-                        <p class="text-xs text-slate-600">Licenciaturas y Títulos de Grado en Seguridad.</p>
-                    </div>
-                    <div class="cat-card cat-b2 bg-gradient-to-b from-orange-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
-                        <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría B2</h3>
-                        <p class="text-xs text-slate-600">Técnicos Superiores en Seguridad.</p>
-                    </div>
-                    <div class="cat-card cat-b3 bg-gradient-to-b from-yellow-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
-                        <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría B3</h3>
-                        <p class="text-xs text-slate-600">Técnicos, Auxiliares y Diplomados en Seguridad.</p>
+                        <h3 class="w-full col-span-full text-sm font-bold text-slate-400 uppercase tracking-widest mt-6 mb-2">Área Seguridad Pública y Privada</h3>
+                        
+                        <div class="cat-card cat-b1 bg-gradient-to-b from-red-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                            <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría B1</h3>
+                            <p class="text-xs text-slate-600">Licenciaturas y Títulos de Grado en Seguridad.</p>
+                        </div>
+                        <div class="cat-card cat-b2 bg-gradient-to-b from-orange-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                            <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría B2</h3>
+                            <p class="text-xs text-slate-600">Técnicos Superiores en Seguridad.</p>
+                        </div>
+                        <div class="cat-card cat-b3 bg-gradient-to-b from-yellow-50 to-white rounded-2xl p-6 border border-slate-200 shadow-lg">
+                            <h3 class="font-bold text-lg text-wlPrimary mb-2">Categoría B3</h3>
+                            <p class="text-xs text-slate-600">Técnicos, Auxiliares y Diplomados en Seguridad.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- COMITÉ EVALUADOR -->
-        <section id="seccion-comite" class="page-section py-16 md:py-24 bg-slate-50 min-h-[70vh]" style="display: none;">
-            <div class="max-w-7xl mx-auto px-4">
-                <div class="text-center mb-14">
-                    <h2 class="font-title text-2xl md:text-4xl font-black text-wlPrimary mb-3 uppercase">
-                        <i data-lucide="shield" class="inline w-8 h-8 text-wlSecondary mr-2"></i>Comité Evaluador
-                    </h2>
-                    <div class="w-24 h-1.5 bg-wlSecondary mx-auto mb-4"></div>
-                    <p class="text-slate-600 text-sm max-w-2xl mx-auto">Autoridades encargadas de la auditoría documental y certificación de matrículas a nivel nacional.</p>
-                </div>
-                <div id="contenedor-comite" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="col-span-full text-center text-slate-400 py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2"></i> Cargando autoridades...</div>
+        <section id="seccion-comite" class="page-section min-h-[70vh]" style="display: none;">
+            <div class="section-glass py-16 md:py-24">
+                <div class="max-w-7xl mx-auto px-4">
+                    <div class="text-center mb-14">
+                        <h2 class="font-title text-2xl md:text-4xl font-black text-wlPrimary mb-3 uppercase">
+                            <i data-lucide="shield" class="inline w-8 h-8 text-wlSecondary mr-2"></i>Comité Evaluador
+                        </h2>
+                        <div class="w-24 h-1.5 bg-wlSecondary mx-auto mb-4"></div>
+                        <p class="text-slate-600 text-sm max-w-2xl mx-auto">Autoridades encargadas de la auditoría documental y certificación de matrículas a nivel nacional.</p>
+                    </div>
+                    <div id="contenedor-comite" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="col-span-full text-center text-slate-400 py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2"></i> Cargando autoridades...</div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- 6. PORTAL DE DIVULGACIÓN CIENTÍFICA -->
-        <section id="seccion-portal-divulgacion" class="page-section py-16 md:py-24 bg-slate-50 min-h-[70vh]">
-            <div class="max-w-7xl mx-auto px-4">
-                <div class="text-center mb-14">
-                    <h2 class="font-title text-2xl md:text-4xl font-black text-wlPrimary mb-3 uppercase">
-                        <i data-lucide="book-open" class="inline w-8 h-8 text-wlSecondary mr-2"></i>Portal de Divulgación Científica
-                    </h2>
-                    <div class="w-24 h-1.5 bg-wlSecondary mx-auto mb-4"></div>
-                    <p class="text-slate-600 text-sm max-w-2xl mx-auto">Plataforma centralizada de actualización académica, noticias institucionales e innovaciones tecnológicas.</p>
-                </div>
+        <section id="seccion-portal-divulgacion" class="page-section min-h-[70vh]">
+            <div class="section-glass py-16 md:py-24">
+                <div class="max-w-7xl mx-auto px-4">
+                    <div class="text-center mb-14">
+                        <h2 class="font-title text-2xl md:text-4xl font-black text-wlPrimary mb-3 uppercase">
+                            <i data-lucide="book-open" class="inline w-8 h-8 text-wlSecondary mr-2"></i>Portal de Divulgación Científica
+                        </h2>
+                        <div class="w-24 h-1.5 bg-wlSecondary mx-auto mb-4"></div>
+                        <p class="text-slate-600 text-sm max-w-2xl mx-auto">Plataforma centralizada de actualización académica, noticias institucionales e innovaciones tecnológicas.</p>
+                    </div>
 
-                <div id="contenedor-noticias-publicas" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+                    <div id="contenedor-noticias-publicas" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+                </div>
             </div>
         </section>
 
         <!-- 7. BIBLIOTECA VIRTUAL -->
-        <section id="seccion-biblioteca" class="page-section py-16 md:py-24 bg-white min-h-[70vh]">
-            <div class="max-w-7xl mx-auto px-4">
-                <div class="text-center mb-12">
-                    <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="library" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Biblioteca Virtual e Investigaciones</h2>
-                    <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
-                </div>
-                <div id="contenedor-biblioteca-ordenada" class="space-y-8 text-center text-slate-500">
-                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2"></i> Conectando con el repositorio oficial...
-                </div>
+        <section id="seccion-biblioteca" class="page-section min-h-[70vh]">
+            <div class="section-glass py-16 md:py-24">
+                <div class="max-w-7xl mx-auto px-4">
+                    <div class="text-center mb-12">
+                        <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="library" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Biblioteca Virtual e Investigaciones</h2>
+                        <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
+                    </div>
+                    <div id="contenedor-biblioteca-ordenada" class="space-y-8 text-center text-slate-500">
+                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2"></i> Conectando con el repositorio oficial...
+                    </div>
 
-                <div class="mt-16 pt-10 border-t border-slate-200">
-                    <h3 class="font-title text-xl md:text-2xl font-black text-wlPrimary mb-4 uppercase text-center">
-                        <i data-lucide="microscope" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Investigaciones de Matriculados (Tesis)
-                    </h3>
-                    <div id="contenedor-tesis-publicas" class="space-y-4 mt-8"></div>
+                    <div class="mt-16 pt-10 border-t border-slate-200">
+                        <h3 class="font-title text-xl md:text-2xl font-black text-wlPrimary mb-4 uppercase text-center">
+                            <i data-lucide="microscope" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Investigaciones de Matriculados (Tesis)
+                        </h3>
+                        <div id="contenedor-tesis-publicas" class="space-y-4 mt-8"></div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- 8. LEGAJO DIGITAL -->
-        <section id="seccion-portafolio" class="page-section py-16 md:py-24 bg-slate-100 min-h-[70vh]">
-            <div class="max-w-4xl mx-auto px-4 text-center">
-                <i data-lucide="folder-check" class="w-20 h-20 text-wlSecondary mx-auto mb-6"></i>
-                <h2 class="font-title text-3xl font-black text-wlPrimary mb-4 uppercase">Ingresar a Mi Legajo Digital</h2>
-                <p class="text-slate-600 mb-8 max-w-xl mx-auto">Accede a tu credencial digital, descarga tus certificados y entra al Portal Científico desde la aplicación de escritorio o móvil (PWA).</p>
-                <a href="legajo.html" class="inline-flex bg-wlSecondary text-wlPrimary px-8 py-4 rounded-xl font-black uppercase tracking-widest hover:scale-105 transition shadow-lg">Abrir Legajo Digital</a>
+        <section id="seccion-portafolio" class="page-section min-h-[70vh]">
+            <div class="section-glass py-16 md:py-24">
+                <div class="max-w-4xl mx-auto px-4 text-center">
+                    <i data-lucide="folder-check" class="w-20 h-20 text-wlSecondary mx-auto mb-6"></i>
+                    <h2 class="font-title text-3xl font-black text-wlPrimary mb-4 uppercase">Ingresar a Mi Legajo Digital</h2>
+                    <p class="text-slate-600 mb-8 max-w-xl mx-auto">Accede a tu credencial digital, descarga tus certificados y entra al Portal Científico desde la aplicación de escritorio o móvil (PWA).</p>
+                    <a href="legajo.html" class="inline-flex bg-wlSecondary text-wlPrimary px-8 py-4 rounded-xl font-black uppercase tracking-widest hover:scale-105 transition shadow-lg">Abrir Legajo Digital</a>
+                </div>
             </div>
         </section>
 
         <!-- 9. INSCRIPCIÓN WIZARD -->
-        <section id="seccion-inscripcion" class="page-section py-16 bg-white min-h-[70vh]">
-            <div class="max-w-4xl mx-auto px-4">
-                <div class="text-center mb-10">
-                    <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="file-text" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Trámite de Matriculación</h2>
-                    <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
-                    <p class="text-slate-600 text-sm">Siga los 3 pasos para generar su expediente y enviar la documentación al Comité de Auditoría.</p>
-                </div>
-
-                <div class="bg-white border border-slate-200 rounded-2xl shadow-xl p-6 md:p-10 relative overflow-hidden">
-                    
-                    <div class="step-indicator">
-                        <div class="step-dot active" id="dot-1">1</div>
-                        <div class="step-line" id="line-1"></div>
-                        <div class="step-dot" id="dot-2">2</div>
-                        <div class="step-line" id="line-2"></div>
-                        <div class="step-dot" id="dot-3">3</div>
+        <section id="seccion-inscripcion" class="page-section min-h-[70vh]">
+            <div class="section-glass py-16">
+                <div class="max-w-4xl mx-auto px-4">
+                    <div class="text-center mb-10">
+                        <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="file-text" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Trámite de Matriculación</h2>
+                        <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
+                        <p class="text-slate-600 text-sm">Siga los 3 pasos para generar su expediente y enviar la documentación al Comité de Auditoría.</p>
                     </div>
 
-                    <form id="form-inscripcion" onsubmit="enviarInscripcion(event)">
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-xl p-6 md:p-10 relative overflow-hidden">
                         
-                        <div id="step-1" class="form-step active space-y-6">
-                            <h3 class="font-black text-lg text-wlPrimary uppercase border-b border-slate-100 pb-2"><i data-lucide="user" class="inline w-5 h-5 text-wlSecondary mr-1"></i> Datos Personales</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div><label class="form-label">Nombres Completos</label><input type="text" id="ins-nombres" required class="form-input"></div>
-                                <div><label class="form-label">Apellidos Completos</label><input type="text" id="ins-apellidos" required class="form-input"></div>
-                                <div><label class="form-label">DNI / Documento</label><input type="number" id="ins-dni" required class="form-input font-mono"></div>
-                                <div><label class="form-label">Año de Nac. (Ej: 1985)</label><input type="number" id="ins-ano-nac" min="1930" max="2010" required class="form-input font-mono" placeholder="1985"></div>
-                                <div><label class="form-label">Correo Electrónico</label><input type="email" id="ins-email" required class="form-input"></div>
-                                <div><label class="form-label">Teléfono / WhatsApp</label><input type="tel" id="ins-tel" required class="form-input font-mono" placeholder="Ej: 549351..."></div>
-                                <div class="md:col-span-2"><label class="form-label">Provincia / Ciudad Laboral</label><input type="text" id="ins-prov" required class="form-input" placeholder="Ej: Córdoba Capital"></div>
-                            </div>
-                            <div class="text-right pt-4"><button type="button" onclick="siguientePaso(2)" class="bg-wlPrimary text-white px-8 py-3 rounded-xl font-bold uppercase text-sm shadow hover:bg-slate-800 transition">Siguiente Paso &rarr;</button></div>
+                        <div class="step-indicator">
+                            <div class="step-dot active" id="dot-1">1</div>
+                            <div class="step-line" id="line-1"></div>
+                            <div class="step-dot" id="dot-2">2</div>
+                            <div class="step-line" id="line-2"></div>
+                            <div class="step-dot" id="dot-3">3</div>
                         </div>
 
-                        <div id="step-2" class="form-step space-y-6">
-                            <h3 class="font-black text-lg text-wlPrimary uppercase border-b border-slate-100 pb-2"><i data-lucide="briefcase" class="inline w-5 h-5 text-wlSecondary mr-1"></i> Perfil Profesional</h3>
-                            <div>
-                                <label class="form-label">Título o Profesión Oficial</label>
-                                <input type="text" id="ins-profesion" required class="form-input" placeholder="Ej: Licenciado en Criminalística" oninput="detectarCategoriaInteligente()">
-                            </div>
-                            <div>
-                                <label class="form-label">Categoría a Solicitar</label>
-                                <select id="ins-categoria" class="form-input font-bold text-wlPrimary bg-slate-50" required onchange="actualizarLinkYPrecio()">
-                                    <option value="" disabled selected>Seleccione una jerarquía o escriba su título arriba...</option>
-                                    <option value="A1">Categoría A.1 - Grado Universitario</option>
-                                    <option value="A2">Categoría A.2 - Técnico Superior</option>
-                                    <option value="A3">Categoría A.3 - Auxiliar / Diplomado</option>
-                                    <option value="A4">Categoría A.4 - Consultor / Estudiante</option>
-                                    <option value="B1">Categoría B.1 - Grado en Seguridad</option>
-                                    <option value="B2">Categoría B.2 - Técnico Superior en Seguridad</option>
-                                    <option value="B3">Categoría B.3 - Téc. / Auxiliar en Seguridad</option>
-                                </select>
-                            </div>
-                            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                                <label class="form-label text-blue-900">Especialidades Adicionales (Opcional)</label>
-                                <p class="text-[10px] text-blue-700 mb-2">Escriba hasta 5 especialidades separadas por coma. Ej: Balística, Papiloscopía, Informática Forense</p>
-                                <input type="text" id="ins-especialidades" class="form-input" placeholder="Especialidad 1, Especialidad 2...">
-                            </div>
-                            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 flex items-start gap-3">
-                                <input type="checkbox" id="ins-directorio" class="mt-1 w-5 h-5 rounded text-wlSecondary focus:ring-wlSecondary border-amber-300">
-                                <div>
-                                    <label for="ins-directorio" class="font-bold text-sm text-amber-900 cursor-pointer">Deseo figurar en el Directorio Público (Mapa Nacional)</label>
-                                    <p class="text-xs text-amber-700 mt-1">Al marcar esta casilla, autorizo que mi nombre, categoría, provincia y especialidades sean públicas para ser contactado por abogados o empresas.</p>
-                                </div>
-                            </div>
-                            <div class="flex justify-between pt-4">
-                                <button type="button" onclick="siguientePaso(1)" class="text-slate-500 font-bold px-4 py-2 hover:bg-slate-100 rounded-lg transition">&larr; Volver</button>
-                                <button type="button" onclick="siguientePaso(3)" class="bg-wlPrimary text-white px-8 py-3 rounded-xl font-bold uppercase text-sm shadow hover:bg-slate-800 transition">Siguiente Paso &rarr;</button>
-                            </div>
-                        </div>
-
-                        <div id="step-3" class="form-step space-y-6">
-                            <h3 class="font-black text-lg text-wlPrimary uppercase border-b border-slate-100 pb-2"><i data-lucide="file-up" class="inline w-5 h-5 text-wlSecondary mr-1"></i> Documentación y Pago</h3>
+                        <form id="form-inscripcion" onsubmit="enviarInscripcion(event)">
                             
-                            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 text-center flex flex-col md:flex-row items-center justify-between gap-4">
-                                <div class="text-left">
-                                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">1. Arancel Administrativo</p>
-                                    <h4 id="display-precio-final" class="font-black text-2xl text-wlPrimary font-mono">Seleccione Categoría</h4>
+                            <div id="step-1" class="form-step active space-y-6">
+                                <h3 class="font-black text-lg text-wlPrimary uppercase border-b border-slate-100 pb-2"><i data-lucide="user" class="inline w-5 h-5 text-wlSecondary mr-1"></i> Datos Personales</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div><label class="form-label">Nombres Completos</label><input type="text" id="ins-nombres" required class="form-input"></div>
+                                    <div><label class="form-label">Apellidos Completos</label><input type="text" id="ins-apellidos" required class="form-input"></div>
+                                    <div><label class="form-label">DNI / Documento</label><input type="number" id="ins-dni" required class="form-input font-mono"></div>
+                                    <div><label class="form-label">Año de Nac. (Ej: 1985)</label><input type="number" id="ins-ano-nac" min="1930" max="2010" required class="form-input font-mono" placeholder="1985"></div>
+                                    <div><label class="form-label">Correo Electrónico</label><input type="email" id="ins-email" required class="form-input"></div>
+                                    <div><label class="form-label">Teléfono / WhatsApp</label><input type="tel" id="ins-tel" required class="form-input font-mono" placeholder="Ej: 549351..."></div>
+                                    <div class="md:col-span-2"><label class="form-label">Provincia / Ciudad Laboral</label><input type="text" id="ins-prov" required class="form-input" placeholder="Ej: Córdoba Capital"></div>
                                 </div>
-                                <a id="btn-mercadopago" href="#" target="_blank" class="bg-sky-600 hover:bg-sky-700 text-white font-black text-sm uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg transition opacity-50 pointer-events-none flex items-center gap-2">
-                                    <i data-lucide="credit-card" class="w-5 h-5"></i> Abonar en Mercado Pago
-                                </a>
+                                <div class="text-right pt-4"><button type="button" onclick="siguientePaso(2)" class="bg-wlPrimary text-white px-8 py-3 rounded-xl font-bold uppercase text-sm shadow hover:bg-slate-800 transition">Siguiente Paso &rarr;</button></div>
                             </div>
 
-                            <div class="space-y-3">
-                                <label class="form-label border-b border-slate-100 pb-1">2. Subida de Archivos Respaldatorios</label>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="border border-slate-200 p-3 rounded-lg bg-white"><span class="text-xs font-bold text-slate-700 block mb-1">Foto de Perfil (Para la credencial)</span><input type="file" id="file-foto" accept="image/*" required class="w-full text-xs text-slate-500"></div>
-                                    <div class="border border-slate-200 p-3 rounded-lg bg-white"><span class="text-xs font-bold text-slate-700 block mb-1">DNI Frente</span><input type="file" id="file-dni-frente" accept="image/*,application/pdf" required class="w-full text-xs text-slate-500"></div>
-                                    <div class="border border-slate-200 p-3 rounded-lg bg-white"><span class="text-xs font-bold text-slate-700 block mb-1">DNI Dorso</span><input type="file" id="file-dni-dorso" accept="image/*,application/pdf" required class="w-full text-xs text-slate-500"></div>
-                                    
-                                    <div class="border border-slate-200 p-3 rounded-lg bg-white">
-                                        <div class="flex justify-between items-center mb-1">
-                                            <span class="text-xs font-bold text-slate-700">Títulos y Certificados</span>
-                                            <span id="contador-archivos" class="text-[9px] font-bold text-white bg-wlPrimary px-2 py-0.5 rounded-full">0/10</span>
-                                        </div>
-                                        <input type="file" id="file-diplomas" multiple accept="image/*,application/pdf" required class="w-full text-xs text-slate-500" onchange="contarArchivos(this)">
-                                        <span class="text-[9px] text-slate-400 mt-1 block">Puede seleccionar hasta 10 archivos a la vez.</span>
+                            <div id="step-2" class="form-step space-y-6">
+                                <h3 class="font-black text-lg text-wlPrimary uppercase border-b border-slate-100 pb-2"><i data-lucide="briefcase" class="inline w-5 h-5 text-wlSecondary mr-1"></i> Perfil Profesional</h3>
+                                <div>
+                                    <label class="form-label">Título o Profesión Oficial</label>
+                                    <input type="text" id="ins-profesion" required class="form-input" placeholder="Ej: Licenciado en Criminalística" oninput="detectarCategoriaInteligente()">
+                                </div>
+                                <div>
+                                    <label class="form-label">Categoría a Solicitar</label>
+                                    <select id="ins-categoria" class="form-input font-bold text-wlPrimary bg-slate-50" required onchange="actualizarLinkYPrecio()">
+                                        <option value="" disabled selected>Seleccione una jerarquía o escriba su título arriba...</option>
+                                        <option value="A1">Categoría A.1 - Grado Universitario</option>
+                                        <option value="A2">Categoría A.2 - Técnico Superior</option>
+                                        <option value="A3">Categoría A.3 - Auxiliar / Diplomado</option>
+                                        <option value="A4">Categoría A.4 - Consultor / Estudiante</option>
+                                        <option value="B1">Categoría B.1 - Grado en Seguridad</option>
+                                        <option value="B2">Categoría B.2 - Técnico Superior en Seguridad</option>
+                                        <option value="B3">Categoría B.3 - Téc. / Auxiliar en Seguridad</option>
+                                    </select>
+                                </div>
+                                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                    <label class="form-label text-blue-900">Especialidades Adicionales (Opcional)</label>
+                                    <p class="text-[10px] text-blue-700 mb-2">Escriba hasta 5 especialidades separadas por coma. Ej: Balística, Papiloscopía, Informática Forense</p>
+                                    <input type="text" id="ins-especialidades" class="form-input" placeholder="Especialidad 1, Especialidad 2...">
+                                </div>
+                                <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 flex items-start gap-3">
+                                    <input type="checkbox" id="ins-directorio" class="mt-1 w-5 h-5 rounded text-wlSecondary focus:ring-wlSecondary border-amber-300">
+                                    <div>
+                                        <label for="ins-directorio" class="font-bold text-sm text-amber-900 cursor-pointer">Deseo figurar en el Directorio Público (Mapa Nacional)</label>
+                                        <p class="text-xs text-amber-700 mt-1">Al marcar esta casilla, autorizo que mi nombre, categoría, provincia y especialidades sean públicas para ser contactado por abogados o empresas.</p>
                                     </div>
-                                    
-                                    <div class="border-2 border-emerald-200 bg-emerald-50 p-4 rounded-lg md:col-span-2 text-center shadow-sm"><span class="text-sm font-black text-emerald-800 uppercase tracking-widest block mb-2"><i data-lucide="receipt" class="inline w-4 h-4 mr-1"></i>Comprobante de Pago</span><input type="file" id="file-pago" accept="image/*,application/pdf" required class="w-full text-xs text-emerald-700 mx-auto max-w-xs file:bg-emerald-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1 file:font-bold"></div>
+                                </div>
+                                <div class="flex justify-between pt-4">
+                                    <button type="button" onclick="siguientePaso(1)" class="text-slate-500 font-bold px-4 py-2 hover:bg-slate-100 rounded-lg transition">&larr; Volver</button>
+                                    <button type="button" onclick="siguientePaso(3)" class="bg-wlPrimary text-white px-8 py-3 rounded-xl font-bold uppercase text-sm shadow hover:bg-slate-800 transition">Siguiente Paso &rarr;</button>
                                 </div>
                             </div>
 
-                            <div class="bg-red-50 border border-red-200 p-5 rounded-xl mt-4">
-                                <label class="flex items-start gap-3 cursor-pointer">
-                                    <input type="checkbox" id="ins-ddjj" required class="mt-1 w-5 h-5 rounded text-red-600 border-red-300 focus:ring-red-500 cursor-pointer">
-                                    <span class="text-xs font-bold text-red-800 leading-relaxed">DECLARACIÓN JURADA: Declaro bajo juramento que los datos ingresados y la documentación adjunta son copias fieles de sus originales. Comprendo que la falsificación constituye un delito penal conforme a los Arts. 292 y 296 del Código Penal Argentino.</span>
-                                </label>
+                            <div id="step-3" class="form-step space-y-6">
+                                <h3 class="font-black text-lg text-wlPrimary uppercase border-b border-slate-100 pb-2"><i data-lucide="file-up" class="inline w-5 h-5 text-wlSecondary mr-1"></i> Documentación y Pago</h3>
+                                
+                                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 text-center flex flex-col md:flex-row items-center justify-between gap-4">
+                                    <div class="text-left">
+                                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">1. Arancel Administrativo</p>
+                                        <h4 id="display-precio-final" class="font-black text-2xl text-wlPrimary font-mono">Seleccione Categoría</h4>
+                                    </div>
+                                    <a id="btn-mercadopago" href="#" target="_blank" class="bg-sky-600 hover:bg-sky-700 text-white font-black text-sm uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg transition opacity-50 pointer-events-none flex items-center gap-2">
+                                        <i data-lucide="credit-card" class="w-5 h-5"></i> Abonar en Mercado Pago
+                                    </a>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <label class="form-label border-b border-slate-100 pb-1">2. Subida de Archivos Respaldatorios</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="border border-slate-200 p-3 rounded-lg bg-white"><span class="text-xs font-bold text-slate-700 block mb-1">Foto de Perfil (Para la credencial)</span><input type="file" id="file-foto" accept="image/*" required class="w-full text-xs text-slate-500"></div>
+                                        <div class="border border-slate-200 p-3 rounded-lg bg-white"><span class="text-xs font-bold text-slate-700 block mb-1">DNI Frente</span><input type="file" id="file-dni-frente" accept="image/*,application/pdf" required class="w-full text-xs text-slate-500"></div>
+                                        <div class="border border-slate-200 p-3 rounded-lg bg-white"><span class="text-xs font-bold text-slate-700 block mb-1">DNI Dorso</span><input type="file" id="file-dni-dorso" accept="image/*,application/pdf" required class="w-full text-xs text-slate-500"></div>
+                                        
+                                        <div class="border border-slate-200 p-3 rounded-lg bg-white">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="text-xs font-bold text-slate-700">Títulos y Certificados</span>
+                                                <span id="contador-archivos" class="text-[9px] font-bold text-white bg-wlPrimary px-2 py-0.5 rounded-full">0/10</span>
+                                            </div>
+                                            <input type="file" id="file-diplomas" multiple accept="image/*,application/pdf" required class="w-full text-xs text-slate-500" onchange="contarArchivos(this)">
+                                            <span class="text-[9px] text-slate-400 mt-1 block">Puede seleccionar hasta 10 archivos a la vez.</span>
+                                        </div>
+                                        
+                                        <div class="border-2 border-emerald-200 bg-emerald-50 p-4 rounded-lg md:col-span-2 text-center shadow-sm"><span class="text-sm font-black text-emerald-800 uppercase tracking-widest block mb-2"><i data-lucide="receipt" class="inline w-4 h-4 mr-1"></i>Comprobante de Pago</span><input type="file" id="file-pago" accept="image/*,application/pdf" required class="w-full text-xs text-emerald-700 mx-auto max-w-xs file:bg-emerald-600 file:text-white file:border-0 file:rounded file:px-3 file:py-1 file:font-bold"></div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-red-50 border border-red-200 p-5 rounded-xl mt-4">
+                                    <label class="flex items-start gap-3 cursor-pointer">
+                                        <input type="checkbox" id="ins-ddjj" required class="mt-1 w-5 h-5 rounded text-red-600 border-red-300 focus:ring-red-500 cursor-pointer">
+                                        <span class="text-xs font-bold text-red-800 leading-relaxed">DECLARACIÓN JURADA: Declaro bajo juramento que los datos ingresados y la documentación adjunta son copias fieles de sus originales. Comprendo que la falsificación constituye un delito penal conforme a los Arts. 292 y 296 del Código Penal Argentino.</span>
+                                    </label>
+                                </div>
+
+                                <div class="flex justify-between items-center pt-6 border-t border-slate-100">
+                                    <button type="button" onclick="siguientePaso(2)" class="text-slate-500 font-bold px-4 py-2 hover:bg-slate-100 rounded-lg transition">&larr; Volver</button>
+                                    <button type="submit" id="btn-submit-tramite" class="bg-wlSecondary text-wlPrimary hover:bg-yellow-500 font-black uppercase tracking-widest text-sm px-8 py-4 rounded-xl shadow-xl transition-all flex items-center gap-2"><i data-lucide="send" class="w-5 h-5"></i> Enviar Expediente Completo</button>
+                                </div>
                             </div>
 
-                            <div class="flex justify-between items-center pt-6 border-t border-slate-100">
-                                <button type="button" onclick="siguientePaso(2)" class="text-slate-500 font-bold px-4 py-2 hover:bg-slate-100 rounded-lg transition">&larr; Volver</button>
-                                <button type="submit" id="btn-submit-tramite" class="bg-wlSecondary text-wlPrimary hover:bg-yellow-500 font-black uppercase tracking-widest text-sm px-8 py-4 rounded-xl shadow-xl transition-all flex items-center gap-2"><i data-lucide="send" class="w-5 h-5"></i> Enviar Expediente Completo</button>
-                            </div>
-                        </div>
-
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </section>
@@ -775,7 +839,7 @@
         };
 
         // ============================================================
-        // BOOTSTRAPPER SaaS
+        // BOOTSTRAPPER SaaS — reforzado para que NUNCA quede en blanco
         // ============================================================
         async function initTenant() {
             try {
@@ -800,10 +864,18 @@
                     .select('*')
                     .eq('slug', tenantSlug)
                     .eq('activo', true)
-                    .single();
+                    .maybeSingle();
 
-                if (error || !tenantConfig) {
-                    throw new Error("Institución no encontrada o inactiva.");
+                if (error) {
+                    console.warn("Tenant no encontrado (no bloqueante):", error);
+                    document.body.classList.add('ready');
+                    return;
+                }
+
+                if (!tenantConfig) {
+                    console.warn("Tenant inactivo o inexistente. Se usa el default.");
+                    document.body.classList.add('ready');
+                    return;
                 }
 
                 currentTenantId = tenantConfig.id;
@@ -846,13 +918,6 @@
 
             } catch (err) {
                 console.error("Error Bootstrapper SaaS:", err);
-                document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
-                        <div>
-                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
-                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
-                        </div>
-                    </div>`;
                 document.body.classList.add('ready');
             }
         }
