@@ -60,9 +60,6 @@
         /* ============================================================
            HERO FIJO GLOBAL - v4 (imagen completa, sin recortes)
            Técnica: "ambient background"
-           - La imagen original se ve COMPLETA con contain
-           - Las franjas laterales se rellenan con la misma imagen
-             estirada + blur, para que no queden bordes vacíos
            ============================================================ */
         #hero-background-global {
             position: fixed;
@@ -126,24 +123,45 @@
         }
         .page-section.active-section { display: block; opacity: 1; }
 
-        /* VIDRIO SEMITRANSPARENTE: el hero se ve claramente detrás */
+        /* ============================================================
+           VIDRIO SEMITRANSPARENTE COMO TARJETA FLOTANTE
+           - Ya no ocupa el 100% del ancho
+           - Es una tarjeta redondeada con sombra
+           - Se ve el hero a los costados
+           ============================================================ */
         .section-glass {
             position: relative;
             z-index: 10;
-            background: rgba(248, 250, 252, 0.72);
-            backdrop-filter: blur(12px) saturate(1.15);
-            -webkit-backdrop-filter: blur(12px) saturate(1.15);
-            border-top: 1px solid rgba(255, 255, 255, 0.4);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(248, 250, 252, 0.88);
+            backdrop-filter: blur(16px) saturate(1.15);
+            -webkit-backdrop-filter: blur(16px) saturate(1.15);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            margin: 1.5rem auto;
+            max-width: 1400px;
+            width: calc(100% - 3rem);
         }
         .section-glass-dark {
             position: relative;
             z-index: 10;
-            background: rgba(15, 23, 42, 0.68);
-            backdrop-filter: blur(12px) saturate(1.15);
-            -webkit-backdrop-filter: blur(12px) saturate(1.15);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(16px) saturate(1.15);
+            -webkit-backdrop-filter: blur(16px) saturate(1.15);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin: 1.5rem auto;
+            max-width: 1400px;
+            width: calc(100% - 3rem);
+        }
+
+        @media (max-width: 768px) {
+            .section-glass, .section-glass-dark {
+                width: calc(100% - 1.5rem);
+                margin: 0.75rem auto;
+                border-radius: 16px;
+            }
         }
 
         /* El header del inicio ya no necesita fondo propio */
@@ -369,10 +387,10 @@
 
         <!-- SECCIÓN INSTITUCIONAL Y TECNOLOGÍA ASARI -->
         <section id="seccion-institucional" class="page-section min-h-[70vh]">
-            <div class="section-glass py-16 md:py-24">
-                <div class="max-w-7xl mx-auto px-4">
+            <div class="section-glass py-10 md:py-14">
+                <div class="max-w-7xl mx-auto px-6 md:px-10">
                     
-                    <div class="text-center mb-16">
+                    <div class="text-center mb-12">
                         <h2 class="font-title text-3xl md:text-4xl font-black text-wlPrimary mb-4 uppercase tracking-tight">
                             <i data-lucide="landmark" class="inline w-8 h-8 text-wlSecondary mr-2 mb-1"></i>Institucional & Tecnología
                         </h2>
@@ -450,9 +468,9 @@
 
         <!-- 2. VERIFICACIÓN PÚBLICA -->
         <section id="seccion-verificacion" class="page-section min-h-[70vh]">
-            <div class="section-glass py-16 md:py-24">
-                <div class="max-w-4xl mx-auto px-4">
-                    <div class="text-center mb-10">
+            <div class="section-glass py-10 md:py-14">
+                <div class="max-w-4xl mx-auto px-6 md:px-10">
+                    <div class="text-center mb-8">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="search" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Verificación Pública</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
                         <p class="text-slate-500 max-w-lg mx-auto">Ingrese el DNI o la Matrícula Oficial para consultar la base de datos inmutable y verificar las credenciales del profesional en tiempo real.</p>
@@ -505,9 +523,9 @@
 
         <!-- 3. SEGUIMIENTO DE TRÁMITE -->
         <section id="seccion-tracking" class="page-section min-h-[70vh]">
-            <div class="section-glass py-16 md:py-24">
-                <div class="max-w-3xl mx-auto px-4">
-                    <div class="text-center mb-10">
+            <div class="section-glass py-10 md:py-14">
+                <div class="max-w-3xl mx-auto px-6 md:px-10">
+                    <div class="text-center mb-8">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="package-search" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Seguimiento de Trámite</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
                         <p class="text-slate-500">Ingrese su DNI para conocer el estado y trazabilidad de su expediente de inscripción.</p>
@@ -530,8 +548,8 @@
 
         <!-- 4. MAPA INTELIGENTE -->
         <section id="seccion-mapa" class="page-section min-h-[70vh] relative">
-            <div class="section-glass-dark py-16">
-                <div class="max-w-7xl mx-auto px-4 relative z-10 text-white">
+            <div class="section-glass-dark py-10 md:py-14">
+                <div class="max-w-7xl mx-auto px-6 md:px-10 relative z-10 text-white">
                     <div class="text-center mb-8">
                         <h2 class="font-title text-2xl md:text-3xl font-black mb-3 uppercase text-white"><i data-lucide="map-pin" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Directorio Nacional de Profesionales</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
@@ -570,9 +588,9 @@
 
         <!-- 5. CATEGORÍAS -->
         <section id="seccion-categorias" class="page-section min-h-[70vh]">
-            <div class="section-glass py-16">
-                <div class="max-w-7xl mx-auto px-4">
-                    <div class="text-center mb-14">
+            <div class="section-glass py-10 md:py-14">
+                <div class="max-w-7xl mx-auto px-6 md:px-10">
+                    <div class="text-center mb-10">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="layers" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Estructura del Padrón</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
                     </div>
@@ -618,9 +636,9 @@
 
         <!-- COMITÉ EVALUADOR -->
         <section id="seccion-comite" class="page-section min-h-[70vh]" style="display: none;">
-            <div class="section-glass py-16 md:py-24">
-                <div class="max-w-7xl mx-auto px-4">
-                    <div class="text-center mb-14">
+            <div class="section-glass py-10 md:py-14">
+                <div class="max-w-7xl mx-auto px-6 md:px-10">
+                    <div class="text-center mb-10">
                         <h2 class="font-title text-2xl md:text-4xl font-black text-wlPrimary mb-3 uppercase">
                             <i data-lucide="shield" class="inline w-8 h-8 text-wlSecondary mr-2"></i>Comité Evaluador
                         </h2>
@@ -636,9 +654,9 @@
 
         <!-- 6. PORTAL DE DIVULGACIÓN CIENTÍFICA -->
         <section id="seccion-portal-divulgacion" class="page-section min-h-[70vh]">
-            <div class="section-glass py-16 md:py-24">
-                <div class="max-w-7xl mx-auto px-4">
-                    <div class="text-center mb-14">
+            <div class="section-glass py-10 md:py-14">
+                <div class="max-w-7xl mx-auto px-6 md:px-10">
+                    <div class="text-center mb-10">
                         <h2 class="font-title text-2xl md:text-4xl font-black text-wlPrimary mb-3 uppercase">
                             <i data-lucide="book-open" class="inline w-8 h-8 text-wlSecondary mr-2"></i>Portal de Divulgación Científica
                         </h2>
@@ -653,9 +671,9 @@
 
         <!-- 7. BIBLIOTECA VIRTUAL -->
         <section id="seccion-biblioteca" class="page-section min-h-[70vh]">
-            <div class="section-glass py-16 md:py-24">
-                <div class="max-w-7xl mx-auto px-4">
-                    <div class="text-center mb-12">
+            <div class="section-glass py-10 md:py-14">
+                <div class="max-w-7xl mx-auto px-6 md:px-10">
+                    <div class="text-center mb-8">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="library" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Biblioteca Virtual e Investigaciones</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
                     </div>
@@ -675,8 +693,8 @@
 
         <!-- 8. LEGAJO DIGITAL -->
         <section id="seccion-portafolio" class="page-section min-h-[70vh]">
-            <div class="section-glass py-16 md:py-24">
-                <div class="max-w-4xl mx-auto px-4 text-center">
+            <div class="section-glass py-10 md:py-14">
+                <div class="max-w-4xl mx-auto px-6 md:px-10 text-center">
                     <i data-lucide="folder-check" class="w-20 h-20 text-wlSecondary mx-auto mb-6"></i>
                     <h2 class="font-title text-3xl font-black text-wlPrimary mb-4 uppercase">Ingresar a Mi Legajo Digital</h2>
                     <p class="text-slate-600 mb-8 max-w-xl mx-auto">Accede a tu credencial digital, descarga tus certificados y entra al Portal Científico desde la aplicación de escritorio o móvil (PWA).</p>
@@ -687,9 +705,9 @@
 
         <!-- 9. INSCRIPCIÓN WIZARD -->
         <section id="seccion-inscripcion" class="page-section min-h-[70vh]">
-            <div class="section-glass py-16">
-                <div class="max-w-4xl mx-auto px-4">
-                    <div class="text-center mb-10">
+            <div class="section-glass py-10 md:py-14">
+                <div class="max-w-4xl mx-auto px-6 md:px-10">
+                    <div class="text-center mb-8">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="file-text" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Trámite de Matriculación</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
                         <p class="text-slate-600 text-sm">Siga los 3 pasos para generar su expediente y enviar la documentación al Comité de Auditoría.</p>
@@ -958,7 +976,6 @@
 
                 if (tenantConfig.hero_image_url) {
                     inyectarSrcSeguro('dyn-hero-bg', tenantConfig.hero_image_url);
-                    // ✅ Inyectar la URL como variable CSS para el fondo ambiental (blur de relleno)
                     document.documentElement.style.setProperty('--hero-bg-url', `url('${tenantConfig.hero_image_url}')`);
                 }
 
