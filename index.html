@@ -919,22 +919,15 @@
                     document.title = tenantConfig.nombre_institucion;
                 }
 
-                const inyectarSrcSeguro = (id, url) => {
-                    const el = document.getElementById(id);
-                    if (el && url) {
-                        el.src = url;
-                        el.style.display = 'block';
-                    }
+                // NOTA: logo y hero YA NO se aplican acá.
+                // Se aplican en cargarConfiguracionPublica() desde renmcycf_config,
+                // con fallback a saas_tenants si en renmcycf_config están vacíos.
+
+                // Guardamos los valores de saas_tenants como fallback global
+                window._saasTenantFallback = {
+                    logo_url: tenantConfig.logo_url || null,
+                    hero_image_url: tenantConfig.hero_image_url || null
                 };
-
-                if (tenantConfig.logo_url) {
-                    inyectarSrcSeguro('nav-logo', tenantConfig.logo_url);
-                }
-
-                if (tenantConfig.hero_image_url) {
-                    inyectarSrcSeguro('dyn-hero-bg', tenantConfig.hero_image_url);
-                    document.documentElement.style.setProperty('--hero-bg-url', `url('${tenantConfig.hero_image_url}')`);
-                }
 
                 document.body.classList.add('ready');
 
@@ -960,6 +953,7 @@
             try { await cargarComitePublico(); } catch(e) { console.warn(e); }
             try { initMap(); } catch(e) { console.warn(e); }
             try { await cargarContadorMatriculados(); } catch(e) { console.warn(e); }
+            try { await registrarVisitaSitio(); } catch(e) { console.warn(e); }
         });
 
         async function cargarTextosPublicos() {
@@ -1022,8 +1016,75 @@
                     setHref('float-wpp', wppLink); setHref('float-mail', mailLink);
                     setHref('float-fb', conf.facebook); setHref('float-ig', conf.instagram);
                     setHref('footer-fb', conf.facebook); setHref('footer-ig', conf.instagram);
+
+                    // ============================================================
+                    // LOGO Y HERO: prioridad renmcycf_config, fallback saas_tenants
+                    // ============================================================
+                    const fallback = window._saasTenantFallback || {};
+
+                    const logoFinal = conf.logo_url || fallback.logo_url;
+                    const heroFinal = conf.hero_image_url || fallback.hero_image_url;
+
+                    if (logoFinal) {
+                        const navLogo = document.getElementById('nav-logo');
+                        if (navLogo) {
+                            navLogo.src = logoFinal;
+                            navLogo.style.display = 'block';
+                        }
+                    }
+
+                    if (heroFinal) {
+                        const heroBg = document.getElementById('dyn-hero-bg');
+                        if (heroBg) {
+                            heroBg.src = heroFinal;
+                            heroBg.style.display = 'block';
+                        }
+                        document.documentElement.style.setProperty('--hero-bg-url', `url('${heroFinal}')`);
+                    }
                 }
             } catch (err) { console.error("Error al cargar config:", err); }
+        }
+
+        // ============================================================
+        // CONTADOR DE VISITAS DEL SITIO (solo registra, no muestra en público)
+        // Se cuenta 1 vez por sesión de navegador.
+        // ============================================================
+        async function registrarVisitaSitio() {
+            if (!currentTenantId) return;
+
+            const sesionKey = `visita_registrada_${currentTenantId}`;
+
+            // Si ya se registró en esta sesión, no sumamos de nuevo
+            if (sessionStorage.getItem(sesionKey)) return;
+
+            try {
+                // 1. Leer visitas actuales
+                const { data: conf, error: errLectura } = await db
+                    .from('renmcycf_config')
+                    .select('visitas')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+
+                if (errLectura) throw errLectura;
+
+                const visitasActuales = Number(conf?.visitas) || 0;
+                const nuevasVisitas = visitasActuales + 1;
+
+                // 2. Actualizar contador
+                const { error: errUpdate } = await db
+                    .from('renmcycf_config')
+                    .update({ visitas: nuevasVisitas })
+                    .eq('tenant_id', currentTenantId);
+
+                if (errUpdate) throw errUpdate;
+
+                // 3. Marcar sesión
+                sessionStorage.setItem(sesionKey, 'true');
+
+                console.log('✅ Visita registrada. Total:', nuevasVisitas);
+            } catch (err) {
+                console.warn("Error al registrar visita del sitio:", err);
+            }
         }
 
         async function cargarAliadosPublicos() {
