@@ -265,7 +265,6 @@
     <aside class="w-64 glass-panel m-4 mr-0 flex flex-col z-20 hidden md:flex border-r border-white/5">
         <div class="h-28 flex flex-col justify-center px-6 border-b border-white/5 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-wlSecondary"></div>
-            <!-- PARCHE 2: Header elástico con logo dinámico -->
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded bg-white p-1 flex-shrink-0 border border-white/20 hidden" id="sidebar-logo-container">
                     <img id="sidebar-dyn-logo" src="" class="w-full h-full object-contain">
@@ -773,20 +772,17 @@
         // ============================================================
         async function initTenantPanel() {
             try {
-                // 1. PRIORIDAD MÁXIMA: Si viene en la URL (?tenant=remaep), manda ese parámetro
                 const urlParams = new URLSearchParams(window.location.search);
                 let tenantSlug = urlParams.get('tenant');
 
-                // 2. Si no viene en la URL, determinarlo por el subdominio real
                 if (!tenantSlug) {
                     const hostname = window.location.hostname;
                     const parts = hostname.split('.');
 
-                    // Si tiene subdominio real y NO es GitHub Pages ni Localhost
                     if (parts.length > 2 && !hostname.includes('github.io') && hostname !== 'localhost' && hostname !== '127.0.0.1') {
                         tenantSlug = parts[0];
                     } else {
-                        tenantSlug = 'instructormap'; // Tenant base por defecto
+                        tenantSlug = 'instructormap';
                     }
                 }
 
@@ -807,14 +803,11 @@
                 localStorage.setItem('saas_current_tenant', currentTenantId);
 
                 // ============================================================
-                // PARCHE 1: NO sobrescribir --wl-primary ni --wl-background
-                // para preservar el Dark Mode del panel. Solo se inyectan
-                // --wl-secondary y --wl-tertiary (colores de acento).
+                // PRESERVAR DARK MODE: NO sobrescribir --wl-primary ni --wl-background.
+                // Solo se inyectan --wl-secondary y --wl-tertiary (colores de acento).
                 // ============================================================
-                // document.documentElement.style.setProperty('--wl-primary', hexToRgb(tenantConfig.color_primario || '#3b82f6'));
                 document.documentElement.style.setProperty('--wl-secondary', hexToRgb(tenantConfig.color_secundario || '#fbbf24'));
                 document.documentElement.style.setProperty('--wl-tertiary', hexToRgb(tenantConfig.color_terciario || '#1e3a8a'));
-                // document.documentElement.style.setProperty('--wl-background', hexToRgb(tenantConfig.color_background || '#030712'));
 
                 const institucionNombres = document.querySelectorAll('#wl-institucion-nombre, #wl-title-institucion, #wl-sidebar-institucion, #modal-institucion-nombre');
                 institucionNombres.forEach(el => {
@@ -836,20 +829,16 @@
                     }
                 };
 
+                // ============================================================
+                // LIMPIEZA SaaS ABSOLUTA: URL directa, sin .replace ni .includes
+                // ============================================================
                 if (tenantConfig.logo_url) {
-                    let finalLogo = tenantConfig.logo_url;
-                    // Parche silencioso REMTYO/REMAEP
-                    if (finalLogo.toLowerCase().includes('remaep')) {
-                        finalLogo = finalLogo.replace(/remaep/gi, 'remtyo');
-                    }
-                    inyectarSrcSeguro('modal-dyn-logo', finalLogo);
+                    inyectarSrcSeguro('modal-dyn-logo', tenantConfig.logo_url);
                     const defaultLogos = document.querySelectorAll('#modal-default-logo');
                     defaultLogos.forEach(el => el.classList.add('hidden'));
 
-                    // ============================================================
-                    // PARCHE 2: Inyectar también el logo en el Sidebar
-                    // ============================================================
-                    inyectarSrcSeguro('sidebar-dyn-logo', finalLogo);
+                    // Inyectar también el logo en el Sidebar
+                    inyectarSrcSeguro('sidebar-dyn-logo', tenantConfig.logo_url);
                     const sidebarLogoContainer = document.getElementById('sidebar-logo-container');
                     if (sidebarLogoContainer) sidebarLogoContainer.classList.remove('hidden');
                 }
@@ -928,7 +917,6 @@
             document.getElementById('header-user-role').textContent = `${rolData.nombres || 'User'} (${rolData.rol})`;
             document.getElementById('login-screen').style.display = 'none';
 
-            cargarIdentidadDossier();
             cargarWhatsappRegistro();
 
             const navButtons = {
@@ -992,28 +980,6 @@
                 document.getElementById('btn-login').disabled = false;
                 document.getElementById('login-screen').style.display = 'flex';
             }
-        }
-
-        async function cargarIdentidadDossier() {
-            try {
-                const { data } = await db.from('renmcycf_config')
-                    .select('logo_url, hero_image_url')
-                    .eq('tenant_id', currentTenantId)
-                    .maybeSingle();
-                    
-                if (data) {
-                    if (data.logo_url) {
-                        document.getElementById('modal-dyn-logo').src = data.logo_url;
-                        document.getElementById('modal-dyn-logo').classList.remove('hidden');
-                        document.getElementById('modal-default-logo').classList.add('hidden');
-                    }
-                    if (data.hero_image_url) {
-                        document.getElementById('modal-dyn-bg').src = data.hero_image_url;
-                        document.getElementById('modal-dyn-bg').classList.remove('hidden');
-                        document.getElementById('modal-dyn-overlay').classList.remove('hidden');
-                    }
-                }
-            } catch (err) { console.error("Error cargando identidad:", err); }
         }
 
         async function cargarWhatsappRegistro() {
@@ -1579,6 +1545,9 @@
             }
         }
 
+        // ============================================================
+        // REPARADO: upload sin { upsert: true } ni cacheControl
+        // ============================================================
         async function reemplazarDocumento(campo) {
             if (!itemDossierActual) return;
             const input = document.createElement('input');
@@ -1587,7 +1556,7 @@
                 const file = e.target.files[0]; if (!file) return;
                 try {
                     const fileName = `${campo}_${Date.now()}.${file.name.split('.').pop()}`;
-                    await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl: '3600', upsert: true });
+                    await db.storage.from('renmcycf-media').upload(fileName, file);
                     const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                     
                     if (itemDossierActual.estado === 'PENDIENTE' || itemDossierActual.estado === 'EN AUDITORIA' || itemDossierActual.estado === 'OBSERVADO') {
@@ -1700,6 +1669,9 @@
         function cerrarModalEdicion() { document.getElementById('modal-editar-padron').classList.add('hidden'); }
         function previewFotoEdicion(input) { if (input.files?.[0]) document.getElementById('edit-foto-preview').src = URL.createObjectURL(input.files[0]); }
         
+        // ============================================================
+        // REPARADO: upload sin { upsert: true } ni cacheControl
+        // ============================================================
         async function guardarEdicionMatriculado(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]'); const originalHtml = btn.innerHTML;
@@ -1711,7 +1683,7 @@
                 let fotoUrl = null;
                 if (file) {
                     const fileName = `foto_edit_${Date.now()}.${file.name.split('.').pop()}`;
-                    await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
+                    await db.storage.from('renmcycf-media').upload(fileName, file);
                     fotoUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 }
                 
@@ -2161,7 +2133,11 @@
 
         // ==========================================
         // 15. CONFIGURACIÓN CORE Y TEXTOS
-        // ==========================================
+        // ============================================
+
+        // ============================================================
+        // CENTRALIZADO: logo y hero se leen desde saas_tenants (fuente de verdad)
+        // ============================================================
         async function cargarConfiguracionForm() {
             try {
                 const { data } = await db.from('renmcycf_config')
@@ -2190,9 +2166,23 @@
                     document.getElementById('conf-instagram').value = data.instagram || ''; 
                     document.getElementById('conf-twitter').value = data.twitter || ''; 
                     document.getElementById('conf-linkedin').value = data.linkedin || ''; 
-                    
-                    if(data.hero_image_url) { document.getElementById('preview-hero').src = data.hero_image_url; document.getElementById('preview-hero').style.display = 'block'; }
-                    if(data.logo_url) { document.getElementById('preview-logo').src = data.logo_url; document.getElementById('preview-logo').style.display = 'block'; }
+                }
+
+                // Previews de identidad visual vienen de saas_tenants (fuente única de verdad)
+                const { data: tenant } = await db.from('saas_tenants')
+                    .select('logo_url, hero_image_url')
+                    .eq('id', currentTenantId)
+                    .maybeSingle();
+
+                if (tenant) {
+                    if (tenant.hero_image_url) {
+                        const prevHero = document.getElementById('preview-hero');
+                        if (prevHero) { prevHero.src = tenant.hero_image_url; prevHero.style.display = 'block'; }
+                    }
+                    if (tenant.logo_url) {
+                        const prevLogo = document.getElementById('preview-logo');
+                        if (prevLogo) { prevLogo.src = tenant.logo_url; prevLogo.style.display = 'block'; }
+                    }
                 }
             } catch (err) { console.error("Error cargando config:", err); }
         }
@@ -2230,16 +2220,14 @@
         }
 
         // ============================================================
-        // PARCHE 3: previewYGuardarImagen ahora actualiza saas_tenants
-        // (Única fuente de verdad) en lugar de renmcycf_config.
-        // Se cambia .eq('tenant_id', ...) por .eq('id', ...) porque la
-        // PK de saas_tenants se llama "id" y su valor es currentTenantId.
+        // CENTRALIZADO + REPARADO: sube SIN upsert/cacheControl y
+        // actualiza saas_tenants usando .eq('id', currentTenantId)
         // ============================================================
         async function previewYGuardarImagen(input, previewId, key) {
             const file = input.files[0]; if (!file) return;
             try {
                 const fileName = `${key}_${Date.now()}.${file.name.split('.').pop()}`;
-                await db.storage.from('renmcycf-media').upload(fileName, file, { upsert: true });
+                await db.storage.from('renmcycf-media').upload(fileName, file);
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 document.getElementById(previewId).src = url; document.getElementById(previewId).style.display = 'block';
                 const payload = {}; payload[`${key}_url`] = url;
@@ -2493,22 +2481,28 @@
             container.innerHTML = html;
         }
 
+        // ============================================================
+        // REPARADO: upload sin { upsert: true } ni cacheControl
+        // ============================================================
         async function subirFondoCredencial(input, lado) {
             const file = input.files[0]; if (!file) return;
             try {
                 const ext = file.name.split('.').pop(); const fileName = `bg_${lado}_${Date.now()}.${ext}`;
-                await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
+                await db.storage.from('renmcycf-media').upload(fileName, file);
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 if (lado === 'frente') bgFrenteUrl = url; else bgDorsoUrl = url;
                 actualizarPreviewCred();
             } catch (err) { alert('Error subiendo fondo: ' + err.message); }
         }
 
+        // ============================================================
+        // REPARADO: upload sin { upsert: true } ni cacheControl
+        // ============================================================
         async function subirRoseta(input) {
             const file = input.files[0]; if (!file) return;
             try {
                 const ext = file.name.split('.').pop(); const fileName = `roseta_${Date.now()}.${ext}`;
-                await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
+                await db.storage.from('renmcycf-media').upload(fileName, file);
                 rosetaUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 actualizarPreviewCred();
             } catch (err) { alert('Error subiendo roseta: ' + err.message); }
