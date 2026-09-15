@@ -761,22 +761,24 @@
         };
 
         // ============================================================
-        // 3. BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
+        // 3. BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO (CORREGIDO)
         // ============================================================
         async function initTenantPanel() {
             try {
-                const hostname = window.location.hostname;
-                let tenantSlug = 'default';
-                
-                if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
-                } else {
+                // 1. PRIORIDAD MÁXIMA: Si viene en la URL (?tenant=remaep), manda ese parámetro
+                const urlParams = new URLSearchParams(window.location.search);
+                let tenantSlug = urlParams.get('tenant');
+
+                // 2. Si no viene en la URL, determinarlo por el subdominio real
+                if (!tenantSlug) {
+                    const hostname = window.location.hostname;
                     const parts = hostname.split('.');
-                    if (parts.length > 2) {
-                        tenantSlug = parts[0]; 
+
+                    // Si tiene subdominio real y NO es GitHub Pages ni Localhost
+                    if (parts.length > 2 && !hostname.includes('github.io') && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+                        tenantSlug = parts[0];
                     } else {
-                        tenantSlug = 'renmcycf'; 
+                        tenantSlug = 'instructormap'; // Tenant base por defecto
                     }
                 }
 
@@ -796,7 +798,7 @@
                 currentTenantId = tenantConfig.id;
                 localStorage.setItem('saas_current_tenant', currentTenantId);
 
-                // Aplicar colores convirtiéndolos a RGB para que Tailwind soporte las opacidades
+                // Aplicar variables CSS para Tailwind
                 document.documentElement.style.setProperty('--wl-primary', hexToRgb(tenantConfig.color_primario || '#3b82f6'));
                 document.documentElement.style.setProperty('--wl-secondary', hexToRgb(tenantConfig.color_secundario || '#fbbf24'));
                 document.documentElement.style.setProperty('--wl-tertiary', hexToRgb(tenantConfig.color_terciario || '#1e3a8a'));
@@ -823,7 +825,12 @@
                 };
 
                 if (tenantConfig.logo_url) {
-                    inyectarSrcSeguro('modal-dyn-logo', tenantConfig.logo_url);
+                    let finalLogo = tenantConfig.logo_url;
+                    // Parche silencioso REMTYO/REMAEP
+                    if (finalLogo.toLowerCase().includes('remaep')) {
+                        finalLogo = finalLogo.replace(/remaep/gi, 'remtyo');
+                    }
+                    inyectarSrcSeguro('modal-dyn-logo', finalLogo);
                     const defaultLogos = document.querySelectorAll('#modal-default-logo');
                     defaultLogos.forEach(el => el.classList.add('hidden'));
                 }
