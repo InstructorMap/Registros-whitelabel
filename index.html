@@ -52,12 +52,11 @@
             color: #334155; 
             overflow-x: hidden; 
             transition: background-color 0.5s ease;
-            /* FIX: sin opacity 0 — la página siempre es visible */
             opacity: 1;
         }
         
         /* ============================================================
-           HERO FIJO GLOBAL: fondo permanente detrás de TODAS las secciones
+           HERO FIJO GLOBAL - v3 (encuadre calibrado)
            ============================================================ */
         #hero-background-global {
             position: fixed;
@@ -67,17 +66,33 @@
             z-index: 0;
             pointer-events: none;
             overflow: hidden;
-            background-color: rgb(var(--wl-primary));
+            background-color: #0a1128;
+            background-image: linear-gradient(135deg, #0a1128 0%, #1e293b 100%);
         }
         #hero-background-global .hero-bg-img {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            object-fit: cover; opacity: 0.45;
-            filter: brightness(0.55) saturate(1.2);
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* ENCUADRE: center 30% prioriza la zona superior evitando recortar arriba */
+            object-position: center 30%;
+            opacity: 0.75;
+            filter: brightness(1) saturate(1.05);
             transition: opacity 0.5s ease;
+            display: block !important;
         }
         #hero-background-global .hero-overlay {
-            position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(10,17,40,0.92) 0%, rgba(10,17,40,0.70) 50%, rgba(10,17,40,0.90) 100%);
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(10, 17, 40, 0.35) 0%,
+                rgba(10, 17, 40, 0.25) 40%,
+                rgba(10, 17, 40, 0.65) 100%
+            );
+            pointer-events: none;
+            z-index: 1;
         }
 
         /* Todas las secciones van por ENCIMA del fondo fijo */
@@ -89,18 +104,24 @@
         }
         .page-section.active-section { display: block; opacity: 1; }
 
-        /* Capa semitransparente para que el contenido sea legible sobre el hero */
+        /* VIDRIO SEMITRANSPARENTE: el hero se ve claramente detrás */
         .section-glass {
             position: relative;
             z-index: 10;
-            background: rgba(248, 250, 252, 0.92);
-            backdrop-filter: blur(2px);
+            background: rgba(248, 250, 252, 0.72);
+            backdrop-filter: blur(12px) saturate(1.15);
+            -webkit-backdrop-filter: blur(12px) saturate(1.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
         }
         .section-glass-dark {
             position: relative;
             z-index: 10;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(2px);
+            background: rgba(15, 23, 42, 0.68);
+            backdrop-filter: blur(12px) saturate(1.15);
+            -webkit-backdrop-filter: blur(12px) saturate(1.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* El header del inicio ya no necesita fondo propio */
