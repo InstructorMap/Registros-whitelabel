@@ -932,6 +932,12 @@
                     setHref('float-wpp', wppLink); setHref('float-mail', mailLink);
                     setHref('float-fb', conf.facebook); setHref('float-ig', conf.instagram);
                     setHref('footer-fb', conf.facebook); setHref('footer-ig', conf.instagram);
+                    // PARCHE: La imagen del logo y del hero se toman exclusivamente de saas_tenants
+                    // (cargadas en initTenant). Se evita que renmcycf_config las sobrescriba.
+                    // if (conf.logo_url) document.getElementById('nav-logo').src = conf.logo_url;
+                    // if (conf.hero_image_url && conf.hero_image_url !== '' && conf.hero_image_url !== null) {
+                    //     document.getElementById('dyn-hero-bg').src = conf.hero_image_url;
+                    // }
                 }
             } catch (err) { console.error("Error al cargar config:", err); }
         }
