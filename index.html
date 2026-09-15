@@ -44,6 +44,8 @@
             --wl-secondary: 212 175 55;
             --wl-tertiary: 30 58 138;
             --wl-background: 248 250 252;
+            /* Fallback del hero (se sobreescribe desde JS con la imagen del tenant) */
+            --hero-bg-url: url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80');
         }
 
         * { scroll-behavior: smooth; }
@@ -56,7 +58,11 @@
         }
         
         /* ============================================================
-           HERO FIJO GLOBAL - v3 (encuadre calibrado)
+           HERO FIJO GLOBAL - v4 (imagen completa, sin recortes)
+           Técnica: "ambient background"
+           - La imagen original se ve COMPLETA con contain
+           - Las franjas laterales se rellenan con la misma imagen
+             estirada + blur, para que no queden bordes vacíos
            ============================================================ */
         #hero-background-global {
             position: fixed;
@@ -67,32 +73,48 @@
             pointer-events: none;
             overflow: hidden;
             background-color: #0a1128;
-            background-image: linear-gradient(135deg, #0a1128 0%, #1e293b 100%);
         }
+
+        /* CAPA 1: Imagen de fondo estirada + blur (rellena los bordes) */
+        #hero-background-global::before {
+            content: '';
+            position: absolute;
+            inset: -40px;
+            background-image: var(--hero-bg-url);
+            background-size: cover;
+            background-position: center;
+            filter: blur(40px) brightness(0.6) saturate(1.3);
+            opacity: 0.85;
+            z-index: 0;
+        }
+
+        /* CAPA 2: Imagen completa visible con contain */
         #hero-background-global .hero-bg-img {
             position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            /* ENCUADRE: center 30% prioriza la zona superior evitando recortar arriba */
-            object-position: center 30%;
-            opacity: 0.75;
+            object-fit: contain;
+            object-position: center center;
+            opacity: 1;
             filter: brightness(1) saturate(1.05);
             transition: opacity 0.5s ease;
             display: block !important;
+            z-index: 1;
         }
+
+        /* CAPA 3: Overlay sutil para contraste del texto */
         #hero-background-global .hero-overlay {
             position: absolute;
             inset: 0;
             background: linear-gradient(
                 180deg,
-                rgba(10, 17, 40, 0.35) 0%,
-                rgba(10, 17, 40, 0.25) 40%,
-                rgba(10, 17, 40, 0.65) 100%
+                rgba(10, 17, 40, 0.25) 0%,
+                rgba(10, 17, 40, 0.15) 40%,
+                rgba(10, 17, 40, 0.55) 100%
             );
             pointer-events: none;
-            z-index: 1;
+            z-index: 2;
         }
 
         /* Todas las secciones van por ENCIMA del fondo fijo */
@@ -844,6 +866,9 @@
         const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
+        // Fallback: URL por defecto del hero hasta que cargue el tenant real
+        document.documentElement.style.setProperty('--hero-bg-url', "url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80')");
+
         let currentTenantId = null;
         let configGlobal = {};
         let mapInstance = null;
@@ -933,6 +958,8 @@
 
                 if (tenantConfig.hero_image_url) {
                     inyectarSrcSeguro('dyn-hero-bg', tenantConfig.hero_image_url);
+                    // ✅ Inyectar la URL como variable CSS para el fondo ambiental (blur de relleno)
+                    document.documentElement.style.setProperty('--hero-bg-url', `url('${tenantConfig.hero_image_url}')`);
                 }
 
                 document.body.classList.add('ready');
