@@ -44,7 +44,6 @@
             --wl-secondary: 212 175 55;
             --wl-tertiary: 30 58 138;
             --wl-background: 248 250 252;
-            /* Fallback del hero (se sobreescribe desde JS con la imagen del tenant) */
             --hero-bg-url: url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80');
         }
 
@@ -58,8 +57,7 @@
         }
         
         /* ============================================================
-           HERO FIJO GLOBAL - v4 (imagen completa, sin recortes)
-           Técnica: "ambient background"
+           HERO FIJO GLOBAL
            ============================================================ */
         #hero-background-global {
             position: fixed;
@@ -71,8 +69,6 @@
             overflow: hidden;
             background-color: #0a1128;
         }
-
-        /* CAPA 1: Imagen de fondo estirada + blur (rellena los bordes) */
         #hero-background-global::before {
             content: '';
             position: absolute;
@@ -84,8 +80,6 @@
             opacity: 0.85;
             z-index: 0;
         }
-
-        /* CAPA 2: Imagen completa visible con contain */
         #hero-background-global .hero-bg-img {
             position: absolute;
             inset: 0;
@@ -99,22 +93,14 @@
             display: block !important;
             z-index: 1;
         }
-
-        /* CAPA 3: Overlay sutil para contraste del texto */
         #hero-background-global .hero-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(
-                180deg,
-                rgba(10, 17, 40, 0.25) 0%,
-                rgba(10, 17, 40, 0.15) 40%,
-                rgba(10, 17, 40, 0.55) 100%
-            );
+            background: linear-gradient(180deg, rgba(10, 17, 40, 0.25) 0%, rgba(10, 17, 40, 0.15) 40%, rgba(10, 17, 40, 0.55) 100%);
             pointer-events: none;
             z-index: 2;
         }
 
-        /* Todas las secciones van por ENCIMA del fondo fijo */
         .page-section { 
             display: none; opacity: 0; 
             position: relative; 
@@ -124,56 +110,50 @@
         .page-section.active-section { display: block; opacity: 1; }
 
         /* ============================================================
-           VIDRIO SEMITRANSPARENTE COMO TARJETA FLOTANTE
-           - Ya no ocupa el 100% del ancho
-           - Es una tarjeta redondeada con sombra
-           - Se ve el hero a los costados
+           TARJETAS FLOTANTES DE VIDRIO ESMERILADO
+           ✅ El hero se ve a los costados, arriba y abajo
            ============================================================ */
         .section-glass {
             position: relative;
             z-index: 10;
-            background: rgba(248, 250, 252, 0.88);
-            backdrop-filter: blur(16px) saturate(1.15);
-            -webkit-backdrop-filter: blur(16px) saturate(1.15);
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            margin: 1.5rem auto;
-            max-width: 1400px;
-            width: calc(100% - 3rem);
+            background: rgba(248, 250, 252, 0.9);
+            backdrop-filter: blur(18px) saturate(1.2);
+            -webkit-backdrop-filter: blur(18px) saturate(1.2);
+            border-radius: 28px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            margin: 2.5rem auto;
+            max-width: 1280px;
+            width: calc(100% - 4rem);
         }
         .section-glass-dark {
             position: relative;
             z-index: 10;
-            background: rgba(15, 23, 42, 0.82);
-            backdrop-filter: blur(16px) saturate(1.15);
-            -webkit-backdrop-filter: blur(16px) saturate(1.15);
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            margin: 1.5rem auto;
-            max-width: 1400px;
-            width: calc(100% - 3rem);
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(18px) saturate(1.2);
+            -webkit-backdrop-filter: blur(18px) saturate(1.2);
+            border-radius: 28px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            margin: 2.5rem auto;
+            max-width: 1280px;
+            width: calc(100% - 4rem);
         }
 
         @media (max-width: 768px) {
             .section-glass, .section-glass-dark {
                 width: calc(100% - 1.5rem);
-                margin: 0.75rem auto;
-                border-radius: 16px;
+                margin: 1rem auto;
+                border-radius: 20px;
             }
         }
 
-        /* El header del inicio ya no necesita fondo propio */
         .hero-pattern { 
             position: relative; 
             overflow: hidden; 
             background-color: transparent; 
         }
         
-        /* ============================================================
-           LOGO INSTITUCIONAL: sobresale por debajo y tapa la línea dorada
-           ============================================================ */
         .logo-arcada { 
             background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%); 
             border-radius: 120px 120px 16px 16px; 
@@ -261,7 +241,6 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans">
 
-    <!-- HERO FIJO GLOBAL: fondo permanente en TODAS las secciones y modales -->
     <div id="hero-background-global">
         <img id="dyn-hero-bg" 
              src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80" 
@@ -271,24 +250,19 @@
         <div class="hero-overlay"></div>
     </div>
 
-    <!-- TOP BAR -->
     <div class="bg-wlPrimary text-white text-[9px] md:text-[11px] py-3 px-4 text-center font-black tracking-[0.18em] md:tracking-[0.25em] uppercase z-50 shadow-lg relative overflow-hidden flex justify-center">
         <span class="relative z-10 truncate max-w-full px-2" id="wl-institucion-nombre-top">Sistema de Registro Institucional</span>
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-wlSecondary/10 to-transparent animate-pulse"></div>
     </div>
 
-    <!-- NAVBAR (elástico, SOLO logo, sin nombre al lado) -->
     <nav class="bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-sm min-h-[6rem] py-3 transition-all relative" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 h-full relative z-10">
-            
-            <!-- IZQUIERDA: SOLO LOGO (elástico, sobresale por debajo) -->
             <div class="flex items-center cursor-pointer h-full pl-2 md:pl-6" onclick="switchSection('seccion-inicio')">
                 <div class="logo-arcada w-20 h-24 md:w-24 md:h-28 lg:w-28 lg:h-32 shrink-0 relative z-50 transform translate-y-4 md:translate-y-6">
                     <img id="nav-logo" src="https://placehold.co/200x200/fff/0f172a?text=Logo" alt="Logo Institución">
                 </div>
             </div>
             
-            <!-- DERECHA: Botonera -->
             <div class="hidden xl:flex items-center gap-1.5 text-[10px] font-bold text-wlPrimary uppercase tracking-[0.08em] shrink-0">
                 <button onclick="switchSection('seccion-inicio')" class="nav-btn hover:text-wlSecondary transition-colors flex items-center gap-1 text-wlSecondary px-1.5 py-1" data-target="seccion-inicio"><i data-lucide="home" class="w-4 h-4"></i> Inicio</button>
                 <button onclick="switchSection('seccion-institucional')" class="nav-btn hover:text-wlSecondary transition-colors flex items-center gap-1 px-1.5 py-1" data-target="seccion-institucional"><i data-lucide="landmark" class="w-4 h-4"></i> El Registro</button>
@@ -307,11 +281,9 @@
                 <i data-lucide="menu" class="w-8 h-8"></i>
             </button>
         </div>
-        <!-- LÍNEA DECORATIVA: por detrás del logo (z-0) -->
         <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-wlSecondary z-0 pointer-events-none"></div>
     </nav>
 
-    <!-- Mobile Menu -->
     <div class="mobile-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
     <div class="mobile-menu" id="mobile-menu">
         <button class="absolute top-6 right-6 text-white" onclick="toggleMobileMenu()" aria-label="Cerrar menú"><i data-lucide="x" class="w-8 h-8"></i></button>
@@ -328,10 +300,8 @@
         <button onclick="switchSection('seccion-inscripcion'); toggleMobileMenu();" class="bg-wlSecondary text-wlPrimary text-center py-4 rounded-xl font-black uppercase tracking-widest mt-4 shadow-lg">Iniciar Trámite</button>
     </div>
 
-    <!-- CONTENEDOR DE SECCIONES -->
     <main class="flex-grow">
 
-        <!-- 1. INICIO (transparente, deja ver el hero global) -->
         <section id="seccion-inicio" class="page-section active-section">
             <header class="hero-pattern pt-24 pb-24 md:pt-32 md:pb-36 px-4 relative flex items-center min-h-[85vh] border-b-4 border-wlSecondary">
                 <div class="relative max-w-7xl mx-auto z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
@@ -385,10 +355,9 @@
             </section>
         </section>
 
-        <!-- SECCIÓN INSTITUCIONAL Y TECNOLOGÍA ASARI -->
         <section id="seccion-institucional" class="page-section min-h-[70vh]">
-            <div class="section-glass py-10 md:py-14">
-                <div class="max-w-7xl mx-auto px-6 md:px-10">
+            <div class="section-glass py-12 md:py-16">
+                <div class="max-w-7xl mx-auto px-6 md:px-12">
                     
                     <div class="text-center mb-12">
                         <h2 class="font-title text-3xl md:text-4xl font-black text-wlPrimary mb-4 uppercase tracking-tight">
@@ -466,11 +435,10 @@
             </div>
         </section>
 
-        <!-- 2. VERIFICACIÓN PÚBLICA -->
         <section id="seccion-verificacion" class="page-section min-h-[70vh]">
-            <div class="section-glass py-10 md:py-14">
-                <div class="max-w-4xl mx-auto px-6 md:px-10">
-                    <div class="text-center mb-8">
+            <div class="section-glass py-12 md:py-16">
+                <div class="max-w-4xl mx-auto px-6 md:px-12">
+                    <div class="text-center mb-10">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="search" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Verificación Pública</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
                         <p class="text-slate-500 max-w-lg mx-auto">Ingrese el DNI o la Matrícula Oficial para consultar la base de datos inmutable y verificar las credenciales del profesional en tiempo real.</p>
@@ -521,11 +489,10 @@
             </div>
         </section>
 
-        <!-- 3. SEGUIMIENTO DE TRÁMITE -->
         <section id="seccion-tracking" class="page-section min-h-[70vh]">
-            <div class="section-glass py-10 md:py-14">
-                <div class="max-w-3xl mx-auto px-6 md:px-10">
-                    <div class="text-center mb-8">
+            <div class="section-glass py-12 md:py-16">
+                <div class="max-w-3xl mx-auto px-6 md:px-12">
+                    <div class="text-center mb-10">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="package-search" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Seguimiento de Trámite</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
                         <p class="text-slate-500">Ingrese su DNI para conocer el estado y trazabilidad de su expediente de inscripción.</p>
@@ -546,10 +513,9 @@
             </div>
         </section>
 
-        <!-- 4. MAPA INTELIGENTE -->
         <section id="seccion-mapa" class="page-section min-h-[70vh] relative">
-            <div class="section-glass-dark py-10 md:py-14">
-                <div class="max-w-7xl mx-auto px-6 md:px-10 relative z-10 text-white">
+            <div class="section-glass-dark py-12 md:py-16">
+                <div class="max-w-7xl mx-auto px-6 md:px-12 relative z-10 text-white">
                     <div class="text-center mb-8">
                         <h2 class="font-title text-2xl md:text-3xl font-black mb-3 uppercase text-white"><i data-lucide="map-pin" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Directorio Nacional de Profesionales</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
@@ -586,10 +552,9 @@
             </div>
         </section>
 
-        <!-- 5. CATEGORÍAS -->
         <section id="seccion-categorias" class="page-section min-h-[70vh]">
-            <div class="section-glass py-10 md:py-14">
-                <div class="max-w-7xl mx-auto px-6 md:px-10">
+            <div class="section-glass py-12 md:py-16">
+                <div class="max-w-7xl mx-auto px-6 md:px-12">
                     <div class="text-center mb-10">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="layers" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Estructura del Padrón</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
@@ -634,10 +599,9 @@
             </div>
         </section>
 
-        <!-- COMITÉ EVALUADOR -->
         <section id="seccion-comite" class="page-section min-h-[70vh]" style="display: none;">
-            <div class="section-glass py-10 md:py-14">
-                <div class="max-w-7xl mx-auto px-6 md:px-10">
+            <div class="section-glass py-12 md:py-16">
+                <div class="max-w-7xl mx-auto px-6 md:px-12">
                     <div class="text-center mb-10">
                         <h2 class="font-title text-2xl md:text-4xl font-black text-wlPrimary mb-3 uppercase">
                             <i data-lucide="shield" class="inline w-8 h-8 text-wlSecondary mr-2"></i>Comité Evaluador
@@ -652,10 +616,9 @@
             </div>
         </section>
 
-        <!-- 6. PORTAL DE DIVULGACIÓN CIENTÍFICA -->
         <section id="seccion-portal-divulgacion" class="page-section min-h-[70vh]">
-            <div class="section-glass py-10 md:py-14">
-                <div class="max-w-7xl mx-auto px-6 md:px-10">
+            <div class="section-glass py-12 md:py-16">
+                <div class="max-w-7xl mx-auto px-6 md:px-12">
                     <div class="text-center mb-10">
                         <h2 class="font-title text-2xl md:text-4xl font-black text-wlPrimary mb-3 uppercase">
                             <i data-lucide="book-open" class="inline w-8 h-8 text-wlSecondary mr-2"></i>Portal de Divulgación Científica
@@ -669,10 +632,9 @@
             </div>
         </section>
 
-        <!-- 7. BIBLIOTECA VIRTUAL -->
         <section id="seccion-biblioteca" class="page-section min-h-[70vh]">
-            <div class="section-glass py-10 md:py-14">
-                <div class="max-w-7xl mx-auto px-6 md:px-10">
+            <div class="section-glass py-12 md:py-16">
+                <div class="max-w-7xl mx-auto px-6 md:px-12">
                     <div class="text-center mb-8">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="library" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Biblioteca Virtual e Investigaciones</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
@@ -691,10 +653,9 @@
             </div>
         </section>
 
-        <!-- 8. LEGAJO DIGITAL -->
         <section id="seccion-portafolio" class="page-section min-h-[70vh]">
-            <div class="section-glass py-10 md:py-14">
-                <div class="max-w-4xl mx-auto px-6 md:px-10 text-center">
+            <div class="section-glass py-12 md:py-16">
+                <div class="max-w-4xl mx-auto px-6 md:px-12 text-center">
                     <i data-lucide="folder-check" class="w-20 h-20 text-wlSecondary mx-auto mb-6"></i>
                     <h2 class="font-title text-3xl font-black text-wlPrimary mb-4 uppercase">Ingresar a Mi Legajo Digital</h2>
                     <p class="text-slate-600 mb-8 max-w-xl mx-auto">Accede a tu credencial digital, descarga tus certificados y entra al Portal Científico desde la aplicación de escritorio o móvil (PWA).</p>
@@ -703,11 +664,10 @@
             </div>
         </section>
 
-        <!-- 9. INSCRIPCIÓN WIZARD -->
         <section id="seccion-inscripcion" class="page-section min-h-[70vh]">
-            <div class="section-glass py-10 md:py-14">
-                <div class="max-w-4xl mx-auto px-6 md:px-10">
-                    <div class="text-center mb-8">
+            <div class="section-glass py-12 md:py-16">
+                <div class="max-w-4xl mx-auto px-6 md:px-12">
+                    <div class="text-center mb-10">
                         <h2 class="font-title text-2xl md:text-3xl font-black text-wlPrimary mb-3 uppercase"><i data-lucide="file-text" class="inline w-6 h-6 text-wlSecondary mr-2"></i>Trámite de Matriculación</h2>
                         <div class="w-20 h-1 bg-wlSecondary mx-auto mb-4"></div>
                         <p class="text-slate-600 text-sm">Siga los 3 pasos para generar su expediente y enviar la documentación al Comité de Auditoría.</p>
@@ -830,7 +790,6 @@
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="bg-wlPrimary text-white py-12 border-t-4 border-wlSecondary mt-auto relative z-20">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <h3 class="font-title text-2xl font-black text-wlSecondary mb-2" id="wl-institucion-nombre-footer">Cargando...</h3>
@@ -847,7 +806,6 @@
         </div>
     </footer>
 
-    <!-- BOTONES FLOTANTES SVG -->
     <div class="floating-container" id="floatingMenu">
         <a href="#" id="float-wpp" target="_blank" rel="noopener" class="float-option option-whatsapp" aria-label="Contactar por WhatsApp"><i data-lucide="message-circle" class="w-5 h-5"></i></a>
         <a href="#" id="float-mail" class="float-option option-email" aria-label="Enviar correo electrónico"><i data-lucide="mail" class="w-5 h-5"></i></a>
@@ -864,7 +822,6 @@
         </button>
     </div>
 
-    <!-- MODAL VISOR DE IMAGEN (LIGHTBOX) -->
     <div id="modal-visor-imagen" class="fixed inset-0 bg-black/95 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300" onclick="cerrarModalImagen()">
         <button onclick="cerrarModalImagen()" class="absolute top-4 right-4 md:top-6 md:right-6 text-white/70 hover:text-white transition-colors z-[210]" aria-label="Cerrar visor">
             <i data-lucide="x" class="w-8 h-8 md:w-10 md:h-10"></i>
@@ -874,17 +831,12 @@
         </div>
     </div>
 
-    <!-- SCRIPTS CORE -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ============================================================
-        // CONFIGURACIÓN DE SUPABASE
-        // ============================================================
         const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
         const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
-        // Fallback: URL por defecto del hero hasta que cargue el tenant real
         document.documentElement.style.setProperty('--hero-bg-url', "url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80')");
 
         let currentTenantId = null;
@@ -902,9 +854,6 @@
             return `${parseInt(hex.substring(0,2), 16)} ${parseInt(hex.substring(2,4), 16)} ${parseInt(hex.substring(4,6), 16)}`;
         };
 
-        // ============================================================
-        // BOOTSTRAPPER SaaS — reforzado para que NUNCA quede en blanco
-        // ============================================================
         async function initTenant() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1049,11 +998,6 @@
             }
         }
 
-        // ============================================================
-        // FUENTE ÚNICA DE VERDAD: solo enlaces de contacto, redes y links de pago.
-        // El logo y el hero_image son inyectados exclusivamente por initTenant()
-        // desde saas_tenants. No se tocan aquí para evitar condiciones de carrera.
-        // ============================================================
         async function cargarConfiguracionPublica() {
             try {
                 const { data: conf, error } = await db.from('renmcycf_config')
