@@ -265,7 +265,15 @@
     <aside class="w-64 glass-panel m-4 mr-0 flex flex-col z-20 hidden md:flex border-r border-white/5">
         <div class="h-28 flex flex-col justify-center px-6 border-b border-white/5 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-wlSecondary"></div>
-            <div class="flex items-center gap-2 text-white font-black tracking-widest text-2xl"><i data-lucide="shield-check" class="text-wlSecondary"></i> <span id="wl-sidebar-institucion">Cargando...</span></div>
+            <!-- PARCHE 2: Header elástico con logo dinámico -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded bg-white p-1 flex-shrink-0 border border-white/20 hidden" id="sidebar-logo-container">
+                    <img id="sidebar-dyn-logo" src="" class="w-full h-full object-contain">
+                </div>
+                <div class="flex flex-col min-w-0">
+                    <span id="wl-sidebar-institucion" class="text-white font-black text-sm uppercase leading-tight line-clamp-2 break-words">Cargando...</span>
+                </div>
+            </div>
             <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Centro de Comando</span>
         </div>
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -761,7 +769,7 @@
         };
 
         // ============================================================
-        // 3. BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO (CORREGIDO)
+        // 3. BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
         // ============================================================
         async function initTenantPanel() {
             try {
@@ -798,11 +806,15 @@
                 currentTenantId = tenantConfig.id;
                 localStorage.setItem('saas_current_tenant', currentTenantId);
 
-                // Aplicar variables CSS para Tailwind
-                document.documentElement.style.setProperty('--wl-primary', hexToRgb(tenantConfig.color_primario || '#3b82f6'));
+                // ============================================================
+                // PARCHE 1: NO sobrescribir --wl-primary ni --wl-background
+                // para preservar el Dark Mode del panel. Solo se inyectan
+                // --wl-secondary y --wl-tertiary (colores de acento).
+                // ============================================================
+                // document.documentElement.style.setProperty('--wl-primary', hexToRgb(tenantConfig.color_primario || '#3b82f6'));
                 document.documentElement.style.setProperty('--wl-secondary', hexToRgb(tenantConfig.color_secundario || '#fbbf24'));
                 document.documentElement.style.setProperty('--wl-tertiary', hexToRgb(tenantConfig.color_terciario || '#1e3a8a'));
-                document.documentElement.style.setProperty('--wl-background', hexToRgb(tenantConfig.color_background || '#030712'));
+                // document.documentElement.style.setProperty('--wl-background', hexToRgb(tenantConfig.color_background || '#030712'));
 
                 const institucionNombres = document.querySelectorAll('#wl-institucion-nombre, #wl-title-institucion, #wl-sidebar-institucion, #modal-institucion-nombre');
                 institucionNombres.forEach(el => {
@@ -833,6 +845,13 @@
                     inyectarSrcSeguro('modal-dyn-logo', finalLogo);
                     const defaultLogos = document.querySelectorAll('#modal-default-logo');
                     defaultLogos.forEach(el => el.classList.add('hidden'));
+
+                    // ============================================================
+                    // PARCHE 2: Inyectar también el logo en el Sidebar
+                    // ============================================================
+                    inyectarSrcSeguro('sidebar-dyn-logo', finalLogo);
+                    const sidebarLogoContainer = document.getElementById('sidebar-logo-container');
+                    if (sidebarLogoContainer) sidebarLogoContainer.classList.remove('hidden');
                 }
 
                 if (tenantConfig.hero_image_url) {
@@ -2210,6 +2229,12 @@
             finally { btn.innerHTML = orig; btn.disabled = false; }
         }
 
+        // ============================================================
+        // PARCHE 3: previewYGuardarImagen ahora actualiza saas_tenants
+        // (Única fuente de verdad) en lugar de renmcycf_config.
+        // Se cambia .eq('tenant_id', ...) por .eq('id', ...) porque la
+        // PK de saas_tenants se llama "id" y su valor es currentTenantId.
+        // ============================================================
         async function previewYGuardarImagen(input, previewId, key) {
             const file = input.files[0]; if (!file) return;
             try {
@@ -2218,9 +2243,9 @@
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 document.getElementById(previewId).src = url; document.getElementById(previewId).style.display = 'block';
                 const payload = {}; payload[`${key}_url`] = url;
-                await db.from('renmcycf_config')
+                await db.from('saas_tenants')
                     .update(payload)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('id', currentTenantId);
                 alert(`✅ Imagen actualizada.`);
             } catch (err) { alert("Error: " + err.message); }
         }
