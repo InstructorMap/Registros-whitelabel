@@ -315,11 +315,29 @@
 
             <!-- DASHBOARD -->
             <div id="view-dashboard" class="tab-content active space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="glass-card p-6"><p class="text-slate-400 text-xs font-bold uppercase">Matriculados</p><h3 class="text-3xl font-black text-white mt-2 font-mono" id="stat-matriculados">0</h3></div>
-                    <div class="glass-card p-6"><p class="text-slate-400 text-xs font-bold uppercase">Pendientes</p><h3 class="text-3xl font-black text-blue-400 mt-2 font-mono" id="stat-pendientes">0</h3></div>
-                    <div class="glass-card p-6"><p class="text-slate-400 text-xs font-bold uppercase">Arancel A1</p><h3 class="text-3xl font-black text-emerald-400 mt-2 font-mono" id="stat-arancel">$0</h3></div>
-                    <div class="glass-card p-6 border-wlSecondary/30"><p class="text-wlSecondary/80 text-xs font-bold uppercase">Ingresos Proyectados</p><h3 class="text-3xl font-black text-wlSecondary mt-2 font-mono" id="stat-caja">$0</h3></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <div class="glass-card p-6">
+                        <p class="text-slate-400 text-xs font-bold uppercase">Matriculados</p>
+                        <h3 class="text-3xl font-black text-white mt-2 font-mono" id="stat-matriculados">0</h3>
+                    </div>
+                    <div class="glass-card p-6">
+                        <p class="text-slate-400 text-xs font-bold uppercase">Pendientes</p>
+                        <h3 class="text-3xl font-black text-blue-400 mt-2 font-mono" id="stat-pendientes">0</h3>
+                    </div>
+                    <div class="glass-card p-6">
+                        <p class="text-slate-400 text-xs font-bold uppercase">Arancel A1</p>
+                        <h3 class="text-3xl font-black text-emerald-400 mt-2 font-mono" id="stat-arancel">$0</h3>
+                    </div>
+                    <div class="glass-card p-6 border-wlSecondary/30">
+                        <p class="text-wlSecondary/80 text-xs font-bold uppercase">Ingresos Proyectados</p>
+                        <h3 class="text-3xl font-black text-wlSecondary mt-2 font-mono" id="stat-caja">$0</h3>
+                    </div>
+                    <div class="glass-card p-6 border-cyan-500/30">
+                        <p class="text-cyan-400/80 text-xs font-bold uppercase flex items-center gap-1">
+                            <i data-lucide="eye" class="w-3.5 h-3.5"></i> Visitas del Sitio
+                        </p>
+                        <h3 class="text-3xl font-black text-cyan-400 mt-2 font-mono" id="stat-visitas">0</h3>
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -816,28 +834,15 @@
                     document.title = `Panel de Administración · ${tenantConfig.nombre_institucion}`;
                 }
 
-                const inyectarSrcSeguro = (id, url) => {
-                    const el = document.getElementById(id);
-                    if (el && url) {
-                        el.src = url;
-                        el.style.display = 'block';
-                    }
+                // Guardamos logo/hero de saas_tenants como FALLBACK
+                // La fuente principal será renmcycf_config (lo setea el director)
+                window._saasTenantFallback = {
+                    logo_url: tenantConfig.logo_url || null,
+                    hero_image_url: tenantConfig.hero_image_url || null
                 };
 
-                if (tenantConfig.logo_url) {
-                    inyectarSrcSeguro('modal-dyn-logo', tenantConfig.logo_url);
-                    const defaultLogos = document.querySelectorAll('#modal-default-logo');
-                    defaultLogos.forEach(el => el.classList.add('hidden'));
-
-                    inyectarSrcSeguro('sidebar-dyn-logo', tenantConfig.logo_url);
-                    const sidebarLogoContainer = document.getElementById('sidebar-logo-container');
-                    if (sidebarLogoContainer) sidebarLogoContainer.classList.remove('hidden');
-                }
-
-                if (tenantConfig.hero_image_url) {
-                    inyectarSrcSeguro('modal-dyn-bg', tenantConfig.hero_image_url);
-                    document.getElementById('modal-dyn-overlay').classList.remove('hidden');
-                }
+                // Aplicamos logo/hero con prioridad renmcycf_config → fallback saas_tenants
+                await aplicarLogoYHero();
 
                 document.body.classList.add('ready');
 
@@ -851,6 +856,49 @@
                         </div>
                     </div>`;
                 document.body.classList.add('ready');
+            }
+        }
+
+        // ============================================================
+        // APLICAR LOGO Y HERO (prioridad renmcycf_config → saas_tenants fallback)
+        // ============================================================
+        async function aplicarLogoYHero() {
+            try {
+                const { data: conf } = await db
+                    .from('renmcycf_config')
+                    .select('logo_url, hero_image_url')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+
+                const fallback = window._saasTenantFallback || {};
+                const logoFinal = (conf && conf.logo_url) || fallback.logo_url || null;
+                const heroFinal = (conf && conf.hero_image_url) || fallback.hero_image_url || null;
+
+                const inyectarSrcSeguro = (id, url) => {
+                    const el = document.getElementById(id);
+                    if (el && url) {
+                        el.src = url;
+                        el.style.display = 'block';
+                    }
+                };
+
+                if (logoFinal) {
+                    inyectarSrcSeguro('modal-dyn-logo', logoFinal);
+                    const defaultLogos = document.querySelectorAll('#modal-default-logo');
+                    defaultLogos.forEach(el => el.classList.add('hidden'));
+
+                    inyectarSrcSeguro('sidebar-dyn-logo', logoFinal);
+                    const sidebarLogoContainer = document.getElementById('sidebar-logo-container');
+                    if (sidebarLogoContainer) sidebarLogoContainer.classList.remove('hidden');
+                }
+
+                if (heroFinal) {
+                    inyectarSrcSeguro('modal-dyn-bg', heroFinal);
+                    const overlay = document.getElementById('modal-dyn-overlay');
+                    if (overlay) overlay.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.warn("Error aplicando logo/hero:", err);
             }
         }
 
@@ -1027,7 +1075,7 @@
                     .eq('tenant_id', currentTenantId);
                     
                 const { data: conf } = await db.from('renmcycf_config')
-                    .select('arancel_a1, arancel_a2, arancel_a3, arancel_a4')
+                    .select('arancel_a1, arancel_a2, arancel_a3, arancel_a4, visitas')
                     .eq('tenant_id', currentTenantId)
                     .maybeSingle();
                     
@@ -1055,11 +1103,17 @@
                 }
                 
                 const arancelRef = conf ? conf.arancel_a1 : 0;
+                const visitas = Number(conf?.visitas) || 0;
 
                 document.getElementById('stat-matriculados').innerText = activos || 0;
                 document.getElementById('stat-pendientes').innerText = pendientes || 0;
                 document.getElementById('stat-arancel').innerText = `$${new Intl.NumberFormat('es-AR').format(arancelRef)}`;
                 document.getElementById('stat-caja').innerText = `$${new Intl.NumberFormat('es-AR').format(ingresosTotales)}`;
+                
+                const statVisitasEl = document.getElementById('stat-visitas');
+                if (statVisitasEl) {
+                    statVisitasEl.innerText = new Intl.NumberFormat('es-AR').format(visitas);
+                }
                 
                 actualizarGraficos();
             } catch (err) { console.error("Error Dashboard:", err); }
@@ -2148,21 +2202,19 @@
                     document.getElementById('conf-instagram').value = data.instagram || ''; 
                     document.getElementById('conf-twitter').value = data.twitter || ''; 
                     document.getElementById('conf-linkedin').value = data.linkedin || ''; 
-                }
 
-                const { data: tenant } = await db.from('saas_tenants')
-                    .select('logo_url, hero_image_url')
-                    .eq('id', currentTenantId)
-                    .maybeSingle();
+                    // Preview de logo/hero desde renmcycf_config (con fallback a saas_tenants)
+                    const fallback = window._saasTenantFallback || {};
+                    const logoFinal = data.logo_url || fallback.logo_url;
+                    const heroFinal = data.hero_image_url || fallback.hero_image_url;
 
-                if (tenant) {
-                    if (tenant.hero_image_url) {
+                    if (heroFinal) {
                         const prevHero = document.getElementById('preview-hero');
-                        if (prevHero) { prevHero.src = tenant.hero_image_url; prevHero.style.display = 'block'; }
+                        if (prevHero) { prevHero.src = heroFinal; prevHero.style.display = 'block'; }
                     }
-                    if (tenant.logo_url) {
+                    if (logoFinal) {
                         const prevLogo = document.getElementById('preview-logo');
-                        if (prevLogo) { prevLogo.src = tenant.logo_url; prevLogo.style.display = 'block'; }
+                        if (prevLogo) { prevLogo.src = logoFinal; prevLogo.style.display = 'block'; }
                     }
                 }
             } catch (err) { console.error("Error cargando config:", err); }
@@ -2201,11 +2253,8 @@
         }
 
         // ============================================================
-        // GUARDADO ROBUSTO DE IMÁGENES DE IDENTIDAD INSTITUCIONAL
-        // - Valida currentTenantId (falla si es null)
-        // - Verifica upload al bucket
-        // - Verifica UPDATE en saas_tenants (con .select() para confirmar filas afectadas)
-        // - Falla ruidosamente con mensaje específico
+        // GUARDADO DE IMÁGENES DE IDENTIDAD INSTITUCIONAL
+        // Ahora guarda en renmcycf_config (el director es el dueño del logo/hero)
         // ============================================================
         async function previewYGuardarImagen(input, previewId, key) {
             const file = input.files[0]; 
@@ -2218,7 +2267,7 @@
             }
 
             try {
-                // 1. Subir al bucket
+                // 1. Subir al bucket renmcycf-media
                 const fileName = `${key}_${Date.now()}.${file.name.split('.').pop()}`;
                 const { error: uploadError } = await db.storage
                     .from('renmcycf-media')
@@ -2229,29 +2278,30 @@
                 // 2. Construir URL pública
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
 
-                // 3. Actualizar saas_tenants — VALIDANDO filas afectadas
+                // 3. Actualizar renmcycf_config (key puede ser 'logo' o 'hero_image')
+                const columna = key === 'logo' ? 'logo_url' : 'hero_image_url';
                 const payload = {};
-                payload[`${key}_url`] = url;
+                payload[columna] = url;
 
                 const { data: updatedRows, error: updateError } = await db
-                    .from('saas_tenants')
+                    .from('renmcycf_config')
                     .update(payload)
-                    .eq('id', currentTenantId)
+                    .eq('tenant_id', currentTenantId)
                     .select();
 
                 if (updateError) {
                     throw new Error(
-                        `Error actualizando la DB: ${updateError.message}\n` +
-                        `Revisá las policies de UPDATE en saas_tenants.`
+                        `Error actualizando renmcycf_config: ${updateError.message}\n` +
+                        `Revisá las policies de UPDATE en renmcycf_config.`
                     );
                 }
 
                 if (!updatedRows || updatedRows.length === 0) {
                     throw new Error(
-                        `El UPDATE no afectó ninguna fila.\n` +
+                        `El UPDATE no afectó ninguna fila en renmcycf_config.\n` +
                         `Causas probables:\n` +
-                        `1. Tu usuario no tiene rol superadmin/director en este tenant.\n` +
-                        `2. El tenantId (${currentTenantId}) no existe.`
+                        `1. El tenantId (${currentTenantId}) no existe en renmcycf_config.\n` +
+                        `2. No tenés permisos de UPDATE.`
                     );
                 }
 
@@ -2260,6 +2310,24 @@
                 if (previewEl) {
                     previewEl.src = url;
                     previewEl.style.display = 'block';
+                }
+
+                // 5. Refrescar logo/hero en sidebar y modal
+                if (key === 'logo') {
+                    const sidebarLogo = document.getElementById('sidebar-dyn-logo');
+                    if (sidebarLogo) { sidebarLogo.src = url; sidebarLogo.style.display = 'block'; }
+                    const container = document.getElementById('sidebar-logo-container');
+                    if (container) container.classList.remove('hidden');
+                    
+                    const modalLogo = document.getElementById('modal-dyn-logo');
+                    if (modalLogo) { modalLogo.src = url; modalLogo.style.display = 'block'; }
+                    document.querySelectorAll('#modal-default-logo').forEach(el => el.classList.add('hidden'));
+                }
+                if (key === 'hero_image') {
+                    const modalBg = document.getElementById('modal-dyn-bg');
+                    if (modalBg) { modalBg.src = url; modalBg.style.display = 'block'; }
+                    const overlay = document.getElementById('modal-dyn-overlay');
+                    if (overlay) overlay.classList.remove('hidden');
                 }
 
                 console.log("✅ Guardado OK:", { key, fileName, url, tenantId: currentTenantId });
