@@ -1147,6 +1147,9 @@
                     if (insErr) throw insErr;
                     
                     // SEED OBLIGATORIO: Crear configuración base para que panel.html no colapse
+                    // IMPORTANTE: NO copiamos logo_url ni hero_image_url acá.
+                    // El director es quien setea su logo y hero desde su propio panel.
+                    // saas_tenants.logo_url queda como fallback hasta que el director lo cambie.
                     agregarLog(`inyectando configuración base → renmcycf_config`);
                     
                     const { error: seedErr } = await db.from('renmcycf_config').insert([{
@@ -1158,8 +1161,7 @@
                         mostrar_wpp: true,
                         mostrar_email: true,
                         mostrar_facebook: false,
-                        mostrar_instagram: false,
-                        logo_url: logoUrl
+                        mostrar_instagram: false
                     }]);
                     
                     if (seedErr) throw seedErr;
