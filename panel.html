@@ -35,11 +35,10 @@
     </script>
     <style>
         :root { 
-            /* Valores por defecto en formato R G B para soportar opacidades de Tailwind */
-            --wl-primary: 59 130 246; /* #3b82f6 */
-            --wl-secondary: 251 191 36; /* #fbbf24 */
-            --wl-tertiary: 30 58 138; /* #1e3a8a */
-            --wl-background: 3 7 18; /* #030712 */
+            --wl-primary: 59 130 246;
+            --wl-secondary: 251 191 36;
+            --wl-tertiary: 30 58 138;
+            --wl-background: 3 7 18;
             
             --glass-bg: rgba(15, 23, 42, 0.6); 
             --glass-border: rgba(255, 255, 255, 0.08); 
@@ -802,10 +801,6 @@
                 currentTenantId = tenantConfig.id;
                 localStorage.setItem('saas_current_tenant', currentTenantId);
 
-                // ============================================================
-                // PRESERVAR DARK MODE: NO sobrescribir --wl-primary ni --wl-background.
-                // Solo se inyectan --wl-secondary y --wl-tertiary (colores de acento).
-                // ============================================================
                 document.documentElement.style.setProperty('--wl-secondary', hexToRgb(tenantConfig.color_secundario || '#fbbf24'));
                 document.documentElement.style.setProperty('--wl-tertiary', hexToRgb(tenantConfig.color_terciario || '#1e3a8a'));
 
@@ -829,15 +824,11 @@
                     }
                 };
 
-                // ============================================================
-                // LIMPIEZA SaaS ABSOLUTA: URL directa, sin .replace ni .includes
-                // ============================================================
                 if (tenantConfig.logo_url) {
                     inyectarSrcSeguro('modal-dyn-logo', tenantConfig.logo_url);
                     const defaultLogos = document.querySelectorAll('#modal-default-logo');
                     defaultLogos.forEach(el => el.classList.add('hidden'));
 
-                    // Inyectar también el logo en el Sidebar
                     inyectarSrcSeguro('sidebar-dyn-logo', tenantConfig.logo_url);
                     const sidebarLogoContainer = document.getElementById('sidebar-logo-container');
                     if (sidebarLogoContainer) sidebarLogoContainer.classList.remove('hidden');
@@ -1545,9 +1536,6 @@
             }
         }
 
-        // ============================================================
-        // REPARADO: upload sin { upsert: true } ni cacheControl
-        // ============================================================
         async function reemplazarDocumento(campo) {
             if (!itemDossierActual) return;
             const input = document.createElement('input');
@@ -1669,9 +1657,6 @@
         function cerrarModalEdicion() { document.getElementById('modal-editar-padron').classList.add('hidden'); }
         function previewFotoEdicion(input) { if (input.files?.[0]) document.getElementById('edit-foto-preview').src = URL.createObjectURL(input.files[0]); }
         
-        // ============================================================
-        // REPARADO: upload sin { upsert: true } ni cacheControl
-        // ============================================================
         async function guardarEdicionMatriculado(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]'); const originalHtml = btn.innerHTML;
@@ -2135,9 +2120,6 @@
         // 15. CONFIGURACIÓN CORE Y TEXTOS
         // ============================================
 
-        // ============================================================
-        // CENTRALIZADO: logo y hero se leen desde saas_tenants (fuente de verdad)
-        // ============================================================
         async function cargarConfiguracionForm() {
             try {
                 const { data } = await db.from('renmcycf_config')
@@ -2168,7 +2150,6 @@
                     document.getElementById('conf-linkedin').value = data.linkedin || ''; 
                 }
 
-                // Previews de identidad visual vienen de saas_tenants (fuente única de verdad)
                 const { data: tenant } = await db.from('saas_tenants')
                     .select('logo_url, hero_image_url')
                     .eq('id', currentTenantId)
@@ -2220,22 +2201,74 @@
         }
 
         // ============================================================
-        // CENTRALIZADO + REPARADO: sube SIN upsert/cacheControl y
-        // actualiza saas_tenants usando .eq('id', currentTenantId)
+        // GUARDADO ROBUSTO DE IMÁGENES DE IDENTIDAD INSTITUCIONAL
+        // - Valida currentTenantId (falla si es null)
+        // - Verifica upload al bucket
+        // - Verifica UPDATE en saas_tenants (con .select() para confirmar filas afectadas)
+        // - Falla ruidosamente con mensaje específico
         // ============================================================
         async function previewYGuardarImagen(input, previewId, key) {
-            const file = input.files[0]; if (!file) return;
+            const file = input.files[0]; 
+            if (!file) { alert("⚠️ No seleccionaste ningún archivo."); return; }
+
+            if (!currentTenantId) {
+                alert("❌ Error: el tenant no está cargado. Recargá la página (F5).");
+                console.error("[previewYGuardarImagen] currentTenantId es null");
+                return;
+            }
+
             try {
+                // 1. Subir al bucket
                 const fileName = `${key}_${Date.now()}.${file.name.split('.').pop()}`;
-                await db.storage.from('renmcycf-media').upload(fileName, file);
+                const { error: uploadError } = await db.storage
+                    .from('renmcycf-media')
+                    .upload(fileName, file);
+
+                if (uploadError) throw new Error(`Error subiendo a Storage: ${uploadError.message}`);
+
+                // 2. Construir URL pública
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
-                document.getElementById(previewId).src = url; document.getElementById(previewId).style.display = 'block';
-                const payload = {}; payload[`${key}_url`] = url;
-                await db.from('saas_tenants')
+
+                // 3. Actualizar saas_tenants — VALIDANDO filas afectadas
+                const payload = {};
+                payload[`${key}_url`] = url;
+
+                const { data: updatedRows, error: updateError } = await db
+                    .from('saas_tenants')
                     .update(payload)
-                    .eq('id', currentTenantId);
-                alert(`✅ Imagen actualizada.`);
-            } catch (err) { alert("Error: " + err.message); }
+                    .eq('id', currentTenantId)
+                    .select();
+
+                if (updateError) {
+                    throw new Error(
+                        `Error actualizando la DB: ${updateError.message}\n` +
+                        `Revisá las policies de UPDATE en saas_tenants.`
+                    );
+                }
+
+                if (!updatedRows || updatedRows.length === 0) {
+                    throw new Error(
+                        `El UPDATE no afectó ninguna fila.\n` +
+                        `Causas probables:\n` +
+                        `1. Tu usuario no tiene rol superadmin/director en este tenant.\n` +
+                        `2. El tenantId (${currentTenantId}) no existe.`
+                    );
+                }
+
+                // 4. Actualizar preview visual
+                const previewEl = document.getElementById(previewId);
+                if (previewEl) {
+                    previewEl.src = url;
+                    previewEl.style.display = 'block';
+                }
+
+                console.log("✅ Guardado OK:", { key, fileName, url, tenantId: currentTenantId });
+                alert(`✅ ${key === 'hero_image' ? 'Imagen de fondo (hero)' : 'Logo'} guardado correctamente.`);
+
+            } catch (err) {
+                console.error("❌ [previewYGuardarImagen] Error:", err);
+                alert("❌ " + err.message);
+            }
         }
 
         async function cargarContenidoForm() {
@@ -2481,9 +2514,6 @@
             container.innerHTML = html;
         }
 
-        // ============================================================
-        // REPARADO: upload sin { upsert: true } ni cacheControl
-        // ============================================================
         async function subirFondoCredencial(input, lado) {
             const file = input.files[0]; if (!file) return;
             try {
@@ -2495,9 +2525,6 @@
             } catch (err) { alert('Error subiendo fondo: ' + err.message); }
         }
 
-        // ============================================================
-        // REPARADO: upload sin { upsert: true } ni cacheControl
-        // ============================================================
         async function subirRoseta(input) {
             const file = input.files[0]; if (!file) return;
             try {
