@@ -2254,7 +2254,7 @@
 
         // ============================================================
         // GUARDADO DE IMÁGENES DE IDENTIDAD INSTITUCIONAL
-        // Ahora guarda en renmcycf_config (el director es el dueño del logo/hero)
+        // Usa UPSERT: si la fila no existe en renmcycf_config, la crea.
         // ============================================================
         async function previewYGuardarImagen(input, previewId, key) {
             const file = input.files[0]; 
@@ -2278,30 +2278,70 @@
                 // 2. Construir URL pública
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
 
-                // 3. Actualizar renmcycf_config (key puede ser 'logo' o 'hero_image')
+                // 3. UPSERT en renmcycf_config
                 const columna = key === 'logo' ? 'logo_url' : 'hero_image_url';
-                const payload = {};
-                payload[columna] = url;
-
-                const { data: updatedRows, error: updateError } = await db
+                
+                // Verificar si ya existe la fila
+                const { data: existente, error: errSelect } = await db
                     .from('renmcycf_config')
-                    .update(payload)
+                    .select('tenant_id')
                     .eq('tenant_id', currentTenantId)
-                    .select();
+                    .maybeSingle();
+
+                if (errSelect) {
+                    throw new Error(`Error consultando renmcycf_config: ${errSelect.message}`);
+                }
+
+                let updateError = null;
+                let updatedRows = null;
+
+                if (existente) {
+                    // La fila existe → UPDATE
+                    const payload = {};
+                    payload[columna] = url;
+                    
+                    const { data, error } = await db
+                        .from('renmcycf_config')
+                        .update(payload)
+                        .eq('tenant_id', currentTenantId)
+                        .select();
+                    
+                    updateError = error;
+                    updatedRows = data;
+                } else {
+                    // La fila NO existe → INSERT con defaults
+                    const payload = {
+                        tenant_id: currentTenantId,
+                        arancel_a1: 0,
+                        arancel_a2: 0,
+                        arancel_a3: 0,
+                        arancel_a4: 0,
+                        mostrar_wpp: true,
+                        mostrar_email: true,
+                        mostrar_facebook: false,
+                        mostrar_instagram: false,
+                        visitas: 0
+                    };
+                    payload[columna] = url;
+
+                    const { data, error } = await db
+                        .from('renmcycf_config')
+                        .insert([payload])
+                        .select();
+                    
+                    updateError = error;
+                    updatedRows = data;
+                }
 
                 if (updateError) {
                     throw new Error(
-                        `Error actualizando renmcycf_config: ${updateError.message}\n` +
-                        `Revisá las policies de UPDATE en renmcycf_config.`
+                        `Error guardando en renmcycf_config: ${updateError.message}`
                     );
                 }
 
                 if (!updatedRows || updatedRows.length === 0) {
                     throw new Error(
-                        `El UPDATE no afectó ninguna fila en renmcycf_config.\n` +
-                        `Causas probables:\n` +
-                        `1. El tenantId (${currentTenantId}) no existe en renmcycf_config.\n` +
-                        `2. No tenés permisos de UPDATE.`
+                        `No se pudo guardar el cambio en renmcycf_config.`
                     );
                 }
 
@@ -2330,7 +2370,7 @@
                     if (overlay) overlay.classList.remove('hidden');
                 }
 
-                console.log("✅ Guardado OK:", { key, fileName, url, tenantId: currentTenantId });
+                console.log("✅ Guardado OK:", { key, fileName, url, tenantId: currentTenantId, modo: existente ? 'UPDATE' : 'INSERT' });
                 alert(`✅ ${key === 'hero_image' ? 'Imagen de fondo (hero)' : 'Logo'} guardado correctamente.`);
 
             } catch (err) {
