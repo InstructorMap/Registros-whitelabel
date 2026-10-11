@@ -10,6 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="saas-core.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Montserrat:wght@700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
@@ -334,107 +335,8 @@
 
     <script>
         // ============================================================
-        // CONFIGURACIÓN DE SUPABASE
+        // BOOTSTRAPPER SaaS (inyectado por saas-core.js)
         // ============================================================
-        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
-        const db = window.supabase.createClient(PROJECT_URL, PUBLIC_KEY);
-
-        // ============================================================
-        // BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
-        // ============================================================
-        let currentTenantId = null;
-
-        async function initTenant() {
-            try {
-                const hostname = window.location.hostname;
-                let tenantSlug = 'default';
-                
-                if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
-                } else {
-                    const parts = hostname.split('.');
-                    if (parts.length > 2) {
-                        tenantSlug = parts[0]; 
-                    } else {
-                        tenantSlug = 'renmcycf'; 
-                    }
-                }
-
-                console.log("Cargando entorno SaaS para:", tenantSlug);
-
-                const { data: tenantConfig, error } = await db
-                    .from('saas_tenants')
-                    .select('*')
-                    .eq('slug', tenantSlug)
-                    .eq('activo', true)
-                    .single();
-
-                if (error || !tenantConfig) {
-                    throw new Error("Institución no encontrada o inactiva.");
-                }
-
-                currentTenantId = tenantConfig.id;
-                localStorage.setItem('saas_current_tenant', currentTenantId);
-
-                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
-                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
-                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
-                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#f8fafc');
-
-                const institucionNombres = document.querySelectorAll('#wl-institucion-nombre, #wl-title-institucion, #wl-sidebar-institucion, #modal-institucion-nombre');
-                institucionNombres.forEach(el => {
-                    if (el) el.innerText = tenantConfig.nombre_institucion;
-                });
-
-                if (document.title.includes('·')) {
-                    const prefijo = document.title.split('·')[0];
-                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
-                } else {
-                    document.title = tenantConfig.nombre_institucion;
-                }
-
-                const inyectarSrcSeguro = (id, url) => {
-                    const el = document.getElementById(id);
-                    if (el && url) {
-                        el.src = url;
-                        el.style.display = 'block';
-                    }
-                };
-
-                if (tenantConfig.logo_url) {
-                    inyectarSrcSeguro('nav-logo', tenantConfig.logo_url);
-                    inyectarSrcSeguro('nav-mini-logo', tenantConfig.logo_url);
-                    inyectarSrcSeguro('val-logo', tenantConfig.logo_url);
-                    inyectarSrcSeguro('dynamic-logo', tenantConfig.logo_url);
-                    inyectarSrcSeguro('modal-dyn-logo', tenantConfig.logo_url);
-                    inyectarSrcSeguro('watermark-logo-img', tenantConfig.logo_url);
-                    
-                    const defaultLogos = document.querySelectorAll('#header-default-logo, #default-logo, #modal-default-logo');
-                    defaultLogos.forEach(el => el.classList.add('hidden'));
-                }
-
-                if (tenantConfig.hero_image_url) {
-                    inyectarSrcSeguro('dyn-hero-bg', tenantConfig.hero_image_url);
-                    inyectarSrcSeguro('dynamic-bg', tenantConfig.hero_image_url);
-                    inyectarSrcSeguro('modal-dyn-bg', tenantConfig.hero_image_url);
-                }
-
-                document.body.classList.add('ready');
-
-            } catch (err) {
-                console.error("Error Bootstrapper SaaS:", err);
-                document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
-                        <div>
-                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
-                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
-                        </div>
-                    </div>`;
-                document.body.classList.add('ready');
-            }
-        }
 
         // ============================================================
         // PARTÍCULAS DE FONDO
@@ -497,7 +399,7 @@
             btn.disabled = true;
             
             try {
-                const { data: authData, error: authError } = await db.auth.signInWithPassword({
+                const { data: authData, error: authError } = await window.db.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
@@ -516,23 +418,23 @@
                     throw new Error('No se pudo obtener la información del usuario.');
                 }
                 
-                const { data: rolData, error: rolError } = await db
+                const { data: rolData, error: rolError } = await window.db
                     .from('renmcycf_roles')
                     .select('*')
                     .eq('user_id', authData.user.id)
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .eq('activo', true)
                     .maybeSingle();
                 
                 if (rolError || !rolData) {
-                    await db.auth.signOut();
+                    await window.db.auth.signOut();
                     throw new Error('No tienes permisos en esta institución.');
                 }
                 
-                await db.from('renmcycf_roles')
+                await window.db.from('renmcycf_roles')
                     .update({ ultimo_acceso: new Date().toISOString() })
                     .eq('id', rolData.id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 
                 successDiv.classList.remove('hidden');
                 successDiv.innerHTML = `
@@ -548,7 +450,7 @@
                     email: authData.user.email,
                     rol: rolData.rol,
                     nombre: rolData.nombres || authData.user.email,
-                    tenant_id: currentTenantId,
+                    tenant_id: window.currentTenantId,
                     session_expires: Date.now() + (8 * 60 * 60 * 1000)
                 }));
                 
@@ -582,25 +484,25 @@
         }
         
         async function checkExistingSession() {
-            const { data: { session } } = await db.auth.getSession();
+            const { data: { session } } = await window.db.auth.getSession();
             if (session) {
                 const storedUser = localStorage.getItem('saas_session');
                 if (storedUser) {
                     const userData = JSON.parse(storedUser);
-                    if (userData.session_expires > Date.now() && userData.tenant_id === currentTenantId) {
+                    if (userData.session_expires > Date.now() && userData.tenant_id === window.currentTenantId) {
                         setTimeout(() => {
                             window.location.href = 'panel.html';
                         }, 800);
                         return;
                     }
                 }
-                await db.auth.signOut();
+                await window.db.auth.signOut();
                 localStorage.removeItem('saas_session');
             }
         }
         
         window.addEventListener('DOMContentLoaded', async () => {
-            await initTenant();
+            await window.initTenant();
             createParticles();
             lucide.createIcons();
             checkExistingSession();
