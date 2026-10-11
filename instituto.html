@@ -17,6 +17,7 @@
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="saas-core.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -842,101 +843,18 @@
 
     <script>
         // ============================================================
-        // 1. CONFIGURACIÓN SUPABASE (SaaS multi-tenant)
+        // 1. BOOTSTRAPPER SaaS (inyectado por saas-core.js)
         // ============================================================
         lucide.createIcons();
-        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
-        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
-        let currentTenantId = null;
-        let tenantConfigGlobal = null;
         let institutoActual = null;
         let aliadoId = null;
         let cursosCargados = [];
         let editorModo = 'alta';
         let editorZoomLevel = 100;
 
-        // ============================================================
-        // 2. BOOTSTRAPPER SaaS
-        // ============================================================
-        async function initTenant() {
-            try {
-                const hostname = window.location.hostname;
-                let tenantSlug = 'default';
-
-                if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
-                } else {
-                    const parts = hostname.split('.');
-                    if (parts.length > 2 && !hostname.includes('github.io')) {
-                        tenantSlug = parts[0];
-                    } else {
-                        tenantSlug = 'renmcycf';
-                    }
-                }
-
-                console.log("Cargando entorno SaaS para:", tenantSlug);
-
-                const { data: tenantConfig, error } = await db
-                    .from('saas_tenants')
-                    .select('*')
-                    .eq('slug', tenantSlug)
-                    .eq('activo', true)
-                    .single();
-
-                if (error || !tenantConfig) throw new Error("Institución no encontrada o inactiva.");
-
-                currentTenantId = tenantConfig.id;
-                tenantConfigGlobal = tenantConfig;
-                localStorage.setItem('saas_current_tenant', currentTenantId);
-
-                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
-                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
-                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
-                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#050914');
-
-                const institucionNombres = document.querySelectorAll(
-                    '.wl-institucion-nombre, .wl-institucion-nombre-corto, #wl-title-institucion, #login-institucion-nombre'
-                );
-                institucionNombres.forEach(el => {
-                    if (el) {
-                        if (el.classList.contains('wl-institucion-nombre-corto')) {
-                            const nombre = tenantConfig.nombre_institucion || 'Institución';
-                            el.innerText = nombre.length > 20 ? nombre.substring(0, 18) + '…' : nombre;
-                        } else {
-                            el.innerText = tenantConfig.nombre_institucion;
-                        }
-                    }
-                });
-
-                const dominios = document.querySelectorAll('.wl-dominio');
-                dominios.forEach(el => { el.innerText = hostname; });
-
-                if (document.title.includes('·')) {
-                    const prefijo = document.title.split('·')[0];
-                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
-                } else {
-                    document.title = tenantConfig.nombre_institucion;
-                }
-
-                return tenantConfig;
-            } catch (err) {
-                console.error("Error Bootstrapper SaaS:", err);
-                document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
-                        <div>
-                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
-                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
-                        </div>
-                    </div>`;
-                throw err;
-            }
-        }
-
         // ==========================================
-        // 3. TEMA
+        // 2. TEMA
         // ==========================================
         function aplicarTemaGuardado() {
             const tema = localStorage.getItem('asari_instituto_theme') || 'dark';
@@ -959,7 +877,7 @@
         }
 
         // ==========================================
-        // 4. EDITOR DE DIPLOMAS
+        // 3. EDITOR DE DIPLOMAS
         // ==========================================
         const defaultEditorState = () => ({
             posX: 50, posY: 50,
@@ -1393,7 +1311,7 @@
         }
 
         // ==========================================
-        // 5. AUTENTICACIÓN
+        // 4. AUTENTICACIÓN
         // ==========================================
         async function iniciarSesion(e) {
             e.preventDefault();
@@ -1405,7 +1323,7 @@
             btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i>';
             btn.disabled = true;
             try {
-                const { error } = await db.auth.signInWithPassword({ email, password: pass });
+                const { error } = await window.db.auth.signInWithPassword({ email, password: pass });
                 if (error) throw error;
                 await verificarSesion();
             } catch (err) {
@@ -1418,30 +1336,30 @@
         }
 
         async function verificarSesion() {
-            const { data: { session }, error } = await db.auth.getSession();
+            const { data: { session }, error } = await window.db.auth.getSession();
             if (error || !session) { document.getElementById('login-screen').style.display = 'flex'; return; }
 
-            const { data: rolData, error: rolError } = await db
+            const { data: rolData, error: rolError } = await window.db
                 .from('renmcycf_roles')
                 .select('rol, activo, nombres, apellidos, aliado_id, tenant_id')
                 .eq('user_id', session.user.id)
-                .eq('tenant_id', currentTenantId)
+                .eq('tenant_id', window.currentTenantId)
                 .single();
 
-            if (rolError || !rolData || !rolData.activo) { await db.auth.signOut(); mostrarErrorLogin("Acceso denegado. Cuenta inactiva o inexistente para esta institución."); return; }
-            if (rolData.rol !== 'director') { await db.auth.signOut(); mostrarErrorLogin("Acceso denegado. Esta cuenta no tiene privilegios institucionales."); return; }
-            if (!rolData.aliado_id) { await db.auth.signOut(); mostrarErrorLogin("Acceso denegado. Su cuenta no está vinculada a ninguna institución."); return; }
+            if (rolError || !rolData || !rolData.activo) { await window.db.auth.signOut(); mostrarErrorLogin("Acceso denegado. Cuenta inactiva o inexistente para esta institución."); return; }
+            if (rolData.rol !== 'director') { await window.db.auth.signOut(); mostrarErrorLogin("Acceso denegado. Esta cuenta no tiene privilegios institucionales."); return; }
+            if (!rolData.aliado_id) { await window.db.auth.signOut(); mostrarErrorLogin("Acceso denegado. Su cuenta no está vinculada a ninguna institución."); return; }
 
             aliadoId = rolData.aliado_id;
 
-            const { data: aliado, error: aliadoError } = await db
+            const { data: aliado, error: aliadoError } = await window.db
                 .from('renmcycf_aliados')
                 .select('*')
                 .eq('id', aliadoId)
-                .eq('tenant_id', currentTenantId)
+                .eq('tenant_id', window.currentTenantId)
                 .single();
 
-            if (aliadoError || !aliado) { await db.auth.signOut(); mostrarErrorLogin("Error: No se encontró la institución asociada."); return; }
+            if (aliadoError || !aliado) { await window.db.auth.signOut(); mostrarErrorLogin("Error: No se encontró la institución asociada."); return; }
             institutoActual = aliado;
 
             if (aliado.logo_url) {
@@ -1473,7 +1391,7 @@
         }
 
         async function cerrarSesion() {
-            await db.auth.signOut();
+            await window.db.auth.signOut();
             institutoActual = null; aliadoId = null; cursosCargados = [];
             document.getElementById('login-email').value = '';
             document.getElementById('login-password').value = '';
@@ -1493,7 +1411,7 @@
         }
 
         // ==========================================
-        // 6. NAVEGACIÓN
+        // 5. NAVEGACIÓN
         // ==========================================
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1510,38 +1428,38 @@
         }
 
         // ==========================================
-        // 7. DASHBOARD
+        // 6. DASHBOARD
         // ==========================================
         async function cargarDashboardInstituto() {
             if (!aliadoId) return;
             try {
-                const { data: aliado } = await db.from('renmcycf_aliados').select('saldo_timbres').eq('id', aliadoId).eq('tenant_id', currentTenantId).single();
+                const { data: aliado } = await window.db.from('renmcycf_aliados').select('saldo_timbres').eq('id', aliadoId).eq('tenant_id', window.currentTenantId).single();
                 if (aliado) {
                     document.getElementById('stat-timbres').textContent = aliado.saldo_timbres || 0;
                     document.getElementById('header-timbres').textContent = `Derechos: ${aliado.saldo_timbres || 0}`;
                 }
-                const { count: certCount } = await db.from('renmcycf_certificados_b2b').select('*', { count: 'exact', head: true }).eq('aliado_id', aliadoId).eq('tenant_id', currentTenantId);
+                const { count: certCount } = await window.db.from('renmcycf_certificados_b2b').select('*', { count: 'exact', head: true }).eq('aliado_id', aliadoId).eq('tenant_id', window.currentTenantId);
                 document.getElementById('stat-certificados').textContent = certCount || 0;
-                const { count: cursosCount } = await db.from('renmcycf_aliados_cursos').select('*', { count: 'exact', head: true }).eq('aliado_id', aliadoId).eq('tenant_id', currentTenantId).eq('estado', 'APROBADO');
+                const { count: cursosCount } = await window.db.from('renmcycf_aliados_cursos').select('*', { count: 'exact', head: true }).eq('aliado_id', aliadoId).eq('tenant_id', window.currentTenantId).eq('estado', 'APROBADO');
                 document.getElementById('stat-cursos').textContent = cursosCount || 0;
             } catch (err) { console.error("Error Dashboard:", err); }
         }
 
         function contactarSoporte() {
-            const whatsappSoporte = tenantConfigGlobal?.whatsapp_soporte || '5490000000000';
+            const whatsappSoporte = window.tenantConfigGlobal?.whatsapp_soporte || '5490000000000';
             const mensaje = encodeURIComponent(`Hola, soy del instituto "${institutoActual?.nombre || ''}". Necesito adquirir más Derechos de Emisión digitales. Mi saldo actual es de ${institutoActual?.saldo_timbres || 0}.`);
             window.open(`https://wa.me/${whatsappSoporte}?text=${mensaje}`, '_blank');
         }
 
         // ==========================================
-        // 8. GESTIÓN DE CURSOS
+        // 7. GESTIÓN DE CURSOS
         // ==========================================
         async function cargarCursosInstituto() {
             const tbody = document.getElementById('cursos-body');
             if (!tbody) return;
             tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Cargando...</td></tr>';
             try {
-                const { data: cursos, error } = await db.from('renmcycf_aliados_cursos').select('*').eq('aliado_id', aliadoId).eq('tenant_id', currentTenantId).order('created_at', { ascending: false });
+                const { data: cursos, error } = await window.db.from('renmcycf_aliados_cursos').select('*').eq('aliado_id', aliadoId).eq('tenant_id', window.currentTenantId).order('created_at', { ascending: false });
                 if (error) throw error;
                 cursosCargados = cursos || [];
                 if (!cursos || cursos.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">No hay cursos propuestos aún.</td></tr>'; return; }
@@ -1665,8 +1583,8 @@
                 const bucket = 'renmcycf-documentos';
                 const subirArchivo = async (file, prefijo) => {
                     const ext = file.name.split('.').pop();
-                    const fileName = `${currentTenantId}_${aliadoId}_${prefijo}_${ts}_${Math.floor(Math.random()*1000)}.${ext}`;
-                    const { error: upErr } = await db.storage.from(bucket).upload(fileName, file, { cacheControl: '3600', upsert: false });
+                    const fileName = `${window.currentTenantId}_${aliadoId}_${prefijo}_${ts}_${Math.floor(Math.random()*1000)}.${ext}`;
+                    const { error: upErr } = await window.db.storage.from(bucket).upload(fileName, file, { cacheControl: '3600', upsert: false });
                     if (upErr) throw new Error(`Error subiendo ${prefijo}: ${upErr.message}`);
                     return `${PROJECT_URL}/storage/v1/object/public/${bucket}/${fileName}`;
                 };
@@ -1677,7 +1595,7 @@
                 if (filePrograma) updates.programa_url = await subirArchivo(filePrograma, 'programa');
                 if (fileAnalitico) updates.analitico_url = await subirArchivo(fileAnalitico, 'analitico');
                 if (fileDiploma) updates.diploma_base_url = await subirArchivo(fileDiploma, 'diploma_base');
-                const { error: updErr } = await db.from('renmcycf_aliados_cursos').update(updates).eq('id', cursoId).eq('aliado_id', aliadoId).eq('tenant_id', currentTenantId);
+                const { error: updErr } = await window.db.from('renmcycf_aliados_cursos').update(updates).eq('id', cursoId).eq('aliado_id', aliadoId).eq('tenant_id', window.currentTenantId);
                 if (updErr) throw updErr;
                 alert('✅ Curso actualizado correctamente.');
                 cerrarModalEdicion();
@@ -1698,7 +1616,7 @@
             const confirm2 = confirm(`¿Confirmás definitivamente la eliminación?`);
             if (!confirm2) return;
             try {
-                const { error } = await db.from('renmcycf_aliados_cursos').delete().eq('id', cursoId).eq('aliado_id', aliadoId).eq('tenant_id', currentTenantId);
+                const { error } = await window.db.from('renmcycf_aliados_cursos').delete().eq('id', cursoId).eq('aliado_id', aliadoId).eq('tenant_id', window.currentTenantId);
                 if (error) throw error;
                 alert('✅ Curso eliminado correctamente.');
                 cargarCursosInstituto();
@@ -1740,8 +1658,8 @@
                 const bucket = 'renmcycf-documentos';
                 const subirArchivo = async (file, prefijo) => {
                     const ext = file.name.split('.').pop();
-                    const fileName = `${currentTenantId}_${aliadoId}_${prefijo}_${ts}_${Math.floor(Math.random()*1000)}.${ext}`;
-                    const { error: upErr } = await db.storage.from(bucket).upload(fileName, file, { cacheControl: '3600', upsert: false });
+                    const fileName = `${window.currentTenantId}_${aliadoId}_${prefijo}_${ts}_${Math.floor(Math.random()*1000)}.${ext}`;
+                    const { error: upErr } = await window.db.storage.from(bucket).upload(fileName, file, { cacheControl: '3600', upsert: false });
                     if (upErr) throw new Error(`Error subiendo ${prefijo}: ${upErr.message}`);
                     return `${PROJECT_URL}/storage/v1/object/public/${bucket}/${fileName}`;
                 };
@@ -1751,14 +1669,14 @@
                     subirArchivo(fileDiploma, 'diploma_base')
                 ]);
                 const payload = {
-                    tenant_id: currentTenantId,
+                    tenant_id: window.currentTenantId,
                     aliado_id: aliadoId,
                     nombre_curso: nombre, carga_horaria: carga, cuerpo_docente: docentes,
                     programa_url: programaUrl, analitico_url: analiticoUrl, diploma_base_url: diplomaBaseUrl,
                     pos_x: posX, pos_y: posY, diseno_config: disenoConfig,
                     estado: 'PENDIENTE'
                 };
-                const { error: dbError } = await db.from('renmcycf_aliados_cursos').insert([payload]);
+                const { error: dbError } = await window.db.from('renmcycf_aliados_cursos').insert([payload]);
                 if (dbError) throw dbError;
                 alert("✅ Curso propuesto. Los 3 archivos fueron subidos y quedan pendientes de auditoría.");
                 document.getElementById('form-curso-b2b').reset();
@@ -1776,7 +1694,7 @@
         }
 
         // ==========================================
-        // 9. EMISIÓN DE CERTIFICADOS
+        // 8. EMISIÓN DE CERTIFICADOS
         // ==========================================
         async function cargarCertificadosInstituto() {
             const tbody = document.getElementById('certificados-body');
@@ -1787,7 +1705,7 @@
             tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Cargando...</td></tr>';
             selectCurso.innerHTML = '<option value="">-- Seleccionar Curso --</option>';
             try {
-                const { data: cursosAprobados, error: errCursos } = await db.from('renmcycf_aliados_cursos').select('id, nombre_curso, carga_horaria, diploma_base_url, pos_x, pos_y, diseno_config').eq('aliado_id', aliadoId).eq('tenant_id', currentTenantId).eq('estado', 'APROBADO');
+                const { data: cursosAprobados, error: errCursos } = await window.db.from('renmcycf_aliados_cursos').select('id, nombre_curso, carga_horaria, diploma_base_url, pos_x, pos_y, diseno_config').eq('aliado_id', aliadoId).eq('tenant_id', window.currentTenantId).eq('estado', 'APROBADO');
                 if (errCursos) throw errCursos;
                 cursosCargados = cursosAprobados || [];
                 if (!cursosAprobados || cursosAprobados.length === 0) {
@@ -1812,7 +1730,7 @@
                         selectCurso.appendChild(opt);
                     });
                 }
-                const { data: certificados, error: errCert } = await db.from('renmcycf_certificados_b2b').select('*').eq('aliado_id', aliadoId).eq('tenant_id', currentTenantId).order('created_at', { ascending: false });
+                const { data: certificados, error: errCert } = await window.db.from('renmcycf_certificados_b2b').select('*').eq('aliado_id', aliadoId).eq('tenant_id', window.currentTenantId).order('created_at', { ascending: false });
                 if (errCert) throw errCert;
                 if (!certificados || certificados.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Aún no se emitieron certificados.</td></tr>';
@@ -1893,7 +1811,7 @@
 
         async function inyectarLogoOficialFaldon() {
             try {
-                const { data: configTenant } = await db.from('renmcycf_config').select('logo_url').eq('tenant_id', currentTenantId).maybeSingle();
+                const { data: configTenant } = await window.db.from('renmcycf_config').select('logo_url').eq('tenant_id', window.currentTenantId).maybeSingle();
                 const wrapper = document.querySelector('#faldon-trazabilidad .logo-oficial-wrapper');
                 if (!wrapper) return;
                 wrapper.innerHTML = '';
@@ -1932,7 +1850,7 @@
             btn.disabled = true;
             lucide.createIcons();
             try {
-                const { data: aliadoDB, error: errAliado } = await db.from('renmcycf_aliados').select('saldo_timbres').eq('id', aliadoId).eq('tenant_id', currentTenantId).single();
+                const { data: aliadoDB, error: errAliado } = await window.db.from('renmcycf_aliados').select('saldo_timbres').eq('id', aliadoId).eq('tenant_id', window.currentTenantId).single();
                 if (errAliado) throw new Error("Error al consultar saldo.");
                 if (!aliadoDB.saldo_timbres || aliadoDB.saldo_timbres <= 0) throw new Error("Saldo Insuficiente. Adquiera más Derechos de Emisión para continuar emitiendo.");
                 btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> GENERANDO CERTIFICADO...';
@@ -1951,20 +1869,20 @@
                 pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 297, 210);
                 btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> ENCRIPTANDO Y SUBIENDO...';
                 const pdfBlob = pdf.output('blob');
-                const pdfFileName = `${currentTenantId}/B2B_${hashCert}.pdf`;
-                const { error: uploadError } = await db.storage.from('renmcycf-pdfs').upload(pdfFileName, pdfBlob, { cacheControl: '3600', upsert: true });
+                const pdfFileName = `${window.currentTenantId}/B2B_${hashCert}.pdf`;
+                const { error: uploadError } = await window.db.storage.from('renmcycf-pdfs').upload(pdfFileName, pdfBlob, { cacheControl: '3600', upsert: true });
                 if (uploadError) throw new Error("Error al guardar el documento en la nube.");
                 const pdfUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-pdfs/${pdfFileName}`;
                 btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> REGISTRANDO TRAZABILIDAD...';
-                const { error: insertError } = await db.from('renmcycf_certificados_b2b').insert([{
-                    tenant_id: currentTenantId,
+                const { error: insertError } = await window.db.from('renmcycf_certificados_b2b').insert([{
+                    tenant_id: window.currentTenantId,
                     aliado_id: aliadoId, curso_id: cursoId,
                     curso_nombre: cursoNombre,
                     alumno_nombres: nombres, alumno_apellidos: apellidos, alumno_dni: dni,
                     hash_cert: hashCert, pdf_url: pdfUrl
                 }]);
                 if (insertError) throw new Error("Error al registrar en base de datos.");
-                const { error: updateError } = await db.from('renmcycf_aliados').update({ saldo_timbres: aliadoDB.saldo_timbres - 1 }).eq('id', aliadoId).eq('tenant_id', currentTenantId);
+                const { error: updateError } = await window.db.from('renmcycf_aliados').update({ saldo_timbres: aliadoDB.saldo_timbres - 1 }).eq('id', aliadoId).eq('tenant_id', window.currentTenantId);
                 if (updateError) throw new Error("Emisión registrada, pero hubo error al descontar el Derecho de Emisión.");
                 alert(`✅ CERTIFICADO EMITIDO EXITOSAMENTE\nHash: ${hashCert}\nSaldo actualizado.`);
                 pdf.save(`Certificado_${dni}.pdf`);
@@ -1981,7 +1899,7 @@
         }
 
         // ==========================================
-        // 10. EMISIÓN MASIVA
+        // 9. EMISIÓN MASIVA
         // ==========================================
         function descargarPlantillaExcel() {
             const ws_data = [['NOMBRES', 'APELLIDOS', 'DNI'], ['Juan Carlos', 'Pérez', '35123456'], ['María Belén', 'Gómez', '38987654']];
@@ -2026,7 +1944,7 @@
                     const total = alumnosValidos.length;
                     if (total === 0) throw new Error("No se encontraron alumnos válidos.");
                     progresoTexto.innerText = "Validando saldo...";
-                    const { data: aliadoDB, error: errAliado } = await db.from('renmcycf_aliados').select('saldo_timbres').eq('id', aliadoId).eq('tenant_id', currentTenantId).single();
+                    const { data: aliadoDB, error: errAliado } = await window.db.from('renmcycf_aliados').select('saldo_timbres').eq('id', aliadoId).eq('tenant_id', window.currentTenantId).single();
                     if (errAliado || !aliadoDB) throw new Error("Error al consultar saldo.");
                     let saldoRestante = aliadoDB.saldo_timbres || 0;
                     if (saldoRestante < total) throw new Error(`Saldo Insuficiente. Intentas emitir ${total}, tienes ${saldoRestante}.`);
@@ -2057,14 +1975,14 @@
                         pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 297, 210);
                         progresoTexto.innerText = `Subiendo ${i + 1} de ${total}...`;
                         const pdfBlob = pdf.output('blob');
-                        const pdfFileName = `${currentTenantId}/B2B_${hashCert}.pdf`;
-                        const { error: uploadError } = await db.storage.from('renmcycf-pdfs').upload(pdfFileName, pdfBlob, { cacheControl: '3600', upsert: true });
+                        const pdfFileName = `${window.currentTenantId}/B2B_${hashCert}.pdf`;
+                        const { error: uploadError } = await window.db.storage.from('renmcycf-pdfs').upload(pdfFileName, pdfBlob, { cacheControl: '3600', upsert: true });
                         if (uploadError) throw new Error("Error al guardar en la nube.");
                         const pdfUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-pdfs/${pdfFileName}`;
                         const arrayBuffer = await pdfBlob.arrayBuffer();
                         zip.file(`Certificado_${dni}_${nombres.split(' ')[0]}.pdf`, arrayBuffer);
                         registrosInsert.push({
-                            tenant_id: currentTenantId,
+                            tenant_id: window.currentTenantId,
                             aliado_id: aliadoId, curso_id: cursoId,
                             curso_nombre: cursoNombre,
                             alumno_nombres: nombres, alumno_apellidos: apellidos, alumno_dni: dni,
@@ -2074,9 +1992,9 @@
                         saldoRestante--;
                     }
                     progresoTexto.innerText = "Registrando en base de datos...";
-                    const { error: insertError } = await db.from('renmcycf_certificados_b2b').insert(registrosInsert);
+                    const { error: insertError } = await window.db.from('renmcycf_certificados_b2b').insert(registrosInsert);
                     if (insertError) throw new Error("Error al registrar emisiones.");
-                    const { error: updateError } = await db.from('renmcycf_aliados').update({ saldo_timbres: saldoRestante }).eq('id', aliadoId).eq('tenant_id', currentTenantId);
+                    const { error: updateError } = await window.db.from('renmcycf_aliados').update({ saldo_timbres: saldoRestante }).eq('id', aliadoId).eq('tenant_id', window.currentTenantId);
                     if (updateError) console.error("Error descontando Derechos, pero los certificados se emitieron.");
                     progresoTexto.innerText = "Comprimiendo ZIP...";
                     progresoBarra.style.width = "100%";
@@ -2099,10 +2017,10 @@
         }
 
         // ==========================================
-        // 11. INIT
+        // 10. INIT
         // ==========================================
         window.addEventListener('DOMContentLoaded', async () => {
-            await initTenant();
+            await window.initTenant();
             aplicarTemaGuardado();
             _editorInitListeners();
             _initAltaImageWatcher();
