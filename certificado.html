@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Certificado · <span id="wl-title-institucion">Cargando...</span></title>
+    <meta name="description" content="Sistema oficial de verificación de certificados con trazabilidad y doble acreditación.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wlPrimary: 'var(--wl-primary)',
+                        wlSecondary: 'var(--wl-secondary)',
+                        wlTertiary: 'var(--wl-tertiary)',
+                        wlBackground: 'var(--wl-background)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --wl-primary: #0f172a;
+            --wl-secondary: #d4af37;
+            --wl-tertiary: #1e3a8a;
+            --wl-background: #f1f5f9;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--wl-background);
+            background-image:
+                radial-gradient(circle at 15% 20%, rgba(30, 58, 138, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(var(--wl-secondary), 0.10) 0%, transparent 45%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .text-gold { color: var(--wl-secondary); }
+        .bg-gold { background-color: var(--wl-secondary); }
+        .border-gold { border-color: var(--wl-secondary); }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up { animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+        @keyframes pulseRing {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .pulse-ring { animation: pulseRing 2s infinite; }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .shimmer-gold {
+            background: linear-gradient(90deg, var(--wl-secondary) 0%, #fde68a 50%, var(--wl-secondary) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .document-card {
+            background: #ffffff;
+            box-shadow:
+                0 1px 2px rgba(15, 23, 42, 0.04),
+                0 20px 50px -10px rgba(15, 23, 42, 0.15),
+                0 0 0 1px rgba(15, 23, 42, 0.05);
+        }
+
+        .corner-seal {
+            background: linear-gradient(135deg, var(--wl-secondary) 0%, #b45309 100%);
+            box-shadow: 0 4px 15px rgba(var(--wl-secondary), 0.4);
+        }
+
+        .loader-ring {
+            border: 4px solid rgba(15, 23, 42, 0.08);
+            border-top-color: var(--wl-secondary);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-18deg);
+            font-size: 140px;
+            font-weight: 900;
+            color: rgba(15, 23, 42, 0.025);
+            letter-spacing: 12px;
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER PÚBLICO -->
+    <header class="bg-wlPrimary text-white shadow-lg sticky top-0 z-40" style="background-color: var(--wl-primary);">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3 group">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform"
+                     style="background: linear-gradient(135deg, var(--wl-secondary) 0%, #b45309 100%);">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 id="wl-institucion-nombre" class="font-black tracking-tight text-lg leading-none">Cargando...</h1>
+                    <p class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--wl-secondary);">Verificador Oficial</p>
+                </div>
+            </a>
+            <a href="index.html" class="text-xs font-bold text-slate-300 transition-colors uppercase tracking-widest hidden md:flex items-center gap-2 hover:text-white">
+                <i data-lucide="home" class="w-4 h-4"></i> Volver al Inicio
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="max-w-4xl mx-auto px-4 md:px-6 py-12 md:py-16 relative z-10">
+
+        <!-- LOADER -->
+        <div id="loader-view" class="text-center py-24 animate-fade-up">
+            <div class="loader-ring mx-auto mb-6"></div>
+            <h2 class="text-xl font-black text-slate-800 mb-2">Verificando Autenticidad...</h2>
+            <p class="text-sm text-slate-500">Consultando el registro inmutable de <span class="wl-institucion-nombre">Cargando...</span></p>
+        </div>
+
+        <!-- ERROR VIEW -->
+        <div id="error-view" class="hidden text-center py-16 animate-fade-up">
+            <div class="w-24 h-24 rounded-full bg-red-100 border-4 border-red-200 flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="shield-x" class="w-12 h-12 text-red-500"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-3" id="error-title">URL Inválida</h1>
+            <p class="text-slate-600 mb-8 max-w-md mx-auto" id="error-message">
+                No se ha podido encontrar un código de certificado para verificar.
+            </p>
+            <a href="index.html" class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Portal Principal
+            </a>
+        </div>
+
+        <!-- RESULT VIEW -->
+        <div id="result-view" class="hidden space-y-8">
+
+            <!-- BANNER DE APROBACIÓN -->
+            <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-5 md:p-6 flex items-center gap-4 animate-fade-up shadow-sm">
+                <div class="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 pulse-ring">
+                    <i data-lucide="check" class="w-8 h-8 text-white" stroke-width="3"></i>
+                </div>
+                <div class="min-w-0">
+                    <h2 class="text-base md:text-lg font-black text-emerald-900 uppercase tracking-wide leading-tight">
+                        Certificado Académico Vigente
+                    </h2>
+                    <p class="text-xs md:text-sm text-emerald-700 font-semibold mt-0.5">
+                        Inmutabilidad Registrada · Validación Blockchain ASARI
+                    </p>
+                </div>
+                <div class="hidden md:flex ml-auto items-center gap-2 text-emerald-700 bg-white border border-emerald-200 rounded-full px-4 py-2 shrink-0">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Verificado</span>
+                </div>
+            </div>
+
+            <!-- DOCUMENTO PRINCIPAL -->
+            <article class="document-card rounded-2xl overflow-hidden relative animate-fade-up" style="animation-delay: 0.1s;">
+
+                <div class="watermark">AUTÉNTICO</div>
+
+                <div class="h-2" style="background: linear-gradient(to right, var(--wl-secondary), #f59e0b, #b45309);"></div>
+
+                <div class="p-8 md:p-12 relative z-10">
+
+                    <!-- ENCABEZADO INSTITUCIONAL -->
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-6 pb-8 border-b border-slate-200">
+                        <div class="shrink-0">
+                            <div id="instituto-logo-container" class="w-24 h-24 rounded-2xl bg-slate-100 border-2 border-slate-200 p-2 flex items-center justify-center overflow-hidden shadow-sm">
+                                <img id="instituto-logo" src="" class="w-full h-full object-contain hidden" alt="Logo Instituto">
+                                <i data-lucide="building-2" id="instituto-logo-icon" class="w-12 h-12 text-slate-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 text-center md:text-left min-w-0">
+                            <p class="text-[10px] font-black text-gold uppercase tracking-[0.25em] mb-2">Entidad Capacitadora Auditada</p>
+                            <h2 id="instituto-nombre" class="text-2xl md:text-3xl font-black text-slate-900 leading-tight mb-2">Cargando...</h2>
+                            <div class="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-full px-3 py-1">
+                                <i data-lucide="badge-check" class="w-3.5 h-3.5 text-blue-600"></i>
+                                <span class="text-[10px] font-black text-slate-600 uppercase tracking-wider">Auditado por Comité ASARI</span>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex corner-seal w-20 h-20 rounded-full items-center justify-center shrink-0 border-4 border-white shadow-lg">
+                            <i data-lucide="award" class="w-9 h-9 text-white"></i>
+                        </div>
+                    </div>
+
+                    <!-- DATOS DEL ALUMNO -->
+                    <div class="py-8 text-center">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.3em] mb-4">Se certifica que</p>
+                        <h1 id="alumno-nombre" class="text-3xl md:text-5xl font-black text-slate-900 uppercase tracking-tight leading-tight mb-4">
+                            NOMBRE DEL ALUMNO
+                        </h1>
+                        <div class="inline-flex items-center gap-3 bg-slate-900 text-white rounded-xl px-5 py-3 shadow-md">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">DNI</span>
+                            <span id="alumno-dni" class="font-mono font-bold text-lg tracking-wider">00.000.000</span>
+                        </div>
+                    </div>
+
+                    <!-- DATOS DEL CURSO -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6 md:p-8 mb-8">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.3em] text-center mb-4">Ha completado satisfactoriamente el programa</p>
+                        <h3 id="curso-nombre" class="text-xl md:text-2xl font-black text-blue-900 text-center uppercase tracking-wide leading-tight mb-4">
+                            NOMBRE DEL CURSO
+                        </h3>
+                        <div class="flex flex-wrap items-center justify-center gap-3">
+                            <div class="inline-flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2">
+                                <i data-lucide="clock" class="w-4 h-4 text-blue-600"></i>
+                                <span id="curso-carga" class="text-xs font-bold text-slate-700">Carga Horaria: --</span>
+                            </div>
+                            <div class="inline-flex items-center gap-2 bg-yellow-50 border border-yellow-300 rounded-full px-4 py-2">
+                                <i data-lucide="shield-check" class="w-4 h-4 text-gold-dark"></i>
+                                <span class="text-xs font-black text-yellow-800 uppercase tracking-wider">Programa Auditado por ASARI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN BLOCKCHAIN -->
+                    <div class="border-t-2 border-dashed border-slate-200 pt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-slate-900 rounded-xl p-4">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i data-lucide="link" class="w-4 h-4 text-gold"></i>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hash de Verificación (TxID)</span>
+                                </div>
+                                <p id="cert-hash" class="font-mono text-sm text-yellow-400 font-bold break-all">ASARI-XXXXXX-XXXX</p>
+                            </div>
+                            <div class="bg-slate-100 rounded-xl p-4 border border-slate-200">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i data-lucide="calendar-check" class="w-4 h-4 text-slate-600"></i>
+                                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Fecha de Emisión</span>
+                                </div>
+                                <p id="cert-fecha" class="font-mono text-sm text-slate-800 font-bold">--/--/----</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <a id="btn-download-pdf" href="#" target="_blank" rel="noopener"
+                               class="flex-1 inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition-colors">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                Descargar Copia en PDF
+                            </a>
+                            <button onclick="copiarHash()"
+                                    class="flex-1 inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-6 rounded-xl border border-slate-200 transition-colors">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                                Copiar Hash
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Footer del documento -->
+                    <div class="mt-8 pt-6 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest text-center md:text-left">
+                            © <span class="wl-institucion-nombre">Institución</span> · Sistema de Trazabilidad y Doble Acreditación
+                        </p>
+                        <p class="text-[10px] text-slate-400 font-mono">
+                            ID: <span id="cert-id" class="font-bold">--</span>
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="h-2" style="background: linear-gradient(to right, #b45309, #f59e0b, var(--wl-secondary));"></div>
+            </article>
+
+            <!-- UPSELL B2C -->
+            <section class="relative overflow-hidden rounded-2xl animate-fade-up" style="animation-delay: 0.2s;">
+                <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"></div>
+                <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-yellow-500/5 to-yellow-500/15"></div>
+                <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-yellow-500/10 blur-3xl"></div>
+                <div class="absolute -bottom-32 -left-20 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"></div>
+
+                <div class="relative p-8 md:p-12 text-center">
+                    <div class="inline-flex items-center gap-2 bg-yellow-500 text-slate-900 font-black text-[10px] uppercase tracking-widest rounded-full px-4 py-2 mb-6 shadow-lg shadow-yellow-500/30">
+                        <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+                        Beneficio Exclusivo para Egresados
+                    </div>
+
+                    <h2 class="text-3xl md:text-5xl font-black text-white mb-4 leading-tight">
+                        🎓 ¡Eleve su <span class="shimmer-gold">Estatus Profesional</span>!
+                    </h2>
+
+                    <p class="text-slate-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
+                        Al ser egresado de un programa auditado, usted califica para obtener su
+                        <strong class="text-yellow-400">Matrícula Nacional Oficial</strong>
+                        con un <strong class="text-yellow-400">20% de descuento</strong>.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
+                        <div class="flex items-center gap-3 bg-white/5 backdrop-blur border border-white/10 rounded-xl p-4 text-left">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center shrink-0">
+                                <i data-lucide="badge-check" class="w-5 h-5 text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-white uppercase tracking-wider">Validez Nacional</p>
+                                <p class="text-[10px] text-slate-400">Reconocimiento oficial</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white/5 backdrop-blur border border-white/10 rounded-xl p-4 text-left">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center shrink-0">
+                                <i data-lucide="briefcase" class="w-5 h-5 text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-white uppercase tracking-wider">Más Oportunidades</p>
+                                <p class="text-[10px] text-slate-400">Acceso laboral premium</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white/5 backdrop-blur border border-white/10 rounded-xl p-4 text-left">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center shrink-0">
+                                <i data-lucide="zap" class="w-5 h-5 text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-white uppercase tracking-wider">Trámite Ágil</p>
+                                <p class="text-[10px] text-slate-400">100% digital y rápido</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a id="btn-promo" href="#"
+                       class="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-slate-900 font-black text-sm md:text-base uppercase tracking-widest py-5 px-10 rounded-2xl transition-all shadow-2xl shadow-yellow-500/30 hover:shadow-yellow-500/50 hover:-translate-y-0.5">
+                        <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                        Solicitar Matrícula Ahora
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </a>
+
+                    <p class="text-[10px] text-slate-400 mt-4 uppercase tracking-widest font-bold">
+                        Descuento aplicado automáticamente al validar su certificado
+                    </p>
+                </div>
+            </section>
+
+            <!-- Footer informativo -->
+            <div class="text-center pt-4">
+                <p class="text-xs text-slate-500 mb-2">
+                    ¿Necesita ayuda con su verificación?
+                </p>
+                <a href="index.html" class="text-xs font-bold text-slate-700 uppercase tracking-widest transition-colors inline-flex items-center gap-1" style="--hover-color: var(--wl-secondary);">
+                    <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+                    Contactar Soporte
+                </a>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer público -->
+    <footer class="text-slate-400 py-6 mt-12" style="background-color: var(--wl-primary);">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <p class="text-[10px] uppercase tracking-widest font-bold">
+                © <span id="year"></span> <span class="wl-institucion-nombre">Institución</span> · Todos los derechos reservados
+            </p>
+        </div>
+    </footer>
+
+    <!-- SCRIPT -->
+    <script>
+        // ============================================================
+        // 1. CONFIGURACIÓN SUPABASE (SaaS multi-tenant)
+        // ============================================================
+        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
+        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+
+        let currentTenantId = null;
+        let tenantConfigGlobal = null;
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+        lucide.createIcons();
+
+        // ============================================================
+        // 2. BOOTSTRAPPER SaaS
+        // ============================================================
+        async function initTenant() {
+            try {
+                const hostname = window.location.hostname;
+                let tenantSlug = 'default';
+
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
+                } else {
+                    const parts = hostname.split('.');
+                    if (parts.length > 2 && !hostname.includes('github.io')) {
+                        tenantSlug = parts[0];
+                    } else {
+                        tenantSlug = 'renmcycf';
+                    }
+                }
+
+                console.log("Cargando entorno SaaS para:", tenantSlug);
+
+                const { data: tenantConfig, error } = await db
+                    .from('saas_tenants')
+                    .select('*')
+                    .eq('slug', tenantSlug)
+                    .eq('activo', true)
+                    .single();
+
+                if (error || !tenantConfig) throw new Error("Institución no encontrada o inactiva.");
+
+                currentTenantId = tenantConfig.id;
+                tenantConfigGlobal = tenantConfig;
+                localStorage.setItem('saas_current_tenant', currentTenantId);
+
+                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
+                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
+                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
+                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#f1f5f9');
+
+                const institucionNombres = document.querySelectorAll(
+                    '.wl-institucion-nombre, #wl-institucion-nombre, #wl-title-institucion'
+                );
+                institucionNombres.forEach(el => {
+                    if (el) el.innerText = tenantConfig.nombre_institucion;
+                });
+
+                if (document.title.includes('·')) {
+                    const prefijo = document.title.split('·')[0];
+                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
+                } else {
+                    document.title = tenantConfig.nombre_institucion;
+                }
+
+                return tenantConfig;
+            } catch (err) {
+                console.error("Error Bootstrapper SaaS:", err);
+                document.body.innerHTML = `
+                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
+                        <div>
+                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
+                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
+                        </div>
+                    </div>`;
+                throw err;
+            }
+        }
+
+        // ==========================================
+        // 3. HELPERS
+        // ==========================================
+        function mostrarError(titulo = 'URL Inválida', mensaje = 'No se ha podido encontrar un código de certificado para verificar.') {
+            document.getElementById('loader-view').classList.add('hidden');
+            document.getElementById('result-view').classList.add('hidden');
+            document.getElementById('error-view').classList.remove('hidden');
+            document.getElementById('error-title').textContent = titulo;
+            document.getElementById('error-message').textContent = mensaje;
+            lucide.createIcons();
+        }
+
+        function mostrarResultado() {
+            document.getElementById('loader-view').classList.add('hidden');
+            document.getElementById('error-view').classList.add('hidden');
+            document.getElementById('result-view').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function formatearFecha(fechaISO) {
+            if (!fechaISO) return '--/--/----';
+            try {
+                const d = new Date(fechaISO);
+                return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            } catch { return '--/--/----'; }
+        }
+
+        window.copiarHash = function() {
+            const hash = document.getElementById('cert-hash').textContent;
+            navigator.clipboard.writeText(hash).then(() => {
+                const btn = event.currentTarget;
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> <span class="text-emerald-600">Copiado</span>';
+                lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    lucide.createIcons();
+                }, 2000);
+            }).catch(() => alert('No se pudo copiar el hash al portapapeles.'));
+        };
+
+        // ==========================================
+        // 4. VERIFICACIÓN PRINCIPAL
+        // ==========================================
+        async function verificarCertificado() {
+            const params = new URLSearchParams(window.location.search);
+            const hash = params.get('hash');
+
+            if (!hash || hash.trim() === '') {
+                mostrarError(
+                    'URL Inválida',
+                    'No se ha proporcionado un código de verificación válido en la URL. Verifique el enlace o el código QR.'
+                );
+                return;
+            }
+
+            try {
+                // 1) Consultar el certificado por hash (aislado por tenant)
+                let queryCert = db
+                    .from('renmcycf_certificados_b2b')
+                    .select('*')
+                    .eq('hash_cert', hash.trim());
+
+                if (currentTenantId) {
+                    queryCert = queryCert.eq('tenant_id', currentTenantId);
+                }
+
+                const { data: cert, error: certError } = await queryCert.single();
+
+                if (certError || !cert) {
+                    mostrarError(
+                        'Documento Apócrifo',
+                        'El código de verificación ingresado no corresponde a ningún certificado registrado en el sistema oficial.'
+                    );
+                    return;
+                }
+
+                // 2) Consultar aliado (instituto emisor)
+                let aliado = null;
+                if (cert.aliado_id) {
+                    let queryAliado = db
+                        .from('renmcycf_aliados')
+                        .select('nombre, logo_url')
+                        .eq('id', cert.aliado_id);
+
+                    if (cert.tenant_id) {
+                        queryAliado = queryAliado.eq('tenant_id', cert.tenant_id);
+                    }
+
+                    const { data } = await queryAliado.single();
+                    aliado = data;
+                }
+
+                // 3) Consultar curso
+                let curso = null;
+                if (cert.curso_id) {
+                    let queryCurso = db
+                        .from('renmcycf_aliados_cursos')
+                        .select('nombre_curso, carga_horaria')
+                        .eq('id', cert.curso_id);
+
+                    if (cert.tenant_id) {
+                        queryCurso = queryCurso.eq('tenant_id', cert.tenant_id);
+                    }
+
+                    const { data } = await queryCurso.single();
+                    curso = data;
+                }
+
+                // 4) Renderizar datos
+                document.getElementById('instituto-nombre').textContent =
+                    aliado?.nombre || 'Institución Aliada';
+
+                if (aliado?.logo_url) {
+                    const logo = document.getElementById('instituto-logo');
+                    const icon = document.getElementById('instituto-logo-icon');
+                    logo.src = aliado.logo_url;
+                    logo.classList.remove('hidden');
+                    icon.classList.add('hidden');
+                }
+
+                const nombres = cert.alumno_nombres || cert.alumno_nombre || '';
+                const apellidos = cert.alumno_apellidos || '';
+                document.getElementById('alumno-nombre').textContent =
+                    `${nombres} ${apellidos}`.trim().toUpperCase() || 'ALUMNO';
+                document.getElementById('alumno-dni').textContent =
+                    cert.alumno_dni || '--';
+
+                document.getElementById('curso-nombre').textContent =
+                    curso?.nombre_curso || cert.curso_nombre || 'Programa de Formación Profesional';
+                document.getElementById('curso-carga').textContent =
+                    `Carga Horaria: ${curso?.carga_horaria || cert.carga_horaria || 'No especificada'}`;
+
+                document.getElementById('cert-hash').textContent = cert.hash_cert || hash;
+                document.getElementById('cert-fecha').textContent = formatearFecha(cert.created_at);
+                document.getElementById('cert-id').textContent = cert.id ? cert.id.toString().slice(0, 8).toUpperCase() : '--';
+
+                const btnPDF = document.getElementById('btn-download-pdf');
+                if (cert.pdf_url) {
+                    btnPDF.href = cert.pdf_url;
+                    btnPDF.classList.remove('hidden');
+                } else {
+                    btnPDF.classList.add('hidden');
+                }
+
+                // 5) MAGIA B2C: link al index con promo_hash
+                const btnPromo = document.getElementById('btn-promo');
+                if (btnPromo) {
+                    btnPromo.href = `index.html?promo_hash=${encodeURIComponent(cert.hash_cert)}${currentTenantId ? '' : ''}`;
+                }
+
+                mostrarResultado();
+
+            } catch (err) {
+                console.error('Error de verificación:', err);
+                mostrarError(
+                    'Error de Conexión',
+                    'No se pudo verificar el certificado en este momento. Por favor, intente nuevamente en unos instantes.'
+                );
+            }
+        }
+
+        // ==========================================
+        // 5. INIT
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initTenant();
+            lucide.createIcons();
+            verificarCertificado();
+        });
+    </script>
+</body>
+</html>
