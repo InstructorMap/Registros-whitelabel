@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="Únase a la red de capacitación auditada. Certificados con doble sello, trazabilidad inmutable y visibilidad institucional nacional.">
+    <title>Alianzas Institucionales · <span id="wl-title-institucion">Cargando...</span></title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wlPrimary: 'var(--wl-primary)',
+                        wlSecondary: 'var(--wl-secondary)',
+                        wlTertiary: 'var(--wl-tertiary)',
+                        wlBackground: 'var(--wl-background)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        title: ['"Playfair Display"', 'serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --wl-primary: #0f172a;
+            --wl-secondary: #d4af37;
+            --wl-tertiary: #1e3a8a;
+            --wl-background: #050914;
+        }
+
+        * { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--wl-background);
+            color: #e2e8f0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-title { font-family: 'Playfair Display', serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        .alianzas-hero-bg {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0.25;
+            filter: brightness(0.4) saturate(1.2);
+            pointer-events: none; display: none;
+        }
+        .alianzas-hero-bg.loaded { display: block; }
+
+        .bg-grid-subtle {
+            background-image:
+                linear-gradient(rgba(var(--wl-secondary), 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(var(--wl-secondary), 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .bg-dots-subtle {
+            background-image: radial-gradient(rgba(var(--wl-secondary), 0.12) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .hero-glow {
+            position: absolute; border-radius: 50%;
+            filter: blur(140px); pointer-events: none;
+        }
+
+        .divider-gold {
+            height: 3px; width: 80px;
+            background: linear-gradient(90deg, transparent, var(--wl-secondary), transparent);
+            margin: 0 auto;
+        }
+
+        .btn-gold {
+            background: var(--wl-secondary);
+            color: var(--wl-primary);
+            font-weight: 900; text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--wl-secondary);
+            position: relative; overflow: hidden;
+        }
+        .btn-gold:hover {
+            background: #e6c14a;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 50px -10px rgba(var(--wl-secondary), 0.5);
+        }
+        .btn-gold::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.7s ease;
+        }
+        .btn-gold:hover::before { transform: translateX(100%); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--wl-secondary);
+            border: 1.5px solid rgba(var(--wl-secondary), 0.4);
+            font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+        }
+        .btn-outline:hover {
+            background: rgba(var(--wl-secondary), 0.08);
+            border-color: var(--wl-secondary);
+        }
+
+        .card-premium {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.55), rgba(10, 17, 40, 0.75));
+            border: 1px solid rgba(var(--wl-secondary), 0.12);
+            border-radius: 18px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-premium:hover {
+            border-color: rgba(var(--wl-secondary), 0.4);
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7), 0 0 40px -20px rgba(var(--wl-secondary), 0.35);
+        }
+
+        .price-card {
+            position: relative;
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.7), rgba(5, 9, 20, 0.85));
+            border: 1.5px solid rgba(var(--wl-secondary), 0.18);
+            border-radius: 20px;
+            transition: all 0.4s ease;
+        }
+        .price-card:hover {
+            border-color: var(--wl-secondary);
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px -20px rgba(var(--wl-secondary), 0.25);
+        }
+        .price-card.featured {
+            border-color: var(--wl-secondary);
+            background: linear-gradient(145deg, rgba(var(--wl-secondary), 0.12), rgba(5, 9, 20, 0.9));
+            box-shadow: 0 25px 60px -20px rgba(var(--wl-secondary), 0.35);
+        }
+        .price-card.featured::before {
+            content: 'MÁS ELEGIDA';
+            position: absolute; top: -13px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--wl-secondary);
+            color: var(--wl-primary);
+            font-size: 9px; font-weight: 900;
+            padding: 5px 14px; border-radius: 20px;
+            letter-spacing: 0.15em;
+        }
+
+        .form-input {
+            width: 100%; padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(var(--wl-secondary), 0.15);
+            border-radius: 10px; color: #ffffff;
+            font-size: 0.9rem;
+            transition: all 0.3s ease; outline: none;
+        }
+        .form-input::placeholder { color: #64748b; }
+        .form-input:focus {
+            border-color: var(--wl-secondary);
+            box-shadow: 0 0 0 3px rgba(var(--wl-secondary), 0.15);
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .form-label {
+            display: block; font-size: 0.68rem; font-weight: 800;
+            color: #94a3b8; text-transform: uppercase;
+            letter-spacing: 0.1em; margin-bottom: 8px;
+        }
+
+        .circuit-node {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 20px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1.5px solid rgba(var(--wl-secondary), 0.2);
+            border-radius: 12px;
+            font-size: 11px; font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #cbd5e1; white-space: nowrap;
+        }
+        .circuit-node.active {
+            background: linear-gradient(145deg, rgba(var(--wl-secondary), 0.15), rgba(10, 17, 40, 0.9));
+            border-color: var(--wl-secondary);
+            color: var(--wl-secondary);
+            box-shadow: 0 10px 30px -10px rgba(var(--wl-secondary), 0.5);
+        }
+        .circuit-arrow {
+            color: var(--wl-secondary);
+            font-size: 18px; font-weight: 900;
+            opacity: 0.6;
+        }
+
+        .contrato-doc {
+            background: linear-gradient(180deg, #fefefe 0%, #f8f6ef 100%);
+            color: var(--wl-primary);
+            border-radius: 16px;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(var(--wl-secondary), 0.3);
+            position: relative; overflow: hidden;
+        }
+        .contrato-doc::before {
+            content: ''; position: absolute;
+            top: 0; left: 0; right: 0; height: 6px;
+            background: linear-gradient(90deg, var(--wl-primary) 0%, var(--wl-secondary) 50%, var(--wl-primary) 100%);
+        }
+        .contrato-watermark {
+            position: absolute; right: -40px; bottom: -40px;
+            opacity: 0.04; pointer-events: none;
+        }
+
+        .sello-asari {
+            position: absolute; right: 32px; bottom: 32px;
+            width: 110px; height: 110px;
+            border: 3px dashed rgba(var(--wl-secondary), 0.35);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transform: rotate(-15deg);
+            opacity: 0.55; pointer-events: none;
+        }
+        .sello-asari-inner {
+            width: 88px; height: 88px;
+            border: 2px solid rgba(var(--wl-secondary), 0.55);
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: rgba(var(--wl-secondary), 0.05);
+        }
+
+        .clausula {
+            display: flex; gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px dashed rgba(15, 23, 42, 0.12);
+        }
+        .clausula:last-child { border-bottom: none; }
+        .clausula-num {
+            flex-shrink: 0; width: 28px; height: 28px;
+            border-radius: 50%;
+            background: var(--wl-primary);
+            color: var(--wl-secondary);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 900; font-size: 12px;
+        }
+
+        @keyframes pulseGold {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(var(--wl-secondary), 0.5); }
+            50% { box-shadow: 0 0 0 14px rgba(var(--wl-secondary), 0); }
+        }
+        .pulse-gold { animation: pulseGold 2.2s infinite; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--wl-background); }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--wl-secondary); }
+
+        .mockup-diploma-wrap {
+            position: relative; width: 100%; max-width: 780px;
+            margin: 0 auto; padding: 20px 0 100px;
+        }
+        .mockup-diploma {
+            position: relative;
+            background: linear-gradient(135deg, #fefefe 0%, #f8f5ee 50%, #fefefe 100%);
+            border: 6px double var(--wl-secondary);
+            border-radius: 8px;
+            padding: 36px 44px 44px;
+            box-shadow: 0 30px 80px -20px rgba(0,0,0,0.5), inset 0 0 60px rgba(var(--wl-secondary),0.08);
+            aspect-ratio: 1.45 / 1;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between;
+            text-align: center; overflow: hidden;
+        }
+        .mockup-diploma::before {
+            content: 'Nombre Institucional';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-22deg);
+            font-family: 'Playfair Display', serif;
+            font-weight: 900; font-size: 130px;
+            color: rgba(var(--wl-secondary),0.06);
+            letter-spacing: 0.08em;
+            pointer-events: none; white-space: nowrap; z-index: 0;
+        }
+        .mockup-diploma > * { position: relative; z-index: 1; }
+
+        .mockup-diploma .diploma-header {
+            display: flex; align-items: center; justify-content: center;
+            gap: 14px; padding-bottom: 12px;
+            border-bottom: 2px solid rgba(var(--wl-secondary),0.35);
+            width: 100%;
+        }
+        .mockup-diploma .diploma-header .diploma-logo {
+            width: 54px; height: 54px; border-radius: 50%;
+            background: linear-gradient(145deg, var(--wl-primary), #1e293b);
+            border: 2px solid var(--wl-secondary);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(var(--wl-primary),0.25);
+            overflow: hidden;
+        }
+        .mockup-diploma .diploma-header .diploma-logo img {
+            width: 100%; height: 100%;
+            object-fit: contain; padding: 4px;
+        }
+        .mockup-diploma .diploma-header .diploma-brand {
+            text-align: left; line-height: 1.1;
+        }
+        .mockup-diploma .diploma-header .diploma-brand strong {
+            display: block;
+            font-family: 'Playfair Display', serif;
+            font-weight: 900; font-size: 15px;
+            color: var(--wl-primary);
+            letter-spacing: 0.03em;
+        }
+        .mockup-diploma .diploma-header .diploma-brand span {
+            display: block; font-size: 8px; font-weight: 800;
+            color: var(--wl-secondary);
+            letter-spacing: 0.22em; text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .mockup-diploma .diploma-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900; font-size: 22px;
+            color: var(--wl-primary);
+            letter-spacing: 0.04em; text-transform: uppercase;
+            margin: 10px 0 2px;
+        }
+        .mockup-diploma .diploma-subtitle {
+            font-size: 10px; font-weight: 700;
+            color: var(--wl-secondary);
+            letter-spacing: 0.32em; text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .mockup-diploma .diploma-line {
+            width: 70%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--wl-secondary), transparent);
+            margin: 6px auto;
+        }
+        .mockup-diploma .diploma-body {
+            font-size: 11px; color: #64748b; margin: 4px 0;
+        }
+        .mockup-diploma .diploma-name {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900; font-size: 22px;
+            color: var(--wl-primary);
+            letter-spacing: 0.02em; margin: 4px 0 8px;
+        }
+        .mockup-diploma .diploma-program {
+            font-size: 11px; font-weight: 700;
+            color: #334155; text-transform: uppercase;
+            letter-spacing: 0.08em; margin-bottom: 12px;
+        }
+        .mockup-diploma .diploma-footer {
+            display: flex; align-items: flex-end;
+            justify-content: space-between; width: 100%;
+            margin-top: auto; padding-top: 12px;
+            border-top: 1px solid rgba(var(--wl-secondary),0.25);
+        }
+        .mockup-diploma .diploma-sign {
+            text-align: center; flex: 1;
+        }
+        .mockup-diploma .diploma-sign .sign-line {
+            width: 90px; height: 1px;
+            background: var(--wl-primary);
+            margin: 0 auto 4px; opacity: 0.5;
+        }
+        .mockup-diploma .diploma-sign small {
+            font-size: 8px; font-weight: 800;
+            color: #64748b; text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+        .mockup-diploma .diploma-seal {
+            width: 62px; height: 62px; border-radius: 50%;
+            background: linear-gradient(145deg, var(--wl-secondary), #b8941f);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 20px rgba(var(--wl-secondary),0.5), inset 0 0 0 3px rgba(255,255,255,0.4);
+            flex-shrink: 0; position: relative;
+        }
+        .mockup-diploma .diploma-seal::after {
+            content: ''; position: absolute; inset: 4px;
+            border: 1px dashed rgba(255,255,255,0.6);
+            border-radius: 50%;
+        }
+
+        .mockup-credencial {
+            position: absolute; bottom: 0; right: 0;
+            width: 300px;
+            background: linear-gradient(145deg, var(--wl-primary) 0%, #1a2744 50%, var(--wl-primary) 100%);
+            border: 2px solid var(--wl-secondary);
+            border-radius: 16px; padding: 16px;
+            box-shadow: 0 40px 80px -15px rgba(0,0,0,0.85), 0 0 50px rgba(var(--wl-secondary),0.25);
+            transform: translate(24px, 46px) rotate(-3deg);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10; overflow: hidden;
+        }
+        .mockup-credencial::before {
+            content: ''; position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(var(--wl-secondary),0.15) 0%, transparent 45%);
+            pointer-events: none;
+        }
+        .mockup-credencial:hover {
+            transform: translate(14px, 26px) rotate(0deg) scale(1.04);
+        }
+        .mockup-credencial .cred-header {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(var(--wl-secondary),0.25);
+            margin-bottom: 12px;
+        }
+        .mockup-credencial .cred-header .cred-logo {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid var(--wl-secondary);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; overflow: hidden;
+        }
+        .mockup-credencial .cred-header .cred-logo img {
+            width: 100%; height: 100%;
+            object-fit: contain; padding: 3px;
+        }
+        .mockup-credencial .cred-header .cred-brand {
+            flex: 1; text-align: left;
+            margin-left: 8px; line-height: 1.1;
+        }
+        .mockup-credencial .cred-header .cred-brand strong {
+            display: block;
+            font-family: 'Playfair Display', serif;
+            font-weight: 900; font-size: 10px;
+            color: #ffffff; letter-spacing: 0.05em;
+        }
+        .mockup-credencial .cred-header .cred-brand span {
+            display: block; font-size: 6.5px; font-weight: 800;
+            color: var(--wl-secondary);
+            letter-spacing: 0.18em; text-transform: uppercase;
+            margin-top: 1px;
+        }
+        .mockup-credencial .cred-header .cred-chip {
+            width: 22px; height: 16px; border-radius: 3px;
+            background: linear-gradient(135deg, #facc15, var(--wl-secondary));
+            border: 1px solid rgba(0,0,0,0.15);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.6);
+            flex-shrink: 0;
+        }
+        .mockup-credencial .cred-body {
+            display: flex; gap: 10px; align-items: flex-start;
+        }
+        .mockup-credencial .cred-photo {
+            width: 62px; height: 74px; border-radius: 6px;
+            background: linear-gradient(145deg, #334155, #1e293b);
+            border: 2px solid var(--wl-secondary);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; flex-shrink: 0; position: relative;
+        }
+        .mockup-credencial .cred-photo::after {
+            content: ''; position: absolute;
+            bottom: 0; left: 0; right: 0; height: 3px;
+            background: var(--wl-secondary);
+        }
+        .mockup-credencial .cred-info {
+            flex: 1; min-width: 0; text-align: left;
+        }
+        .mockup-credencial .cred-info .cred-name {
+            font-size: 11px; font-weight: 800;
+            color: #ffffff; line-height: 1.15; margin-bottom: 2px;
+        }
+        .mockup-credencial .cred-info .cred-cat {
+            font-size: 7px; font-weight: 900;
+            color: var(--wl-secondary);
+            letter-spacing: 0.1em; text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .mockup-credencial .cred-info .cred-row {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 7px; color: #94a3b8;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 2px;
+        }
+        .mockup-credencial .cred-qr {
+            width: 58px; height: 58px; background: #ffffff;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px rgba(var(--wl-secondary),0.6), 0 0 40px rgba(var(--wl-secondary),0.3);
+            animation: qrGlow 2s ease-in-out infinite alternate;
+            flex-shrink: 0;
+        }
+        .mockup-credencial .cred-footer {
+            margin-top: 10px; padding-top: 8px;
+            border-top: 1px solid rgba(var(--wl-secondary),0.2);
+            display: flex; align-items: center;
+            justify-content: space-between;
+        }
+        .mockup-credencial .cred-footer .cred-valid {
+            display: flex; align-items: center; gap: 3px;
+            font-size: 7px; font-weight: 900;
+            color: #10b981; text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .mockup-credencial .cred-footer .cred-id {
+            font-size: 6.5px; color: #64748b;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.05em;
+        }
+        @keyframes qrGlow {
+            from { box-shadow: 0 0 15px rgba(var(--wl-secondary),0.5), 0 0 30px rgba(var(--wl-secondary),0.2); }
+            to { box-shadow: 0 0 25px rgba(var(--wl-secondary),0.9), 0 0 55px rgba(var(--wl-secondary),0.5); }
+        }
+
+        .mockup-badge {
+            position: absolute; bottom: 28px; right: 340px;
+            background: #ffffff;
+            border: 2px solid var(--wl-secondary);
+            border-radius: 50px; padding: 6px 14px;
+            font-size: 9px; font-weight: 900;
+            color: var(--wl-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            z-index: 11;
+            display: flex; align-items: center; gap: 6px;
+            white-space: nowrap;
+        }
+        .mockup-badge i { color: var(--wl-secondary); }
+
+        @media (max-width: 768px) {
+            .mockup-diploma { padding: 22px 18px 26px; aspect-ratio: 1.1 / 1; }
+            .mockup-diploma::before { font-size: 70px; }
+            .mockup-diploma .diploma-header .diploma-logo { width: 40px; height: 40px; }
+            .mockup-diploma .diploma-title { font-size: 15px; }
+            .mockup-diploma .diploma-name { font-size: 15px; }
+            .mockup-diploma .diploma-seal { width: 46px; height: 46px; }
+            .mockup-credencial { width: 230px; padding: 12px; transform: translate(12px, 34px) rotate(-3deg); }
+            .mockup-credencial .cred-qr { width: 46px; height: 46px; }
+            .mockup-credencial .cred-photo { width: 50px; height: 60px; }
+            .mockup-badge { right: 250px; bottom: 20px; font-size: 8px; padding: 5px 10px; }
+            .mockup-diploma-wrap { padding: 10px 0 70px; }
+        }
+        @media (max-width: 520px) {
+            .mockup-badge { display: none; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- TOP BAR -->
+    <div class="text-white text-[10px] md:text-[11px] py-3 px-4 text-center font-black tracking-[0.2em] md:tracking-[0.3em] uppercase relative overflow-hidden"
+         style="background-color: var(--wl-primary); border-bottom: 1px solid rgba(var(--wl-secondary), 0.2);">
+        <span class="relative z-10"><span id="wl-institucion-nombre-top">Cargando...</span> · Portal de Alianzas Institucionales</span>
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-wlSecondary/10 to-transparent animate-pulse"></div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-50 backdrop-blur-md" style="background-color: rgba(var(--wl-primary), 0.95); border-bottom: 1px solid rgba(var(--wl-secondary), 0.1);">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center overflow-hidden"
+                     style="background-color: var(--wl-primary); border: 2px solid var(--wl-secondary);">
+                    <i data-lucide="fingerprint" id="nav-logo-icon" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                    <img id="nav-logo-img" src="" class="w-full h-full object-contain p-1.5 hidden" alt="Logo Institucional">
+                </div>
+                <div class="leading-tight hidden sm:block">
+                    <span id="wl-institucion-nombre" class="font-title font-black text-lg block text-white tracking-tight">Cargando...</span>
+                    <span class="text-[9px] font-bold uppercase tracking-[0.25em]" style="color: var(--wl-secondary);">Alianzas Institucionales</span>
+                </div>
+            </a>
+            <div class="flex items-center gap-3 md:gap-5">
+                <a href="#servicios" class="hidden md:inline-block text-[11px] font-bold text-slate-300 uppercase tracking-[0.15em] transition-colors hover:text-white">Servicios</a>
+                <a href="#precios" class="hidden md:inline-block text-[11px] font-bold text-slate-300 uppercase tracking-[0.15em] transition-colors hover:text-white">Tarifas</a>
+                <a href="#solicitud" class="btn-gold px-5 py-2.5 rounded-lg text-[11px]">Solicitar Convenio</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="relative overflow-hidden border-b" style="background-color: var(--wl-background); border-color: rgba(var(--wl-secondary), 0.15);">
+        <img id="hero-bg-img" src="" class="alianzas-hero-bg" alt="Fondo institucional">
+        <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to bottom right, rgba(var(--wl-background),0.95), rgba(var(--wl-primary),0.85), rgba(var(--wl-background),0.95));"></div>
+        <div class="absolute inset-0 bg-grid-subtle opacity-30 pointer-events-none"></div>
+
+        <div class="hero-glow" style="width: 500px; height: 500px; top: -200px; left: -150px; background: rgba(var(--wl-secondary), 0.15);"></div>
+        <div class="hero-glow" style="width: 400px; height: 400px; bottom: -150px; right: -100px; background: rgba(30, 58, 138, 0.2);"></div>
+
+        <div class="relative max-w-7xl mx-auto px-4 md:px-6 py-20 md:py-32">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-7" data-aos="fade-right">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6"
+                         style="background: rgba(var(--wl-secondary), 0.1); color: var(--wl-secondary); border: 1px solid rgba(var(--wl-secondary), 0.3);">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        Red de Capacitación Auditada
+                    </div>
+
+                    <h1 class="font-title text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 leading-[1.05] tracking-tight">
+                        Eleve el prestigio de su institución con una<br>
+                        <span class="text-transparent bg-clip-text" style="background-image: linear-gradient(to right, var(--wl-secondary), #fef08a, var(--wl-secondary)); -webkit-background-clip: text; background-clip: text;">credencial que habla por sí sola.</span>
+                    </h1>
+
+                    <p class="text-slate-300 text-base md:text-lg leading-relaxed mb-8 max-w-2xl font-light">
+                        Únase a la red de capacitación auditada y brinde a sus alumnos certificados con <strong class="text-white font-semibold">trazabilidad inmutable</strong>, verificación por QR y el respaldo tecnológico del Registro Institucional.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-3 mb-12">
+                        <a href="#solicitud" class="btn-gold px-8 py-4 rounded-xl text-sm inline-flex items-center justify-center gap-2">
+                            <i data-lucide="handshake" class="w-5 h-5"></i> Iniciar Convenio
+                        </a>
+                        <a href="#servicios" class="btn-outline px-8 py-4 rounded-xl text-sm inline-flex items-center justify-center gap-2">
+                            <i data-lucide="eye" class="w-5 h-5"></i> Ver Servicios
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+                        <div>
+                            <div class="font-mono font-black text-2xl md:text-3xl" style="color: var(--wl-secondary);">100%</div>
+                            <div class="text-[10px] text-slate-400 uppercase tracking-[0.15em] font-bold mt-1">Auditoría documental</div>
+                        </div>
+                        <div>
+                            <div class="font-mono font-black text-2xl md:text-3xl" style="color: var(--wl-secondary);">QR</div>
+                            <div class="text-[10px] text-slate-400 uppercase tracking-[0.15em] font-bold mt-1">Verificación pública</div>
+                        </div>
+                        <div>
+                            <div class="font-mono font-black text-2xl md:text-3xl" style="color: var(--wl-secondary);">24/48h</div>
+                            <div class="text-[10px] text-slate-400 uppercase tracking-[0.15em] font-bold mt-1">Respuesta del Comité</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 flex justify-center" data-aos="fade-left" data-aos-delay="200">
+                    <div class="mockup-diploma-wrap">
+                        <div class="mockup-diploma">
+                            <div class="diploma-header">
+                                <div class="diploma-logo">
+                                    <i data-lucide="fingerprint" id="mockup-diploma-logo-icon" class="w-6 h-6" style="color: var(--wl-secondary);"></i>
+                                    <img id="mockup-diploma-logo-img" src="" class="hidden" alt="Logo">
+                                </div>
+                                <div class="diploma-brand">
+                                    <strong id="mockup-diploma-inst-nombre">Nombre Institucional</strong>
+                                    <span>Registro Institucional</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="diploma-subtitle">Certificado Oficial</p>
+                                <h4 class="diploma-title">Instructorado Profesional</h4>
+                                <div class="diploma-line"></div>
+                                <p class="diploma-body">Otorgado a</p>
+                                <p class="diploma-name">Juan Pérez</p>
+                                <p class="diploma-program">Por haber completado satisfactoriamente el programa de estudios</p>
+                            </div>
+
+                            <div class="diploma-footer">
+                                <div class="diploma-sign">
+                                    <div class="sign-line"></div>
+                                    <small>Dirección Académica</small>
+                                </div>
+                                <div class="diploma-seal">
+                                    <i data-lucide="award" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div class="diploma-sign">
+                                    <div class="sign-line"></div>
+                                    <small>Comité Evaluador</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mockup-credencial">
+                            <div class="cred-header">
+                                <div class="cred-logo">
+                                    <i data-lucide="fingerprint" id="mockup-credencial-logo-icon" class="w-4 h-4" style="color: var(--wl-primary);"></i>
+                                    <img id="mockup-credencial-logo-img" src="" class="hidden" alt="Logo">
+                                </div>
+                                <div class="cred-brand">
+                                    <strong id="mockup-credencial-inst-nombre">Nombre Institucional</strong>
+                                    <span>Credencial Profesional</span>
+                                </div>
+                                <div class="cred-chip"></div>
+                            </div>
+
+                            <div class="cred-body">
+                                <div class="cred-photo">
+                                    <i data-lucide="user" class="w-7 h-7 text-slate-400"></i>
+                                </div>
+                                <div class="cred-info">
+                                    <p class="cred-name">Juan Pérez</p>
+                                    <p class="cred-cat">Cat. A3 · Instructor</p>
+                                    <p class="cred-row"><i data-lucide="id-card" class="w-2.5 h-2.5"></i> DNI 35.123.456</p>
+                                    <p class="cred-row"><i data-lucide="hash" class="w-2.5 h-2.5"></i> RN-2026-XXXX</p>
+                                </div>
+                                <div class="cred-qr">
+                                    <i data-lucide="qr-code" class="w-8 h-8" style="color: var(--wl-primary);"></i>
+                                </div>
+                            </div>
+
+                            <div class="cred-footer">
+                                <span class="cred-valid"><i data-lucide="check-circle" class="w-3 h-3"></i> Válido 2026</span>
+                                <span class="cred-id">institucion.com/verificar</span>
+                            </div>
+                        </div>
+
+                        <div class="mockup-badge">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            Carnet digital + QR verificable
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SERVICIO 1: VISIBILIDAD Y POSICIONAMIENTO -->
+    <section id="servicios" class="relative py-20 md:py-28 border-b overflow-hidden" style="border-color: rgba(var(--wl-secondary), 0.1);">
+        <div class="absolute inset-0 bg-dots-subtle opacity-20 pointer-events-none"></div>
+
+        <div class="relative max-w-7xl mx-auto px-4 md:px-6">
+            <div class="text-center mb-16 max-w-3xl mx-auto" data-aos="fade-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-5"
+                     style="background: rgba(var(--wl-secondary), 0.1); color: var(--wl-secondary); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                    <i data-lucide="megaphone" class="w-3.5 h-3.5"></i> Servicio 01
+                </div>
+                <h2 class="font-title text-3xl md:text-5xl font-black text-white mb-4 tracking-tight leading-tight">
+                    Visibilidad y<br>Posicionamiento Institucional
+                </h2>
+                <div class="divider-gold mb-6"></div>
+                <p class="text-slate-400 text-base md:text-lg leading-relaxed">
+                    Su institución, presente en la vitrina nacional del sector.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-16">
+                <div data-aos="fade-right">
+                    <h3 class="font-title text-2xl md:text-3xl font-black text-white mb-6 leading-tight">
+                        Deje de ser un instituto más.<br>
+                        <span style="color: var(--wl-secondary);">Conviértase en referente nacional.</span>
+                    </h3>
+                    <p class="text-slate-300 leading-relaxed mb-6">
+                        Al adherirse, su logo, teléfono, dirección web y cursos verificados aparecen en <strong class="text-white">la página principal del Registro</strong>, en la sección de instituciones auditadas y en el <strong class="text-white">mapa geográfico nacional</strong>.
+                    </p>
+                    <p class="text-slate-400 leading-relaxed mb-6">
+                        Cada persona que busque capacitación en su provincia lo encontrará a usted primero. Derivamos tráfico directo a su web y redes sociales.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm text-slate-200">
+                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <span>Perfil institucional con logo, web, teléfono y descripción</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-slate-200">
+                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <span>Presencia en el mapa geográfico nacional por provincia</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-slate-200">
+                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <span>Sello digital "Entidad Auditada" verificable</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm text-slate-200">
+                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <span>Derivación directa de consultas a sus canales de contacto</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" data-aos="fade-left">
+                    <div class="price-card p-7">
+                        <div class="text-center mb-5">
+                            <div class="text-[10px] font-black uppercase tracking-[0.3em] mb-3" style="color: var(--wl-secondary);">Plan Semestral</div>
+                            <h4 class="font-title text-3xl font-black text-white mb-1">6 Meses</h4>
+                            <p class="text-[11px] text-slate-400 uppercase tracking-widest">Publicación activa</p>
+                        </div>
+                        <div class="text-center py-6 border-y border-white/10 mb-5">
+                            <div class="font-mono font-black text-3xl md:text-4xl text-white mb-1">$1.500.000</div>
+                            <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">ARS / período</div>
+                        </div>
+                        <ul class="space-y-2 text-xs text-slate-300 mb-6">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Perfil institucional completo</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Presencia en mapa nacional</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Derivación de consultas</li>
+                        </ul>
+                        <a href="#solicitud" class="btn-outline w-full py-3 rounded-lg text-xs inline-flex items-center justify-center gap-2">
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i> Quiero este plan
+                        </a>
+                    </div>
+
+                    <div class="price-card featured p-7">
+                        <div class="text-center mb-5">
+                            <div class="text-[10px] font-black uppercase tracking-[0.3em] mb-3" style="color: var(--wl-secondary);">Plan Anual</div>
+                            <h4 class="font-title text-3xl font-black text-white mb-1">12 Meses</h4>
+                            <p class="text-[11px] uppercase tracking-widest font-bold" style="color: var(--wl-secondary);">Ahorro 17%</p>
+                        </div>
+                        <div class="text-center py-6 border-y mb-5" style="border-color: rgba(var(--wl-secondary), 0.25);">
+                            <div class="font-mono font-black text-3xl md:text-4xl mb-1" style="color: var(--wl-secondary);">$2.500.000</div>
+                            <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">ARS / período</div>
+                        </div>
+                        <ul class="space-y-2 text-xs text-slate-200 mb-6">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Todo lo del plan semestral</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Prioridad en búsquedas</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Publicación de cursos sin cargo</li>
+                        </ul>
+                        <a href="#solicitud" class="btn-gold w-full py-3 rounded-lg text-xs inline-flex items-center justify-center gap-2">
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i> Quiero este plan
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICIO 2: EMISIÓN DE DIPLOMAS -->
+    <section id="precios" class="relative py-20 md:py-28 border-b overflow-hidden" style="background: linear-gradient(to bottom, var(--wl-background), var(--wl-primary), var(--wl-background)); border-color: rgba(var(--wl-secondary), 0.1);">
+        <div class="absolute inset-0 bg-grid-subtle opacity-30 pointer-events-none"></div>
+
+        <div class="relative max-w-7xl mx-auto px-4 md:px-6">
+            <div class="text-center mb-16 max-w-3xl mx-auto" data-aos="fade-up">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-5"
+                     style="background: rgba(var(--wl-secondary), 0.1); color: var(--wl-secondary); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                    <i data-lucide="stamp" class="w-3.5 h-3.5"></i> Servicio 02
+                </div>
+                <h2 class="font-title text-3xl md:text-5xl font-black text-white mb-4 tracking-tight leading-tight">
+                    Emisión de Diplomas<br>con Doble Sello
+                </h2>
+                <div class="divider-gold mb-6"></div>
+                <p class="text-slate-400 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+                    Su diseño, sus logos, sus firmas. Nuestra infraestructura, nuestra trazabilidad, nuestro sello institucional.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-premium p-7">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                        <i data-lucide="palette" class="w-6 h-6" style="color: var(--wl-secondary);"></i>
+                    </div>
+                    <h4 class="font-black text-sm text-white uppercase tracking-widest mb-2">Su Diseño Intacto</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">Utiliza su plantilla, sus logos y sus firmas. La identidad visual de su institución se preserva al 100%.</p>
+                </div>
+                <div class="card-premium p-7">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                        <i data-lucide="qr-code" class="w-6 h-6" style="color: var(--wl-secondary);"></i>
+                    </div>
+                    <h4 class="font-black text-sm text-white uppercase tracking-widest mb-2">Valor Agregado ASARI</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">QR verificable, sello institucional, horas de acreditación, analítico, programa de estudio y CV del docente.</p>
+                </div>
+                <div class="card-premium p-7">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                        <i data-lucide="shield-check" class="w-6 h-6" style="color: var(--wl-secondary);"></i>
+                    </div>
+                    <h4 class="font-black text-sm text-white uppercase tracking-widest mb-2">Seriedad Absoluta</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">Quien verifique el diploma notará la absoluta seriedad de su instituto. Confianza que se traduce en reputación.</p>
+                </div>
+            </div>
+
+            <div class="max-w-5xl mx-auto mb-16" data-aos="fade-up" data-aos-delay="200">
+                <div class="rounded-2xl p-6 md:p-8" style="background: rgba(var(--wl-background), 0.5); border: 1px solid rgba(var(--wl-secondary), 0.15);">
+                    <p class="text-center text-[10px] font-black uppercase tracking-[0.25em] mb-6" style="color: var(--wl-secondary);">
+                        <i data-lucide="route" class="inline w-3.5 h-3.5 mr-1"></i> Trazabilidad del Certificado
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        <div class="circuit-node"><i data-lucide="building-2" class="w-4 h-4"></i> Su Instituto</div>
+                        <span class="circuit-arrow">→</span>
+                        <div class="circuit-node"><i data-lucide="users" class="w-4 h-4"></i> Alumno</div>
+                        <span class="circuit-arrow">→</span>
+                        <div class="circuit-node active"><i data-lucide="fingerprint" class="w-4 h-4"></i> Hash ASARI</div>
+                        <span class="circuit-arrow">→</span>
+                        <div class="circuit-node active"><i data-lucide="qr-code" class="w-4 h-4"></i> QR Único</div>
+                        <span class="circuit-arrow">→</span>
+                        <div class="circuit-node active"><i data-lucide="check-circle" class="w-4 h-4"></i> Verificación Pública</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mb-10" data-aos="fade-up">
+                <h3 class="font-title text-2xl md:text-3xl font-black text-white mb-3">Tarifas por Emisión de Certificado</h3>
+                <p class="text-slate-400 text-sm max-w-xl mx-auto">Pague solo por lo que emite. Sin costos fijos ocultos.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10" data-aos="fade-up" data-aos-delay="100">
+                <div class="price-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                            <i data-lucide="presentation" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-secondary);">Seminarios</p>
+                            <p class="text-[9px] text-slate-500 uppercase tracking-wider">1 día a 8 horas</p>
+                        </div>
+                    </div>
+                    <div class="font-mono font-black text-2xl text-white mb-1">$3.000</div>
+                    <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">ARS / certificado</div>
+                    <ul class="space-y-1.5 text-[11px] text-slate-400">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Certificado digital</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> QR verificable</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Sello institucional</li>
+                    </ul>
+                </div>
+
+                <div class="price-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                            <i data-lucide="book-open" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-secondary);">Cursos</p>
+                            <p class="text-[9px] text-slate-500 uppercase tracking-wider">2 a 4 meses</p>
+                        </div>
+                    </div>
+                    <div class="font-mono font-black text-2xl text-white mb-1">$25.000</div>
+                    <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">ARS / certificado</div>
+                    <ul class="space-y-1.5 text-[11px] text-slate-400">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Todo lo anterior</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Analítico digital</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Programa de estudio</li>
+                    </ul>
+                </div>
+
+                <div class="price-card featured p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: rgba(var(--wl-secondary), 0.2); border: 1px solid rgba(var(--wl-secondary), 0.4);">
+                            <i data-lucide="graduation-cap" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-secondary);">Diplomaturas</p>
+                            <p class="text-[9px] text-slate-400 uppercase tracking-wider">2 a 8 meses</p>
+                        </div>
+                    </div>
+                    <div class="font-mono font-black text-2xl mb-1" style="color: var(--wl-secondary);">$40.000</div>
+                    <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">ARS / certificado</div>
+                    <ul class="space-y-1.5 text-[11px] text-slate-300">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Todo lo anterior</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> CV del docente</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Doble sello verificado</li>
+                    </ul>
+                </div>
+
+                <div class="price-card p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                            <i data-lucide="medal" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-secondary);">Tecnicaturas</p>
+                            <p class="text-[9px] text-slate-500 uppercase tracking-wider">12 a 24 meses</p>
+                        </div>
+                    </div>
+                    <div class="font-mono font-black text-2xl text-white mb-1">$80.000</div>
+                    <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">ARS / certificado</div>
+                    <ul class="space-y-1.5 text-[11px] text-slate-400">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Todo lo anterior</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Verificación ampliada</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Trazabilidad extendida</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="max-w-2xl mx-auto rounded-xl p-5 flex items-start gap-3" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3);" data-aos="fade-up">
+                <i data-lucide="info" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+                <p class="text-xs text-amber-200/90 leading-relaxed">
+                    <strong class="text-amber-300">Nota legal:</strong> Todos los valores están sujetos a modificaciones según IPC (Índice de Precios al Consumidor). Las tarifas vigentes al momento del cierre del convenio son las que se aplicarán durante el período acordado.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- EMBUDO DE CONVERSIÓN -->
+    <section id="solicitud" class="relative py-20 md:py-28 overflow-hidden">
+        <div class="absolute inset-0 bg-dots-subtle opacity-15 pointer-events-none"></div>
+        <div class="hero-glow" style="width: 600px; height: 600px; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(var(--wl-secondary), 0.1);"></div>
+
+        <div class="relative max-w-4xl mx-auto px-4 md:px-6">
+
+            <!-- PASO 1: FORMULARIO -->
+            <div id="bloque-formulario" data-aos="fade-up">
+                <div class="text-center mb-12">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-5"
+                         style="background: rgba(var(--wl-secondary), 0.1); color: var(--wl-secondary); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                        <i data-lucide="file-signature" class="w-3.5 h-3.5"></i> Solicitud de Alianza
+                    </div>
+                    <h2 class="font-title text-3xl md:text-5xl font-black text-white mb-4 tracking-tight leading-tight">
+                        Inicie el Convenio<br>de Vinculación Institucional
+                    </h2>
+                    <div class="divider-gold mb-6"></div>
+                    <p class="text-slate-400 text-base leading-relaxed max-w-2xl mx-auto">
+                        Complete los datos de su institución. Le mostraremos un <strong style="color: var(--wl-secondary);">Pre-Acuerdo de Vinculación</strong> y luego podrá enviarlo directamente a nuestra Mesa Directiva.
+                    </p>
+                </div>
+
+                <form id="form-convenio" class="rounded-2xl p-6 md:p-10 backdrop-blur-md" style="background: linear-gradient(to bottom right, rgba(30, 41, 59, 0.6), rgba(var(--wl-background), 0.8)); border: 1px solid rgba(var(--wl-secondary), 0.2);" onsubmit="generarPreAcuerdo(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="md:col-span-2">
+                            <label class="form-label" for="inst-nombre">
+                                <i data-lucide="building-2" class="inline w-3.5 h-3.5 mr-1" style="color: var(--wl-secondary);"></i>
+                                Nombre del Instituto o Centro de Capacitación
+                            </label>
+                            <input type="text" id="inst-nombre" class="form-input" placeholder="Ej: Instituto Superior de Capacitación Aplicada" required>
+                        </div>
+                        <div>
+                            <label class="form-label" for="inst-director">
+                                <i data-lucide="user-tie" class="inline w-3.5 h-3.5 mr-1" style="color: var(--wl-secondary);"></i>
+                                Nombre del Director
+                            </label>
+                            <input type="text" id="inst-director" class="form-input" placeholder="Ej: Dr. Juan Pérez" required>
+                        </div>
+                        <div>
+                            <label class="form-label" for="inst-provincia">
+                                <i data-lucide="map-pin" class="inline w-3.5 h-3.5 mr-1" style="color: var(--wl-secondary);"></i>
+                                Provincia
+                            </label>
+                            <input type="text" id="inst-provincia" class="form-input" placeholder="Ej: Córdoba" required>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl p-5 mb-8" style="background: rgba(var(--wl-primary), 0.5); border: 1px solid rgba(var(--wl-secondary), 0.15);">
+                        <div class="flex items-start gap-3">
+                            <i data-lucide="info" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <div class="text-xs text-slate-300 leading-relaxed space-y-1">
+                                <p class="font-bold" style="color: var(--wl-secondary);">Al continuar, se generará un Pre-Acuerdo vinculante de forma digital.</p>
+                                <p class="text-slate-400">El documento resume los términos generales del Convenio y lo envía directamente a la Mesa Directiva para su evaluación final.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-gold w-full py-4 rounded-xl text-sm inline-flex items-center justify-center gap-3">
+                        <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                        Generar Pre-Acuerdo de Vinculación
+                    </button>
+                </form>
+            </div>
+
+            <!-- PASO 2: PRE-ACUERDO -->
+            <div id="bloque-preacuerdo" class="hidden" data-aos="fade-up">
+
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-5 pulse-gold"
+                         style="background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+                        <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Pre-Acuerdo Generado
+                    </div>
+                    <h2 class="font-title text-2xl md:text-4xl font-black text-white mb-3 tracking-tight">
+                        Revise el Documento
+                    </h2>
+                    <p class="text-slate-400 text-sm max-w-xl mx-auto">
+                        Lea detenidamente el Pre-Acuerdo. Al firmarlo, se abrirá WhatsApp con el mensaje pre-cargado para la Mesa Directiva.
+                    </p>
+                </div>
+
+                <div class="contrato-doc p-8 md:p-12 relative">
+                    <i data-lucide="shield-check" class="contrato-watermark w-72 h-72" style="color: var(--wl-primary);"></i>
+
+                    <div class="relative z-10">
+                        <div class="text-center mb-8 pb-6" style="border-bottom: 2px solid rgba(var(--wl-primary), 0.15);">
+                            <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3 shadow-md overflow-hidden" style="background: var(--wl-primary);">
+                                <i data-lucide="fingerprint" id="doc-logo-icon" class="w-8 h-8" style="color: var(--wl-secondary);"></i>
+                                <img id="doc-logo-img" src="" class="w-full h-full object-contain p-2 hidden" alt="Logo">
+                            </div>
+                            <h3 class="font-title text-xl md:text-2xl font-black uppercase tracking-wider mb-1" style="color: var(--wl-primary);">
+                                Pre-Acuerdo de Vinculación Institucional
+                            </h3>
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em]" id="doc-institucion-subtitulo">
+                                Registro Institucional
+                            </p>
+                            <p class="text-[10px] font-mono text-slate-400 mt-2" id="doc-fecha"></p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 pb-6" style="border-bottom: 1px dashed rgba(var(--wl-primary), 0.15);">
+                            <div>
+                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Institución Solicitante</p>
+                                <p class="font-title font-black text-lg leading-tight" style="color: var(--wl-primary);" id="doc-instituto">—</p>
+                                <p class="text-xs text-slate-500 mt-1">Representada por su Director</p>
+                            </div>
+                            <div class="md:text-right">
+                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Autoridad Solicitante</p>
+                                <p class="font-title font-black text-lg leading-tight" style="color: var(--wl-primary);" id="doc-director">—</p>
+                                <p class="text-xs text-slate-500 mt-1">Provincia de <span id="doc-provincia" class="font-bold">—</span></p>
+                            </div>
+                        </div>
+
+                        <div class="mb-8">
+                            <p class="text-[10px] font-black uppercase tracking-[0.25em] mb-4" style="color: var(--wl-primary);">
+                                <i data-lucide="scroll-text" class="inline w-3.5 h-3.5 mr-1"></i> Cláusulas del Acuerdo
+                            </p>
+
+                            <div class="clausula">
+                                <div class="clausula-num">I</div>
+                                <div>
+                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: var(--wl-primary);">Aceptación de Tarifas</p>
+                                    <p class="text-xs text-slate-600 leading-relaxed">La institución solicitante declara conocer y aceptar las tarifas vigentes de Visibilidad Institucional (Plan Semestral: $1.500.000 ARS / Plan Anual: $2.500.000 ARS) y las tarifas por Emisión de Certificados (Seminarios: $3.000 / Cursos: $25.000 / Diplomaturas: $40.000 / Tecnicaturas: $80.000 ARS), sujetas a modificación según IPC.</p>
+                                </div>
+                            </div>
+
+                            <div class="clausula">
+                                <div class="clausula-num">II</div>
+                                <div>
+                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: var(--wl-primary);">Preservación de Identidad</p>
+                                    <p class="text-xs text-slate-600 leading-relaxed">El Registro se compromete a preservar íntegramente la marca, logos, firmas y propuesta académica de la institución. La tecnología se integra de forma silenciosa, potenciando la verificabilidad sin intervenir en la identidad institucional.</p>
+                                </div>
+                            </div>
+
+                            <div class="clausula">
+                                <div class="clausula-num">III</div>
+                                <div>
+                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: var(--wl-primary);">Infraestructura y Trazabilidad</p>
+                                    <p class="text-xs text-slate-600 leading-relaxed">La institución obtiene acceso a la plataforma ASARI Core para la emisión de certificados con código QR único, Hash de trazabilidad inmutable, analítico digital, programa de estudio y CV del docente.</p>
+                                </div>
+                            </div>
+
+                            <div class="clausula">
+                                <div class="clausula-num">IV</div>
+                                <div>
+                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: var(--wl-primary);">Auditoría y Adhesión</p>
+                                    <p class="text-xs text-slate-600 leading-relaxed">Toda institución adherida queda sujeta a auditoría documental por parte del Comité Evaluador. El presente Pre-Acuerdo constituye una manifestación formal de intención y será ratificado por ambas partes mediante la firma del Convenio definitivo.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6" style="border-top: 1px solid rgba(var(--wl-primary), 0.15);">
+                            <div class="text-center">
+                                <div class="h-16 mb-2" style="border-bottom: 2px solid rgba(var(--wl-primary), 0.3);"></div>
+                                <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-primary);">Dirección Solicitante</p>
+                                <p class="text-[10px] text-slate-500 mt-0.5" id="firma-director">—</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="h-16 mb-2" style="border-bottom: 2px solid rgba(var(--wl-primary), 0.3);"></div>
+                                <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-primary);">Mesa Directiva</p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">Pendiente de contrafirma</p>
+                            </div>
+                        </div>
+
+                        <div class="sello-asari">
+                            <div class="sello-asari-inner">
+                                <i data-lucide="shield-check" class="w-6 h-6 mb-1" style="color: var(--wl-secondary);"></i>
+                                <p class="text-[7px] font-black uppercase tracking-widest leading-tight text-center px-2" style="color: var(--wl-primary);">Sello Digital<br>ASARI Core</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                    <button type="button" onclick="volverAlFormulario()" class="btn-outline flex-1 py-4 rounded-xl text-sm inline-flex items-center justify-center gap-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Editar Datos
+                    </button>
+                    <button type="button" onclick="firmarYEnviar(event)" id="btn-firmar-enviar" class="btn-gold flex-1 py-4 rounded-xl text-base inline-flex items-center justify-center gap-3">
+                        <i data-lucide="signature" class="w-5 h-5"></i>
+                        Firmar y Enviar Solicitud
+                    </button>
+                </div>
+
+                <p class="text-center text-[10px] text-slate-500 mt-5 uppercase tracking-widest">
+                    <i data-lucide="shield-check" class="inline w-3 h-3 mr-1"></i>
+                    El envío se realiza por WhatsApp cifrado hacia la Mesa Directiva
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-12 border-t" style="background-color: var(--wl-primary); border-color: rgba(var(--wl-secondary), 0.15);">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden"
+                         style="background-color: var(--wl-primary); border: 1px solid rgba(var(--wl-secondary), 0.3);">
+                        <i data-lucide="fingerprint" id="footer-logo-icon" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                        <img id="footer-logo-img" src="" class="w-full h-full object-contain p-1 hidden" alt="Logo">
+                    </div>
+                    <div class="leading-tight">
+                        <p id="wl-institucion-nombre-footer" class="font-title font-black text-white text-sm tracking-tight">Cargando...</p>
+                        <p class="text-[9px] text-slate-500 uppercase tracking-[0.2em] font-bold">Registro Institucional</p>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest text-center md:text-right">
+                    © 2026 · Tecnología ASARI Core · Todos los derechos reservados
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // ============================================================
+        // 1. BOOTSTRAPPER SaaS
+        // ============================================================
+        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
+        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
+        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+
+        let currentTenantId = null;
+        let WHATSAPP_MESA_DIRECTIVA = '5490000000000';
+
+        async function initTenant() {
+            try {
+                const hostname = window.location.hostname;
+                let tenantSlug = 'default';
+
+                if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
+                } else {
+                    const parts = hostname.split('.');
+                    if (parts.length > 2) {
+                        tenantSlug = parts[0];
+                    } else {
+                        tenantSlug = 'renmcycf';
+                    }
+                }
+
+                console.log("Cargando entorno SaaS para:", tenantSlug);
+
+                const { data: tenantConfig, error } = await db
+                    .from('saas_tenants')
+                    .select('*')
+                    .eq('slug', tenantSlug)
+                    .eq('activo', true)
+                    .single();
+
+                if (error || !tenantConfig) {
+                    throw new Error("Institución no encontrada o inactiva.");
+                }
+
+                currentTenantId = tenantConfig.id;
+                localStorage.setItem('saas_current_tenant', currentTenantId);
+
+                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
+                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
+                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
+                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#050914');
+
+                const institucionNombres = document.querySelectorAll(
+                    '#wl-institucion-nombre, #wl-institucion-nombre-top, #wl-institucion-nombre-footer, #wl-title-institucion, #mockup-diploma-inst-nombre, #mockup-credencial-inst-nombre, #doc-institucion-subtitulo'
+                );
+                institucionNombres.forEach(el => {
+                    if (el) el.innerText = tenantConfig.nombre_institucion;
+                });
+
+                if (document.title.includes('·')) {
+                    const prefijo = document.title.split('·')[0];
+                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
+                } else {
+                    document.title = tenantConfig.nombre_institucion;
+                }
+
+                return tenantConfig;
+
+            } catch (err) {
+                console.error("Error Bootstrapper SaaS:", err);
+                document.body.innerHTML = `
+                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
+                        <div>
+                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
+                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
+                        </div>
+                    </div>`;
+                throw err;
+            }
+        }
+
+        // ==========================================
+        // 2. INIT
+        // ==========================================
+        AOS.init({ once: true, duration: 700, easing: 'ease-out-cubic' });
+        lucide.createIcons();
+
+        let datosConvenio = {
+            instituto: '',
+            director: '',
+            provincia: ''
+        };
+
+        // ==========================================
+        // 3. CARGA DE IDENTIDAD INSTITUCIONAL (multi-tenant)
+        // ==========================================
+        async function cargarIdentidadInstitucional() {
+            if (!currentTenantId) return;
+
+            try {
+                const { data: conf } = await db.from('renmcycf_config')
+                    .select('logo_url, hero_image_url, whatsapp')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+
+                if (!conf) return;
+
+                const logos = [
+                    { icon: 'nav-logo-icon', img: 'nav-logo-img' },
+                    { icon: 'mockup-diploma-logo-icon', img: 'mockup-diploma-logo-img' },
+                    { icon: 'mockup-credencial-logo-icon', img: 'mockup-credencial-logo-img' },
+                    { icon: 'doc-logo-icon', img: 'doc-logo-img' },
+                    { icon: 'footer-logo-icon', img: 'footer-logo-img' }
+                ];
+
+                if (conf.logo_url) {
+                    logos.forEach(({ icon, img }) => {
+                        const imgEl = document.getElementById(img);
+                        const iconEl = document.getElementById(icon);
+                        if (imgEl && iconEl) {
+                            imgEl.src = conf.logo_url;
+                            imgEl.classList.remove('hidden');
+                            iconEl.classList.add('hidden');
+                        }
+                    });
+                }
+
+                if (conf.hero_image_url) {
+                    const heroBg = document.getElementById('hero-bg-img');
+                    if (heroBg) {
+                        heroBg.src = conf.hero_image_url;
+                        heroBg.classList.add('loaded');
+                    }
+                }
+
+                if (conf.whatsapp) {
+                    WHATSAPP_MESA_DIRECTIVA = String(conf.whatsapp).replace(/\D/g, '');
+                }
+
+                lucide.createIcons();
+            } catch (err) {
+                console.warn('No se pudo cargar la identidad institucional:', err);
+            }
+        }
+
+        // ==========================================
+        // 4. GENERAR PRE-ACUERDO
+        // ==========================================
+        function generarPreAcuerdo(event) {
+            event.preventDefault();
+
+            const instituto = document.getElementById('inst-nombre').value.trim();
+            const director = document.getElementById('inst-director').value.trim();
+            const provincia = document.getElementById('inst-provincia').value.trim();
+
+            if (!instituto || !director || !provincia) {
+                alert('Por favor, complete todos los campos obligatorios.');
+                return;
+            }
+
+            datosConvenio = { instituto, director, provincia };
+
+            document.getElementById('doc-instituto').textContent = instituto;
+            document.getElementById('doc-director').textContent = director;
+            document.getElementById('doc-provincia').textContent = provincia;
+            document.getElementById('firma-director').textContent = director;
+
+            const hoy = new Date();
+            const opciones = { day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('doc-fecha').textContent = `Emitido el ${hoy.toLocaleDateString('es-AR', opciones)}`;
+
+            document.getElementById('bloque-formulario').classList.add('hidden');
+            document.getElementById('bloque-preacuerdo').classList.remove('hidden');
+
+            setTimeout(() => {
+                document.getElementById('solicitud').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // 5. VOLVER AL FORMULARIO
+        // ==========================================
+        function volverAlFormulario() {
+            document.getElementById('bloque-preacuerdo').classList.add('hidden');
+            document.getElementById('bloque-formulario').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('solicitud').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // 6. FIRMAR Y ENVIAR
+        // ==========================================
+        async function firmarYEnviar(event) {
+            const { instituto, director, provincia } = datosConvenio;
+
+            if (!instituto || !director || !provincia) {
+                alert('Los datos del convenio no están completos. Vuelva al formulario.');
+                return;
+            }
+
+            const boton = document.getElementById('btn-firmar-enviar');
+            const textoOriginal = boton.innerHTML;
+            boton.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Registrando solicitud...';
+            boton.disabled = true;
+            lucide.createIcons();
+
+            let idConvenio = null;
+            try {
+                const { data: insertData, error } = await db
+                    .from('renmcycf_convenios')
+                    .insert([{
+                        tenant_id: currentTenantId,
+                        institucion: instituto,
+                        director: director,
+                        provincia: provincia,
+                        estado: 'PENDIENTE',
+                        fecha_solicitud: new Date().toISOString()
+                    }])
+                    .select('id')
+                    .single();
+
+                if (error) throw error;
+                idConvenio = insertData?.id || null;
+                console.log('✅ Solicitud registrada. ID:', idConvenio);
+            } catch (err) {
+                console.warn('⚠️ No se pudo registrar en Supabase:', err.message);
+            }
+
+            const mensaje = `Hola Mesa Directiva, soy ${director} de ${instituto} en la provincia de ${provincia}. He leído la propuesta de valores y solicito avanzar con el Convenio de Alianza B2B.
+
+Confirmo haber revisado el Pre-Acuerdo de Vinculación Institucional y acepto las tarifas vigentes (Visibilidad Institucional + Emisión de Certificados con Doble Sello ASARI).
+${idConvenio ? `\nN° de Solicitud: ${idConvenio.substring(0, 8).toUpperCase()}` : ''}
+
+Quedo a disposición para coordinar los siguientes pasos.
+
+Saludos cordiales,
+${director}
+${instituto} · ${provincia}`;
+
+            const mensajeCodificado = encodeURIComponent(mensaje);
+            const urlWhatsApp = `https://wa.me/${WHATSAPP_MESA_DIRECTIVA}?text=${mensajeCodificado}`;
+
+            window.open(urlWhatsApp, '_blank');
+
+            setTimeout(() => {
+                boton.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> ¡Solicitud Enviada!';
+                lucide.createIcons();
+                setTimeout(() => {
+                    boton.innerHTML = textoOriginal;
+                    boton.disabled = false;
+                    lucide.createIcons();
+                }, 2000);
+            }, 800);
+        }
+
+        // ==========================================
+        // 7. SMOOTH SCROLL
+        // ==========================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // ==========================================
+        // 8. ARRANQUE
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initTenant();
+            await cargarIdentidadInstitucional();
+        });
+    </script>
+</body>
+</html>
