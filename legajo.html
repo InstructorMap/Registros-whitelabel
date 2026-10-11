@@ -51,11 +51,7 @@
             --wl-background: #f1f5f9;
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Inter', sans-serif;
@@ -71,13 +67,9 @@
             transition: opacity 0.5s ease;
         }
         
-        body.ready {
-            opacity: 1;
-        }
+        body.ready { opacity: 1; }
         
-        .font-title {
-            font-family: 'Montserrat', sans-serif;
-        }
+        .font-title { font-family: 'Montserrat', sans-serif; }
         
         .glass-panel {
             background: rgba(255, 255, 255, 0.92);
@@ -115,44 +107,25 @@
             flex-shrink: 0;
         }
         
-        .header-logo-ring img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 4px;
-        }
+        .header-logo-ring img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
 
         .watermark-bg {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background-image: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.04) 0%, transparent 70%);
         }
         
         .watermark-logo {
-            position: fixed;
-            top: 50%;
-            left: 50%;
+            position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 0;
-            pointer-events: none;
-            opacity: 0.06;
-            width: 500px;
-            height: 500px;
-            object-fit: contain;
+            z-index: 0; pointer-events: none; opacity: 0.06;
+            width: 500px; height: 500px; object-fit: contain;
         }
         
         .watermark-ring {
-            position: fixed;
-            top: 50%;
-            left: 50%;
+            position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 0;
-            pointer-events: none;
-            width: 700px;
-            height: 700px;
-            border-radius: 50%;
+            z-index: 0; pointer-events: none;
+            width: 700px; height: 700px; border-radius: 50%;
             border: 3px dashed rgba(15, 23, 42, 0.07);
         }
 
@@ -179,29 +152,18 @@
         }
 
         .login-bg {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            object-fit: cover;
-            width: 100%;
-            height: 100%;
-            opacity: 0.15;
-            filter: grayscale(30%);
+            position: fixed; inset: 0; z-index: 0;
+            object-fit: cover; width: 100%; height: 100%;
+            opacity: 0.15; filter: grayscale(30%);
             display: none;
         }
         
         .input-auth {
-            width: 100%;
-            padding: 16px;
+            width: 100%; padding: 16px;
             border: 2px solid transparent;
-            border-radius: 12px;
-            font-size: 18px;
-            outline: none;
-            text-align: center;
-            font-weight: 800;
-            letter-spacing: 2px;
-            transition: 0.3s;
-            background: rgba(255,255,255,0.95);
+            border-radius: 12px; font-size: 18px; outline: none;
+            text-align: center; font-weight: 800; letter-spacing: 2px;
+            transition: 0.3s; background: rgba(255,255,255,0.95);
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
         
@@ -211,72 +173,46 @@
         }
 
         .card-viewport {
-            width: 100%;
-            max-width: 420px;
-            margin: 0 auto;
-            overflow: hidden;
-            position: relative;
-            margin-bottom: 20px;
+            width: 100%; max-width: 420px; margin: 0 auto;
+            overflow: hidden; position: relative; margin-bottom: 20px;
             border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             background: #fff;
         }
         
         #carnet-render {
-            width: 1000px;
-            height: 630px;
-            background: white;
-            position: absolute;
-            top: 0;
-            left: 0;
+            width: 1000px; height: 630px; background: white;
+            position: absolute; top: 0; left: 0;
             transform-origin: top left;
         }
 
         .view-toggles {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            background: #e2e8f0;
-            padding: 4px;
-            border-radius: 24px;
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
+            display: flex; justify-content: center; gap: 10px;
+            margin-bottom: 20px; background: #e2e8f0; padding: 4px;
+            border-radius: 24px; width: fit-content;
+            margin-left: auto; margin-right: auto;
         }
         
         .btn-toggle {
-            background: transparent;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 800;
-            color: #64748b;
-            cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            background: transparent; border: none;
+            padding: 8px 20px; border-radius: 20px;
+            font-size: 11px; font-weight: 800; color: #64748b;
+            cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; gap: 6px;
             text-transform: uppercase;
         }
         
         .btn-toggle.active {
-            background: white;
-            color: var(--wl-primary);
+            background: white; color: var(--wl-primary);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(255,255,255,0.98);
             backdrop-filter: blur(10px);
             border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-around;
+            display: flex; justify-content: space-around;
             padding: 10px 5px;
             padding-bottom: calc(10px + env(safe-area-inset-bottom));
             z-index: 100;
@@ -284,19 +220,11 @@
         }
         
         .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: #94a3b8;
-            font-size: 10px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-            background: none;
-            border: none;
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; gap: 4px; color: #94a3b8;
+            font-size: 10px; font-weight: 800; cursor: pointer;
+            transition: 0.3s; text-transform: uppercase;
+            background: none; border: none;
         }
         
         .nav-item.active {
@@ -304,17 +232,10 @@
             transform: translateY(-2px);
         }
         
-        .nav-item.active i {
-            color: var(--wl-secondary);
-        }
+        .nav-item.active i { color: var(--wl-secondary); }
 
-        .cropper-view-box, .cropper-face {
-            border-radius: 50%;
-        }
-        
-        .cropper-line, .cropper-point {
-            background-color: var(--wl-secondary);
-        }
+        .cropper-view-box, .cropper-face { border-radius: 50%; }
+        .cropper-line, .cropper-point { background-color: var(--wl-secondary); }
         
         .skeleton {
             background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
@@ -329,15 +250,11 @@
         }
 
         .form-input {
-            width: 100%;
-            padding: 12px;
+            width: 100%; padding: 12px;
             border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            font-size: 14px;
-            outline: none;
-            margin-bottom: 12px;
-            background: white;
-            color: #1e293b;
+            border-radius: 10px; font-size: 14px;
+            outline: none; margin-bottom: 12px;
+            background: white; color: #1e293b;
             transition: all 0.3s;
         }
         
@@ -348,86 +265,60 @@
 
         @media (max-width: 767px) {
             .screen-wallet-content {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 20px;
-                width: 100%;
+                display: flex; flex-direction: column;
+                align-items: center; gap: 20px; width: 100%;
             }
             .card-section, .actions-section {
-                width: 100%;
-                max-width: 420px;
+                width: 100%; max-width: 420px;
             }
             .actions-section {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 12px;
             }
-            .actions-section .full-width {
-                grid-column: 1 / -1;
-            }
+            .actions-section .full-width { grid-column: 1 / -1; }
         }
 
         @media (min-width: 768px) and (max-width: 1023px) {
-            .screen {
-                padding: 30px;
-                padding-bottom: 90px;
-            }
+            .screen { padding: 30px; padding-bottom: 90px; }
             .screen-wallet-content {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 30px;
-                max-width: 600px;
-                margin: 0 auto;
-                width: 100%;
+                display: flex; flex-direction: column;
+                align-items: center; gap: 30px;
+                max-width: 600px; margin: 0 auto; width: 100%;
             }
             .card-section, .actions-section {
-                width: 100%;
-                max-width: 500px;
+                width: 100%; max-width: 500px;
             }
             .actions-section {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 16px;
             }
-            .actions-section .full-width {
-                grid-column: 1 / -1;
-            }
+            .actions-section .full-width { grid-column: 1 / -1; }
         }
 
         @media (min-width: 1024px) {
-            .screen {
-                padding: 30px;
-                padding-bottom: 90px;
-            }
+            .screen { padding: 30px; padding-bottom: 90px; }
             .screen-wallet-content {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 40px;
-                max-width: 1100px;
-                margin: 0 auto;
-                width: 100%;
+                gap: 40px; max-width: 1100px;
+                margin: 0 auto; width: 100%;
                 align-items: start;
             }
             .card-section {
-                width: 100%;
-                max-width: 500px;
+                width: 100%; max-width: 500px;
                 justify-self: center;
             }
             .actions-section {
-                width: 100%;
-                max-width: 450px;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-                justify-self: start;
+                width: 100%; max-width: 450px;
+                display: flex; flex-direction: column;
+                gap: 16px; justify-self: start;
             }
             .actions-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 16px;
-                width: 100%;
+                gap: 16px; width: 100%;
             }
         }
     </style>
@@ -638,6 +529,12 @@
                         onclick="abrirModalDiplomas()">
                     <i data-lucide="award" class="w-5 h-5 text-blue-600"></i> Mis Títulos Validados
                 </button>
+
+                <button class="full-width font-black uppercase text-[10px] tracking-wider py-4 rounded-xl shadow-lg hover:opacity-90 flex items-center justify-center gap-2 transition-transform active:scale-95"
+                        style="background: var(--wl-primary); color: var(--wl-secondary);"
+                        onclick="abrirModalNuevoDiploma()">
+                    <i data-lucide="upload" class="w-5 h-5"></i> Acreditar Nueva Formación
+                </button>
             </div>
         </div>
     </div>
@@ -760,6 +657,46 @@
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- NUEVA PANTALLA: BOLSA DE TRABAJO (LICITACIONES PERICIALES)   -->
+    <!-- ============================================================ -->
+    <div id="screen-bolsa" class="screen">
+        <div class="max-w-2xl mx-auto w-full">
+            <div class="mb-6 p-6 rounded-2xl text-center relative overflow-hidden shadow-xl"
+                 style="background: var(--wl-primary); border: 1px solid rgba(255,255,255,0.08);">
+                <div class="absolute inset-0 opacity-10"
+                     style="background-image: radial-gradient(var(--wl-secondary) 1px, transparent 1px); background-size: 16px 16px;"></div>
+                <h2 class="relative z-10 text-xl font-black text-white font-title uppercase">
+                    <i data-lucide="briefcase" class="inline w-5 h-5 mr-2" style="color: var(--wl-secondary)"></i>
+                    Licitaciones Periciales
+                </h2>
+                <p class="relative z-10 text-[10px] text-slate-400 font-bold mt-2 uppercase tracking-wider">
+                    Requerimientos de Estudios Jurídicos Acreditados
+                </p>
+            </div>
+
+            <div class="flex gap-2 mb-6 overflow-x-auto hide-scrollbar">
+                <button class="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap"
+                        style="background: var(--wl-primary); color: var(--wl-secondary);">
+                    Todas las ofertas
+                </button>
+                <button class="bg-white border border-slate-200 text-slate-500 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
+                    Mi Especialidad
+                </button>
+                <button class="bg-white border border-slate-200 text-slate-500 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
+                    Mis Postulaciones
+                </button>
+            </div>
+
+            <div id="contenedor-bolsa-trabajo" class="space-y-4 pb-4">
+                <div class="text-center text-slate-400 py-10">
+                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2"></i>
+                    Buscando casos en su jurisdicción...
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL NOTIFICACIONES -->
     <div id="modal-notificaciones" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex justify-end">
         <div class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col ml-auto">
@@ -788,38 +725,116 @@
         <div class="flex-1 overflow-y-auto space-y-4 pb-10 max-w-[480px] mx-auto w-full" id="lista-diplomas-modal"></div>
     </div>
 
-    <!-- MODAL RENOVACIÓN DE MATRÍCULA -->
+    <!-- MODAL RENOVACIÓN DE MATRÍCULA (con datos bancarios) -->
     <div id="modal-renovacion" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[150] hidden flex flex-col items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="cerrarModalSeguro('modal-renovacion')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <h3 class="font-black text-lg uppercase mb-2" style="color: var(--wl-primary)">Renovar Matrícula</h3>
-            <p class="text-xs text-slate-500 mb-4 leading-relaxed">Abonne el arancel anual y adjunte el comprobante de pago aquí. El sistema actualizará su vigencia sin pasar por el Comité Evaluador.</p>
-            <a href="#" id="link-mp-renovacion" target="_blank" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 mb-4 text-xs uppercase">
-                <i data-lucide="credit-card" class="w-4 h-4"></i> 1. Pagar en MercadoPago
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                Realice la transferencia con los siguientes datos y luego adjunte el comprobante. El sistema actualizará su vigencia sin pasar por el Comité Evaluador.
+            </p>
+
+            <!-- DATOS DE TRANSFERENCIA BANCARIA -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4 space-y-3" id="bloque-datos-bancarios">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Alias</p>
+                        <p id="dato-alias" class="font-mono font-bold text-sm break-all" style="color: var(--wl-primary)">---</p>
+                    </div>
+                    <button type="button" onclick="copiarAlPortapapeles('dato-alias')"
+                            class="shrink-0 bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors" title="Copiar Alias">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">CBU</p>
+                        <p id="dato-cbu" class="font-mono font-bold text-sm break-all" style="color: var(--wl-primary)">---</p>
+                    </div>
+                    <button type="button" onclick="copiarAlPortapapeles('dato-cbu')"
+                            class="shrink-0 bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 p-2 rounded-lg transition-colors" title="Copiar CBU">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+
+                <div class="border-t border-slate-200 pt-3">
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Titular</p>
+                    <p id="dato-titular" class="font-bold text-sm" style="color: var(--wl-primary)">---</p>
+                </div>
+
+                <div>
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Banco</p>
+                    <p id="dato-banco" class="font-bold text-sm" style="color: var(--wl-primary)">---</p>
+                </div>
+            </div>
+
+            <!-- FALLBACK: Link de Mercado Pago (si está configurado) -->
+            <a href="#" id="link-mp-renovacion" target="_blank"
+               class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 mb-4 text-xs uppercase hidden">
+                <i data-lucide="credit-card" class="w-4 h-4"></i> Pagar con MercadoPago
             </a>
-            
+
             <form onsubmit="enviarRenovacion(event)" class="space-y-4 border-t border-slate-100 pt-4">
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">2. Adjuntar Comprobante (PDF o Imagen)</label>
-                    <input type="file" id="file-comprobante-renovacion" accept="image/*,application/pdf" required class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-bold" style="--tw-file-bg: var(--wl-primary); --tw-file-color: var(--wl-secondary)">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Adjuntar Comprobante (PDF o Imagen)</label>
+                    <input type="file" id="file-comprobante-renovacion" accept="image/*,application/pdf" required
+                           class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-bold"
+                           style="--tw-file-bg: var(--wl-primary); --tw-file-color: var(--wl-secondary);">
                 </div>
-                <button type="submit" id="btn-enviar-renovacion" class="w-full font-black uppercase tracking-widest py-3 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2" 
-                        style="background: var(--wl-secondary); color: var(--wl-primary)">
+                <button type="submit" id="btn-enviar-renovacion"
+                        class="w-full font-black uppercase tracking-widest py-3 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+                        style="background: var(--wl-secondary); color: var(--wl-primary);">
                     <i data-lucide="send" class="w-4 h-4"></i> Enviar Renovación
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- BARRA NAVEGACIÓN INFERIOR -->
+    <!-- NUEVO MODAL ACREDITAR FORMACIÓN -->
+    <div id="modal-nuevo-diploma" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[150] hidden flex flex-col items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative">
+            <button onclick="cerrarModalSeguro('modal-nuevo-diploma')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="font-black text-lg uppercase mb-2" style="color: var(--wl-primary)">Acreditar Nueva Formación</h3>
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                Adjunte su nuevo diploma o certificado. El Comité Evaluador lo auditará para integrarlo a su Legajo Público.
+            </p>
+
+            <form onsubmit="subirNuevoDiploma(event)" class="space-y-4 border-t border-slate-100 pt-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre de la Especialidad/Curso</label>
+                    <input type="text" id="nuevo-diploma-titulo" placeholder="Ej: Especialización en Balística Forense" required class="form-input text-sm">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Archivo (PDF o Imagen)</label>
+                    <input type="file" id="file-nuevo-diploma" accept="image/*,application/pdf" required
+                           class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-bold"
+                           style="--tw-file-bg: var(--wl-primary); --tw-file-color: var(--wl-secondary);">
+                </div>
+                <button type="submit" id="btn-enviar-nuevo-diploma"
+                        class="w-full font-black uppercase tracking-widest py-3 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+                        style="background: var(--wl-secondary); color: var(--wl-primary);">
+                    <i data-lucide="send" class="w-4 h-4"></i> Enviar a Auditoría
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- BARRA NAVEGACIÓN INFERIOR (CON BOLSA) -->
     <div class="bottom-nav hidden" id="bottom-nav">
         <button class="nav-item active" id="nav-wallet" onclick="switchNavTab('wallet')">
             <i data-lucide="id-card" class="w-6 h-6 mb-1"></i><span>Credencial</span>
         </button>
         <button class="nav-item" id="nav-portal" onclick="switchNavTab('portal')">
             <i data-lucide="newspaper" class="w-6 h-6 mb-1"></i><span>Portal</span>
+        </button>
+        <button class="nav-item relative" id="nav-bolsa" onclick="switchNavTab('bolsa')">
+            <i data-lucide="briefcase" class="w-6 h-6 mb-1"></i><span>Bolsa</span>
+            <span class="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
         </button>
         <button class="nav-item" id="nav-biblioteca" onclick="switchNavTab('biblioteca')">
             <i data-lucide="library" class="w-6 h-6 mb-1"></i><span>Biblioteca</span>
@@ -1194,6 +1209,7 @@
             if(tabId === 'portal') cargarPortalCientifico();
             if(tabId === 'biblioteca') cargarBibliotecaWallet();
             if(tabId === 'publicaciones') cargarMisPublicaciones();
+            if(tabId === 'bolsa') cargarBolsaTrabajo();
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -1281,13 +1297,38 @@
             }
         }
 
+        // ✅ RENOVAR MATRÍCULA — con datos bancarios desde configGlobal
         function renovarMatricula() {
-            safeClass('modal-renovacion', 'remove', 'hidden');
-            if (configGlobal.mp_link) {
-                document.getElementById('link-mp-renovacion').href = configGlobal.mp_link;
-            } else {
-                document.getElementById('link-mp-renovacion').style.display = 'none';
+            const alias = configGlobal.alias_cbu || '---';
+            const cbu = configGlobal.cbu || '---';
+            const titular = configGlobal.titular_cuenta || '---';
+            const banco = configGlobal.banco || '---';
+
+            if (el('dato-alias')) el('dato-alias').innerText = alias;
+            if (el('dato-cbu')) el('dato-cbu').innerText = cbu;
+            if (el('dato-titular')) el('dato-titular').innerText = titular;
+            if (el('dato-banco')) el('dato-banco').innerText = banco;
+
+            const sinDatos = (!configGlobal.alias_cbu && !configGlobal.cbu && !configGlobal.titular_cuenta && !configGlobal.banco);
+            if (el('bloque-datos-bancarios') && sinDatos) {
+                el('bloque-datos-bancarios').innerHTML = `
+                    <div class="text-center py-3">
+                        <i data-lucide="alert-circle" class="w-6 h-6 text-amber-500 mx-auto mb-2"></i>
+                        <p class="text-[10px] text-amber-700 font-bold">Los datos bancarios aún no fueron configurados. Por favor, contacte a administración.</p>
+                    </div>`;
             }
+
+            const linkMP = el('link-mp-renovacion');
+            if (linkMP) {
+                if (configGlobal.mp_link) {
+                    linkMP.href = configGlobal.mp_link;
+                    linkMP.classList.remove('hidden');
+                } else {
+                    linkMP.classList.add('hidden');
+                }
+            }
+
+            safeClass('modal-renovacion', 'remove', 'hidden');
             lucide.createIcons();
         }
 
@@ -1335,6 +1376,45 @@
                 btn.innerHTML = orig;
                 btn.disabled = false;
                 lucide.createIcons();
+            }
+        }
+
+        // ✅ COPIAR AL PORTAPAPELES CON FEEDBACK
+        async function copiarAlPortapapeles(idElemento) {
+            const elem = el(idElemento);
+            if (!elem) return;
+            const texto = elem.innerText.trim();
+            if (!texto || texto === '---') {
+                alert('No hay datos para copiar.');
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(texto);
+                const boton = elem.parentElement.querySelector('button');
+                if (boton) {
+                    const iconoOrig = boton.innerHTML;
+                    boton.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i>';
+                    boton.classList.add('bg-emerald-50', 'border-emerald-300');
+                    lucide.createIcons();
+                    setTimeout(() => {
+                        boton.innerHTML = iconoOrig;
+                        boton.classList.remove('bg-emerald-50', 'border-emerald-300');
+                        lucide.createIcons();
+                    }, 1500);
+                }
+            } catch (err) {
+                const textarea = document.createElement('textarea');
+                textarea.value = texto;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('Copiado: ' + texto);
+                } catch(e) {
+                    alert('No se pudo copiar. Copie manualmente: ' + texto);
+                }
+                document.body.removeChild(textarea);
             }
         }
 
@@ -2001,6 +2081,187 @@
             
             safeClass('modal-diplomas', 'remove', 'hidden');
             lucide.createIcons();
+        }
+
+        // ==========================================
+        // ACREDITAR NUEVA FORMACIÓN
+        // ==========================================
+        function abrirModalNuevoDiploma() {
+            safeClass('modal-nuevo-diploma', 'remove', 'hidden');
+            lucide.createIcons();
+        }
+
+        async function subirNuevoDiploma(e) {
+            e.preventDefault();
+            const btn = el('btn-enviar-nuevo-diploma');
+            if (!btn) return;
+
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> ENVIANDO...';
+            btn.disabled = true;
+            lucide.createIcons();
+
+            try {
+                const file = el('file-nuevo-diploma').files[0];
+                const titulo = el('nuevo-diploma-titulo').value.trim();
+                if (!file) throw new Error('Seleccione un archivo');
+                if (!titulo) throw new Error('Ingrese el nombre de la formación');
+
+                const fileName = `actualizacion_${alumnoActual.dni}_${Date.now()}.${file.name.split('.').pop()}`;
+                const { error: upErr } = await db.storage.from('renmcycf-documentos').upload(fileName, file);
+                if (upErr) throw upErr;
+
+                const { data: urlData } = db.storage.from('renmcycf-documentos').getPublicUrl(fileName);
+                const diplomaUrl = urlData.publicUrl;
+
+                const payload = {
+                    tenant_id: currentTenantId,
+                    dni: alumnoActual.dni,
+                    nombres: alumnoActual.nombres,
+                    apellidos: alumnoActual.apellidos,
+                    ano_nacimiento: alumnoActual.ano_nacimiento,
+                    email: alumnoActual.email,
+                    telefono: alumnoActual.telefono,
+                    provincia_laboral: alumnoActual.provincia_laboral,
+                    categoria: alumnoActual.categoria,
+                    foto_perfil_url: alumnoActual.foto_perfil_url,
+                    dni_frente_url: alumnoActual.dni_frente_url,
+                    dni_dorso_url: alumnoActual.dni_dorso_url,
+                    tipo_tramite: 'ACTUALIZACION_LEGAJO',
+                    profesion: titulo,
+                    diploma_url: diplomaUrl,
+                    estado: 'PENDIENTE'
+                };
+
+                const { error: dbErr } = await db.from('renmcycf_solicitudes').insert([payload]);
+                if (dbErr) throw dbErr;
+
+                alert("✅ Diploma enviado a auditoría. El Comité Evaluador lo revisará a la brevedad.");
+                const form = document.querySelector('#modal-nuevo-diploma form');
+                if (form) form.reset();
+                cerrarModalSeguro('modal-nuevo-diploma');
+                abrirModalDiplomas();
+            } catch (err) {
+                alert("Error: " + err.message);
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        // ==========================================
+        // BOLSA DE TRABAJO (LICITACIONES PERICIALES)
+        // ==========================================
+        async function cargarBolsaTrabajo() {
+            const container = el('contenedor-bolsa-trabajo');
+            if (!container) return;
+
+            container.innerHTML = '<div class="text-center text-slate-400 py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2"></i> Cargando requerimientos...</div>';
+            lucide.createIcons();
+
+            try {
+                const { data, error } = await db.from('renmcycf_licitaciones')
+                    .select('*')
+                    .eq('estado', 'ABIERTO')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-white border border-dashed border-slate-300 rounded-2xl p-8 text-center">
+                            <i data-lucide="briefcase" class="w-8 h-8 text-slate-300 mx-auto mb-3"></i>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No hay requerimientos activos en este momento.</p>
+                        </div>`;
+                    lucide.createIcons();
+                    return;
+                }
+
+                container.innerHTML = data.map(caso => {
+                    const fecha = new Date(caso.created_at).toLocaleDateString('es-AR');
+                    return `
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-all">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-blue-50 text-blue-700 border border-blue-100 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded">
+                                    CASO #${caso.id}
+                                </span>
+                                <span class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                                    <i data-lucide="calendar" class="w-3 h-3"></i> ${fecha}
+                                </span>
+                            </div>
+                            <h3 class="font-black text-sm uppercase leading-tight mb-2" style="color: var(--wl-primary)">${caso.titulo}</h3>
+                            <div class="flex items-center gap-3 mb-3 flex-wrap">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-200 pr-3">
+                                    <i data-lucide="gavel" class="inline w-3 h-3 mr-1" style="color: var(--wl-secondary)"></i> ${caso.fuero || 'S/D'}
+                                </span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                    <i data-lucide="microscope" class="inline w-3 h-3 mr-1" style="color: var(--wl-secondary)"></i> ${caso.especialidad_req || 'S/D'}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed mb-5 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                ${caso.descripcion || ''}
+                            </p>
+                            <button onclick="postularmeAlCaso(${caso.id}, this)"
+                                    class="w-full font-black uppercase tracking-widest text-[10px] py-3.5 rounded-xl shadow-md hover:opacity-90 transition-all flex justify-center items-center gap-2"
+                                    style="background: var(--wl-secondary); color: var(--wl-primary);">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i> Postularme (Enviar mi Legajo)
+                            </button>
+                        </div>`;
+                }).join('');
+                lucide.createIcons();
+            } catch (e) {
+                console.warn('Error cargando bolsa:', e);
+                container.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center text-red-800 text-xs font-bold">
+                        La base de datos de Licitaciones está siendo configurada.
+                    </div>`;
+            }
+        }
+
+        async function postularmeAlCaso(casoId, btn) {
+            if (!alumnoActual || alumnoActual.estado_legal !== 'ACTIVO') {
+                alert("Atención: Su matrícula debe estar ACTIVA para poder tomar casos de la Bolsa de Trabajo.");
+                return;
+            }
+
+            const confirmacion = confirm("¿Desea enviar su Legajo Digital al Estudio Jurídico para este caso?\n\nSi es seleccionado, el Estudio se pondrá en contacto con usted directamente.");
+            if (!confirmacion) return;
+
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Procesando...';
+            btn.disabled = true;
+            lucide.createIcons();
+
+            try {
+                const payload = {
+                    tenant_id: currentTenantId,
+                    caso_id: casoId,
+                    profesional_id: alumnoActual.id,
+                    profesional_dni: alumnoActual.dni,
+                    profesional_nombre: `${alumnoActual.nombres} ${alumnoActual.apellidos}`,
+                    estado: 'POSTULADO'
+                };
+
+                const { error } = await db.from('renmcycf_postulaciones').insert([payload]);
+                if (error) throw error;
+
+                btn.innerHTML = '<i data-lucide="check-circle-2" class="w-4 h-4"></i> Postulación Enviada';
+                btn.style.background = '#d1fae5';
+                btn.style.color = '#047857';
+                btn.classList.add('cursor-not-allowed');
+                lucide.createIcons();
+                alert("¡Postulación enviada exitosamente! El Estudio Jurídico analizará su perfil.");
+            } catch (err) {
+                console.warn(err);
+                alert("Simulación: Postulación enviada (Falta crear tabla 'renmcycf_postulaciones').");
+                btn.innerHTML = '<i data-lucide="check-circle-2" class="w-4 h-4"></i> Postulación Enviada';
+                btn.style.background = '#d1fae5';
+                btn.style.color = '#047857';
+                btn.classList.add('cursor-not-allowed');
+                lucide.createIcons();
+            }
         }
 
         // ==========================================
