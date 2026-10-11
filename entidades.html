@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="saas-core.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -74,7 +75,7 @@
                     <input type="email" id="login-email" class="input-solid" placeholder="estudio@ejemplo.com" required autocomplete="username">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Clave de Acceso (Matrícula/CUIT)</label>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Clave de Acceso (CUIT)</label>
                     <input type="password" id="login-clave" class="input-solid" placeholder="••••••••" required autocomplete="current-password">
                 </div>
 
@@ -241,87 +242,14 @@
 
     <script>
         // ============================================================
-        // 1. CONFIGURACIÓN SUPABASE (SaaS multi-tenant)
+        // 1. BOOTSTRAPPER SaaS (inyectado por saas-core.js)
         // ============================================================
         lucide.createIcons();
-        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
-        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
-        let currentTenantId = null;
-        let tenantConfigGlobal = null;
         let entidadActual = null;
 
-        // ============================================================
-        // 2. BOOTSTRAPPER SaaS
-        // ============================================================
-        async function initTenant() {
-            try {
-                const hostname = window.location.hostname;
-                let tenantSlug = 'default';
-
-                if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
-                } else {
-                    const parts = hostname.split('.');
-                    if (parts.length > 2 && !hostname.includes('github.io')) {
-                        tenantSlug = parts[0];
-                    } else {
-                        tenantSlug = 'renmcycf';
-                    }
-                }
-
-                console.log("Cargando entorno SaaS para:", tenantSlug);
-
-                const { data: tenantConfig, error } = await db
-                    .from('saas_tenants')
-                    .select('*')
-                    .eq('slug', tenantSlug)
-                    .eq('activo', true)
-                    .single();
-
-                if (error || !tenantConfig) throw new Error("Institución no encontrada o inactiva.");
-
-                currentTenantId = tenantConfig.id;
-                tenantConfigGlobal = tenantConfig;
-                localStorage.setItem('saas_current_tenant', currentTenantId);
-
-                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
-                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
-                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
-                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#f1f5f9');
-
-                const institucionNombres = document.querySelectorAll(
-                    '.wl-institucion-nombre, #wl-institucion-nombre, #wl-title-institucion, #sidebar-institucion-nombre'
-                );
-                institucionNombres.forEach(el => {
-                    if (el) el.innerText = tenantConfig.nombre_institucion;
-                });
-
-                if (document.title.includes('·')) {
-                    const prefijo = document.title.split('·')[0];
-                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
-                } else {
-                    document.title = tenantConfig.nombre_institucion;
-                }
-
-                return tenantConfig;
-            } catch (err) {
-                console.error("Error Bootstrapper SaaS:", err);
-                document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
-                        <div>
-                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
-                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
-                        </div>
-                    </div>`;
-                throw err;
-            }
-        }
-
         // =========================================
-        // 3. NAVEGACIÓN Y MODALES
+        // 2. NAVEGACIÓN Y MODALES
         // =========================================
         function cambiarPantalla(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -338,7 +266,7 @@
         }
 
         // =========================================
-        // 4. AUTENTICACIÓN (multi-tenant) — CON VALIDACIÓN DE CLAVE
+        // 3. AUTENTICACIÓN (multi-tenant) — CON VALIDACIÓN DE CLAVE
         // =========================================
         async function ingresarPortal(e) {
             e.preventDefault();
@@ -358,14 +286,14 @@
                 // Validamos email + cuit + estado APROBADO en una sola query.
                 // Sin el .eq('cuit', clave) cualquier email aprobado entraba
                 // con cualquier contraseña.
-                let query = db.from('renmcycf_convenios')
+                let query = window.db.from('renmcycf_convenios')
                     .select('*')
                     .eq('email', email)
                     .eq('cuit', clave)
                     .eq('estado', 'APROBADO');
 
-                if (currentTenantId) {
-                    query = query.eq('tenant_id', currentTenantId);
+                if (window.currentTenantId) {
+                    query = query.eq('tenant_id', window.currentTenantId);
                 }
 
                 const { data, error } = await query.maybeSingle();
@@ -397,7 +325,7 @@
         }
 
         // =========================================
-        // 5. DASHBOARD
+        // 4. DASHBOARD
         // =========================================
         function iniciarDashboard() {
             cambiarPantalla('screen-dashboard');
@@ -412,13 +340,13 @@
             lucide.createIcons();
 
             try {
-                let query = db.from('renmcycf_licitaciones')
+                let query = window.db.from('renmcycf_licitaciones')
                     .select('*')
                     .eq('entidad_id', entidadActual.id)
                     .order('created_at', { ascending: false });
 
-                if (currentTenantId) {
-                    query = query.eq('tenant_id', currentTenantId);
+                if (window.currentTenantId) {
+                    query = query.eq('tenant_id', window.currentTenantId);
                 }
 
                 const { data, error } = await query;
@@ -485,7 +413,7 @@
             lucide.createIcons();
 
             const payload = {
-                tenant_id: currentTenantId,
+                tenant_id: window.currentTenantId,
                 entidad_id: entidadActual.id,
                 entidad_nombre: entidadActual.institucion,
                 titulo: document.getElementById('req-titulo').value.trim(),
@@ -497,7 +425,7 @@
             };
 
             try {
-                const { error } = await db.from('renmcycf_licitaciones').insert([payload]);
+                const { error } = await window.db.from('renmcycf_licitaciones').insert([payload]);
                 if (error) throw error;
 
                 alert("Requerimiento publicado con éxito. Los peritos de la especialidad han sido notificados.");
@@ -520,10 +448,10 @@
         }
 
         // =========================================
-        // 6. INIT
+        // 5. INIT
         // =========================================
         window.addEventListener('DOMContentLoaded', async () => {
-            await initTenant();
+            await window.initTenant();
             lucide.createIcons();
         });
     </script>
