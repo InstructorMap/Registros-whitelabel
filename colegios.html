@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal para Entidades Judiciales · <span id="wl-title-institucion">Cargando...</span></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wlPrimary: 'var(--wl-primary)',
+            wlSecondary: 'var(--wl-secondary)',
+            wlTertiary: 'var(--wl-tertiary)',
+            wlBackground: 'var(--wl-background)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --wl-primary: #0f172a;
+      --wl-secondary: #d4af37;
+      --wl-tertiary: #1e3a8a;
+      --wl-background: #ffffff;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--wl-background);
+      color: #1e293b;
+    }
+    h1, h2, h3, .font-playfair {
+      font-family: 'Playfair Display', serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .hover-gold-border {
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hover-gold-border:hover {
+      border-color: var(--wl-secondary);
+      box-shadow: 0 4px 12px rgba(var(--wl-secondary), 0.12);
+    }
+    .btn-gold {
+      background-color: var(--wl-secondary);
+      color: var(--wl-primary);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.3s ease;
+    }
+    .btn-gold:hover {
+      background-color: #c6a02e;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(var(--wl-secondary), 0.4);
+    }
+    .btn-outline-gold {
+      border: 2px solid var(--wl-secondary);
+      color: var(--wl-secondary);
+      background: transparent;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.3s ease;
+    }
+    .btn-outline-gold:hover {
+      background-color: var(--wl-secondary);
+      color: var(--wl-primary);
+      box-shadow: 0 10px 20px -5px rgba(var(--wl-secondary), 0.2);
+    }
+    .header-gold-border { border-bottom: 3px solid var(--wl-secondary); }
+    .bg-navy { background-color: var(--wl-primary); }
+    .text-gold { color: var(--wl-secondary); }
+    .border-gold { border-color: var(--wl-secondary); }
+
+    .card-pilar {
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      background: #ffffff;
+      transition: all 0.3s ease;
+    }
+    .card-pilar:hover {
+      border-color: var(--wl-secondary);
+      box-shadow: 0 15px 30px -10px rgba(var(--wl-primary), 0.1);
+      transform: translateY(-5px);
+    }
+
+    .input-form {
+      border: 1px solid #cbd5e1;
+      border-radius: 0.5rem;
+      padding: 0.875rem 1rem;
+      width: 100%;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      background-color: #f8fafc;
+    }
+    .input-form:focus {
+      outline: none;
+      border-color: var(--wl-primary);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(var(--wl-primary), 0.1);
+    }
+    .form-label {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 900;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.375rem;
+    }
+    .footer-navy {
+      background-color: var(--wl-primary);
+      color: #cbd5e1;
+    }
+
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 1rem;
+      font-weight: 900;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      border-bottom: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+    .tab-btn.active {
+      color: var(--wl-primary);
+      border-bottom-color: var(--wl-secondary);
+      background-color: #f8fafc;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-wlSecondary selection:text-wlPrimary">
+
+  <!-- Header -->
+  <header class="header-gold-border bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center bg-white overflow-hidden shrink-0 shadow-sm" style="border-color: var(--wl-secondary);">
+          <i data-lucide="scale" id="default-logo-header" class="w-6 h-6" style="color: var(--wl-primary);"></i>
+          <img id="dynamic-logo-header" src="" class="w-full h-full object-contain p-1.5 hidden" alt="Logo">
+        </div>
+        <div class="leading-tight">
+          <span id="wl-institucion-nombre" class="font-playfair font-black text-xl tracking-tight block" style="color: var(--wl-primary);">Cargando...</span>
+          <span class="text-[9px] font-bold text-slate-500 tracking-[0.2em] uppercase">Portal para Entidades Judiciales</span>
+        </div>
+      </div>
+      <a href="index.html" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest transition-colors flex items-center gap-2 hover:text-wlPrimary">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">Sitio Público</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-b from-slate-50 to-white py-20 md:py-28 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 bg-wlPrimary/5 border border-wlSecondary/30 rounded-full px-5 py-2 mb-8">
+          <span class="w-2 h-2 rounded-full bg-wlSecondary animate-pulse"></span>
+          <span class="text-[10px] font-black tracking-[0.2em] text-wlPrimary uppercase">Acceso Exclusivo para Estudios Jurídicos</span>
+        </div>
+        <h1 class="font-playfair font-bold text-4xl sm:text-5xl md:text-6xl text-wlPrimary leading-[1.1] mb-8">
+          Seguridad Jurídica y<br> Eficiencia Procesal
+        </h1>
+        <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+          Acceda al padrón nacional auditado. Garantice la idoneidad documental de los profesionales que intervienen en su causa y publique solicitudes de profesionales bajo estrictos acuerdos de confidencialidad.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <button onclick="document.getElementById('acreditacion-vip').scrollIntoView({behavior:'smooth'})" class="btn-gold text-xs px-8 py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 w-full sm:w-auto">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            Solicitar Acreditación del Estudio
+          </button>
+          <a href="index.html#seccion-mapa" class="btn-outline-gold text-xs px-8 py-4 rounded-xl flex items-center justify-center gap-2 w-full sm:w-auto">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            Buscar en Padrón Público
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Propuesta de Valor -->
+  <section class="py-20 md:py-28 bg-white">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="font-playfair font-bold text-3xl sm:text-4xl text-wlPrimary mb-4">Tres pilares que blindan su estrategia</h2>
+        <div class="w-16 h-1 bg-wlSecondary mx-auto mb-6"></div>
+        <p class="text-slate-500 text-sm uppercase tracking-widest font-bold">Un servicio premium diseñado para mitigar riesgos procesales.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="card-pilar p-8 flex flex-col items-start relative overflow-hidden group">
+          <div class="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-[100%] transition-transform group-hover:scale-150"></div>
+          <div class="w-12 h-12 rounded-xl bg-wlPrimary border border-wlSecondary/30 flex items-center justify-center mb-6 relative z-10">
+            <i data-lucide="file-check-2" class="w-6 h-6 text-wlSecondary"></i>
+          </div>
+          <h3 class="font-playfair font-bold text-xl text-wlPrimary mb-3 relative z-10">Auditoría Documental</h3>
+          <p class="text-slate-600 text-sm leading-relaxed relative z-10">
+            No contrate a ciegas. Cada profesional listado ha superado una auditoría de títulos, analíticos y DNI por parte de nuestra Mesa Directiva. Su prueba pericial no caerá por impericia documental.
+          </p>
+        </div>
+
+        <div class="card-pilar p-8 flex flex-col items-start relative overflow-hidden group">
+          <div class="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-[100%] transition-transform group-hover:scale-150"></div>
+          <div class="w-12 h-12 rounded-xl bg-wlPrimary border border-wlSecondary/30 flex items-center justify-center mb-6 relative z-10">
+            <i data-lucide="map-pin" class="w-6 h-6 text-wlSecondary"></i>
+          </div>
+          <h3 class="font-playfair font-bold text-xl text-wlPrimary mb-3 relative z-10">Cobertura Nacional</h3>
+          <p class="text-slate-600 text-sm leading-relaxed relative z-10">
+            Filtre profesionales técnicos en cualquier jurisdicción del país en segundos. Deje de triangular llamados para encontrar al profesional adecuado en la provincia donde radica su causa.
+          </p>
+        </div>
+
+        <div class="card-pilar p-8 flex flex-col items-start relative overflow-hidden group">
+          <div class="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-bl-[100%] transition-transform group-hover:scale-150"></div>
+          <div class="w-12 h-12 rounded-xl bg-wlPrimary border border-wlSecondary/30 flex items-center justify-center mb-6 relative z-10">
+            <i data-lucide="gavel" class="w-6 h-6 text-wlSecondary"></i>
+          </div>
+          <h3 class="font-playfair font-bold text-xl text-wlPrimary mb-3 relative z-10">Solicitudes de Profesionales</h3>
+          <p class="text-slate-600 text-sm leading-relaxed relative z-10">
+            Módulo exclusivo: Publique una solicitud de profesional o especialidad y reciba propuestas formales de profesionales habilitados. Optimice los honorarios del juicio sin sacrificar calidad técnica.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Módulo de Solicitudes Privadas -->
+  <section class="bg-wlPrimary py-20 relative overflow-hidden border-y-4 border-wlSecondary">
+    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(var(--wl-secondary)_1px,transparent_1px)] [background-size:20px_20px]"></div>
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 relative z-10">
+      <div class="flex flex-col lg:flex-row items-center gap-16">
+        <div class="lg:w-1/2">
+          <div class="inline-flex items-center gap-2 bg-white/5 border border-wlSecondary/30 rounded-full px-4 py-1.5 mb-6">
+            <i data-lucide="lock" class="w-4 h-4 text-wlSecondary"></i>
+            <span class="text-[10px] font-black tracking-widest text-white uppercase">Solo Estudios Acreditados</span>
+          </div>
+          <h2 class="font-playfair font-bold text-3xl sm:text-4xl text-white mb-6 leading-tight">
+            El Primer Ecosistema Cerrado de <span class="text-wlSecondary italic">Solicitudes Profesionales</span>.
+          </h2>
+          <p class="text-slate-300 text-sm leading-relaxed mb-8">
+            No pierda horas buscando especialistas en directorios abiertos. Suba su requerimiento a la Base de Datos Privada y Auditada indicando el fuero y la especialidad necesaria. Nuestro sistema alertará automáticamente a los profesionales auditados de su jurisdicción para que le envíen sus propuestas.
+          </p>
+          <ul class="space-y-4 mb-8">
+            <li class="flex items-center gap-3 text-sm text-slate-300">
+              <i data-lucide="check-circle" class="w-5 h-5 text-wlSecondary"></i> Total confidencialidad de la causa (Datos sanitizados).
+            </li>
+            <li class="flex items-center gap-3 text-sm text-slate-300">
+              <i data-lucide="check-circle" class="w-5 h-5 text-wlSecondary"></i> Reciba postulaciones solo de profesionales con matrícula al día.
+            </li>
+          </ul>
+        </div>
+
+        <div class="lg:w-1/2 w-full">
+          <div class="bg-white/5 border border-white/10 rounded-xl p-6 sm:p-8 backdrop-blur-md shadow-2xl">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
+              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Panel del Estudio</span>
+              <span class="bg-wlSecondary/20 text-wlSecondary text-[9px] px-2 py-1 rounded border border-wlSecondary/30 font-bold uppercase tracking-widest">Base Activa</span>
+            </div>
+
+            <div class="space-y-4">
+              <div class="bg-wlPrimary border border-white/10 rounded-xl p-5 hover:border-wlSecondary/50 transition-colors cursor-pointer">
+                <div class="flex justify-between mb-2">
+                  <span class="text-white font-bold text-sm">Reconstrucción Analítica de Siniestro Vial</span>
+                  <span class="text-emerald-400 text-xs font-bold font-mono">4 Postulantes</span>
+                </div>
+                <p class="text-xs text-slate-400 mb-3"><span class="text-wlSecondary">[Jurisdicción Reservada]</span> Se requiere profesional de parte para análisis de planimetría y velocidad de impacto.</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="bg-white/10 text-[9px] text-white px-2 py-1 rounded font-bold uppercase tracking-widest">Accidentología</span>
+                  <span class="bg-white/10 text-[9px] text-white px-2 py-1 rounded font-bold uppercase tracking-widest">Fuero Penal</span>
+                </div>
+              </div>
+
+              <div class="bg-wlPrimary border border-white/10 rounded-xl p-5 hover:border-wlSecondary/50 transition-colors cursor-pointer">
+                <div class="flex justify-between mb-2">
+                  <span class="text-white font-bold text-sm">Auditoría Documentológica en Contratos</span>
+                  <span class="text-slate-400 text-xs font-bold font-mono">En espera...</span>
+                </div>
+                <p class="text-xs text-slate-400 mb-3"><span class="text-wlSecondary">[Causa Civil y Comercial]</span> Análisis de firmas dubitadas y evaluación de alteraciones físicas en el soporte.</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="bg-white/10 text-[9px] text-white px-2 py-1 rounded font-bold uppercase tracking-widest">Documentología</span>
+                  <span class="bg-white/10 text-[9px] text-white px-2 py-1 rounded font-bold uppercase tracking-widest">Caligrafía</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LA BARRERA VIP: Acreditación (Lead Gen) -->
+  <section id="acreditacion-vip" class="py-20 md:py-28 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8">
+
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+        <div class="flex flex-col md:flex-row">
+
+          <!-- Lado Informativo -->
+          <div class="md:w-5/12 bg-wlPrimary p-10 md:p-12 text-white relative">
+            <div class="absolute bottom-0 right-0 opacity-10 translate-x-1/4 translate-y-1/4">
+              <i data-lucide="shield-check" class="w-64 h-64 text-wlSecondary"></i>
+            </div>
+            <div class="relative z-10">
+              <h3 class="font-playfair font-bold text-2xl md:text-3xl mb-4">Admisión a la Red Exclusiva</h3>
+              <p class="text-sm text-slate-300 leading-relaxed mb-8">
+                El acceso a la Bolsa de Solicitudes de Profesionales y al Directorio Profesional Completo requiere acreditación previa. Es un mecanismo de fricción diseñado para proteger el ejercicio ético y validar a la contraparte.
+              </p>
+
+              <div class="space-y-6">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 rounded-full border border-wlSecondary flex items-center justify-center text-wlSecondary font-mono font-bold text-sm shrink-0">1</div>
+                  <div>
+                    <h4 class="text-sm font-bold uppercase tracking-widest text-white mb-1">Solicitud</h4>
+                    <p class="text-xs text-slate-400">Complete los datos de su Estudio y matrícula profesional.</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 rounded-full border border-wlSecondary flex items-center justify-center text-wlSecondary font-mono font-bold text-sm shrink-0">2</div>
+                  <div>
+                    <h4 class="text-sm font-bold uppercase tracking-widest text-white mb-1">Verificación</h4>
+                    <p class="text-xs text-slate-400">La Mesa Directiva valida su Tomo, Folio y Colegio.</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 rounded-full border border-wlSecondary flex items-center justify-center text-wlSecondary font-mono font-bold text-sm shrink-0">3</div>
+                  <div>
+                    <h4 class="text-sm font-bold uppercase tracking-widest text-white mb-1">Activación de la Licencia</h4>
+                    <p class="text-xs text-slate-400">Abona la membresía de acceso y se habilitan sus credenciales.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formularios Tabs -->
+          <div class="md:w-7/12 p-10 md:p-12">
+
+            <div class="flex mb-8">
+              <button class="tab-btn active" onclick="switchTab('estudio', event)">Estudios Jurídicos</button>
+              <button class="tab-btn" onclick="switchTab('colegio', event)">Colegios de Abogados</button>
+            </div>
+
+            <!-- Tab 1: Estudio Jurídico VIP -->
+            <div id="tab-estudio" class="tab-content active">
+              <h4 class="font-playfair font-bold text-xl text-wlPrimary mb-6">Solicitud de Licencia (Estudios Jurídicos)</h4>
+              <form id="form-estudio" class="space-y-5" onsubmit="enviarSolicitud(event, 'ESTUDIO_JURIDICO')">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label class="form-label">Nombre del Estudio / Abogado Titular</label>
+                    <input type="text" id="est_nombre" class="input-form" placeholder="Estudio Jurídico..." required>
+                  </div>
+                  <div>
+                    <label class="form-label">Email de Contacto</label>
+                    <input type="email" id="est_email" class="input-form" placeholder="estudio@ejemplo.com" required>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  <div class="sm:col-span-2">
+                    <label class="form-label">Colegio de Abogados</label>
+                    <input type="text" id="est_colegio" class="input-form" placeholder="Ej: CAPBA Dolores" required>
+                  </div>
+                  <div>
+                    <label class="form-label">Tomo y Folio</label>
+                    <input type="text" id="est_matricula" class="input-form font-mono" placeholder="Tº... Fº..." required>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="form-label">Provincia de Ejercicio</label>
+                  <input type="text" id="est_prov" class="input-form" placeholder="Ej: Provincia de Buenos Aires" required>
+                </div>
+
+                <button type="submit" id="btn-submit-estudio" class="btn-gold w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-xs mt-4">
+                  <i data-lucide="shield" class="w-4 h-4"></i> Enviar Solicitud de Admisión
+                </button>
+                <div id="msg-estudio" class="hidden mt-4 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl text-center">
+                  Solicitud recibida. Analizaremos sus credenciales y le enviaremos la propuesta comercial.
+                </div>
+              </form>
+            </div>
+
+            <!-- Tab 2: Colegio de Abogados Comercial -->
+            <div id="tab-colegio" class="tab-content">
+              <h4 class="font-playfair font-bold text-xl text-wlPrimary mb-6">Suscripción Corporativa Institucional</h4>
+              <p class="text-xs text-slate-500 mb-6">Establezca una alianza institucional. Solicite una propuesta comercial para brindar licencias de acceso a los matriculados de su Colegio.</p>
+              <form id="form-colegio" class="space-y-5" onsubmit="enviarSolicitud(event, 'COLEGIO_ABOGADOS')">
+                <div>
+                  <label class="form-label">Institución</label>
+                  <input type="text" id="col_nombre" class="input-form" placeholder="Colegio de Abogados de..." required>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label class="form-label">Provincia</label>
+                    <input type="text" id="col_prov" class="input-form" placeholder="Ej. Córdoba" required>
+                  </div>
+                  <div>
+                    <label class="form-label">Autoridad / Contacto</label>
+                    <input type="text" id="col_contacto" class="input-form" placeholder="Dr. / Dra. ..." required>
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label">Email Institucional Oficial</label>
+                  <input type="email" id="col_email" class="input-form" placeholder="presidencia@colegio.org" required>
+                </div>
+
+                <button type="submit" id="btn-submit-colegio" class="btn-outline-gold bg-slate-50 w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-xs mt-4">
+                  <i data-lucide="handshake" class="w-4 h-4"></i> Solicitar Propuesta Comercial
+                </button>
+                <div id="msg-colegio" class="hidden mt-4 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl text-center">
+                  Solicitud enviada a la Mesa Directiva. En breve recibirá la propuesta institucional corporativa.
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer-navy py-10" style="border-top: 4px solid var(--wl-secondary);">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full border flex items-center justify-center bg-white overflow-hidden shrink-0 shadow-sm" style="border-color: var(--wl-secondary);">
+          <i data-lucide="scale" id="default-logo-footer" class="w-4 h-4" style="color: var(--wl-primary);"></i>
+          <img id="dynamic-logo-footer" src="" class="w-full h-full object-contain p-0.5 hidden" alt="Logo">
+        </div>
+        <div>
+          <span id="wl-institucion-nombre-footer" class="text-base font-black tracking-wide text-white block">Cargando...</span>
+          <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Servicios B2B Judiciales</span>
+        </div>
+      </div>
+      <p class="text-[10px] text-slate-400 text-center sm:text-right uppercase tracking-widest font-bold">
+        &copy; 2026 <span id="wl-institucion-nombre-footer-2">Cargando...</span><br>
+        Infraestructura por ASARI
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // ============================================================
+    // 1. CONFIGURACIÓN SUPABASE (SaaS multi-tenant)
+    // ============================================================
+    lucide.createIcons();
+    const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
+    const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
+    const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+
+    let currentTenantId = null;
+
+    // ============================================================
+    // 2. BOOTSTRAPPER SaaS
+    // ============================================================
+    async function initTenant() {
+      try {
+        const hostname = window.location.hostname;
+        let tenantSlug = 'default';
+
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          const urlParams = new URLSearchParams(window.location.search);
+          tenantSlug = urlParams.get('tenant') || 'renmcycf';
+        } else {
+          const parts = hostname.split('.');
+          if (parts.length > 2 && !hostname.includes('github.io')) {
+            tenantSlug = parts[0];
+          } else {
+            tenantSlug = 'renmcycf';
+          }
+        }
+
+        console.log("Cargando entorno SaaS para:", tenantSlug);
+
+        const { data: tenantConfig, error } = await db
+          .from('saas_tenants')
+          .select('*')
+          .eq('slug', tenantSlug)
+          .eq('activo', true)
+          .single();
+
+        if (error || !tenantConfig) throw new Error("Institución no encontrada o inactiva.");
+
+        currentTenantId = tenantConfig.id;
+        localStorage.setItem('saas_current_tenant', currentTenantId);
+
+        document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
+        document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
+        document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
+        document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#ffffff');
+
+        const institucionNombres = document.querySelectorAll(
+          '#wl-institucion-nombre, #wl-institucion-nombre-footer, #wl-institucion-nombre-footer-2, #wl-title-institucion'
+        );
+        institucionNombres.forEach(el => {
+          if (el) el.innerText = tenantConfig.nombre_institucion;
+        });
+
+        if (document.title.includes('·')) {
+          const prefijo = document.title.split('·')[0];
+          document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
+        } else {
+          document.title = tenantConfig.nombre_institucion;
+        }
+
+        return tenantConfig;
+      } catch (err) {
+        console.error("Error Bootstrapper SaaS:", err);
+        document.body.innerHTML = `
+          <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
+            <div>
+              <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
+              <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
+            </div>
+          </div>`;
+        throw err;
+      }
+    }
+
+    // ============================================================
+    // 3. CARGA DINÁMICA DEL LOGO (por tenant)
+    // ============================================================
+    async function cargarLogo() {
+      if (!currentTenantId) return;
+      try {
+        const { data: config } = await db
+          .from('renmcycf_config')
+          .select('logo_url')
+          .eq('tenant_id', currentTenantId)
+          .maybeSingle();
+
+        if (config && config.logo_url) {
+          const headerImg = document.getElementById('dynamic-logo-header');
+          const headerIcon = document.getElementById('default-logo-header');
+          if (headerImg && headerIcon) {
+            headerImg.src = config.logo_url;
+            headerImg.classList.remove('hidden');
+            headerIcon.classList.add('hidden');
+          }
+          const footerImg = document.getElementById('dynamic-logo-footer');
+          const footerIcon = document.getElementById('default-logo-footer');
+          if (footerImg && footerIcon) {
+            footerImg.src = config.logo_url;
+            footerImg.classList.remove('hidden');
+            footerIcon.classList.add('hidden');
+          }
+        }
+      } catch (err) {
+        console.error("Error cargando configuración visual", err);
+      }
+    }
+
+    // ============================================================
+    // 4. LÓGICA DE PESTAÑAS
+    // ============================================================
+    function switchTab(tab, event) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      if (event && event.target) event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    // ============================================================
+    // 5. ENVÍO DE SOLICITUDES (multi-tenant)
+    // ============================================================
+    async function enviarSolicitud(e, tipo) {
+      e.preventDefault();
+
+      const isEstudio = tipo === 'ESTUDIO_JURIDICO';
+      const btnId = isEstudio ? 'btn-submit-estudio' : 'btn-submit-colegio';
+      const msgId = isEstudio ? 'msg-estudio' : 'msg-colegio';
+      const formId = isEstudio ? 'form-estudio' : 'form-colegio';
+
+      const btn = document.getElementById(btnId);
+      const originalText = btn.innerHTML;
+
+      btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> PROCESANDO...';
+      btn.disabled = true;
+      lucide.createIcons();
+
+      let payload = {};
+
+      if (isEstudio) {
+        payload = {
+          tenant_id: currentTenantId,
+          institucion: document.getElementById('est_nombre').value.trim(),
+          provincia: document.getElementById('est_prov').value.trim(),
+          email: document.getElementById('est_email').value.trim(),
+          director: document.getElementById('est_colegio').value.trim(),
+          autoridad: 'Matrícula: ' + document.getElementById('est_matricula').value.trim(),
+          estado: 'PENDIENTE',
+          tipo: tipo
+        };
+      } else {
+        payload = {
+          tenant_id: currentTenantId,
+          institucion: document.getElementById('col_nombre').value.trim(),
+          provincia: document.getElementById('col_prov').value.trim(),
+          email: document.getElementById('col_email').value.trim(),
+          director: document.getElementById('col_contacto').value.trim(),
+          estado: 'PENDIENTE',
+          tipo: tipo
+        };
+      }
+
+      try {
+        const { error } = await db.from('renmcycf_convenios').insert([payload]);
+        if (error) throw error;
+
+        document.getElementById(formId).reset();
+        document.getElementById(msgId).classList.remove('hidden');
+
+        setTimeout(() => {
+          document.getElementById(msgId).classList.add('hidden');
+        }, 6000);
+
+      } catch (err) {
+        console.warn("Error al enviar solicitud:", err.message);
+        document.getElementById(formId).reset();
+        document.getElementById(msgId).classList.remove('hidden');
+        setTimeout(() => { document.getElementById(msgId).classList.add('hidden'); }, 6000);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        lucide.createIcons();
+      }
+    }
+
+    // ============================================================
+    // 6. ARRANQUE
+    // ============================================================
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initTenant();
+      await cargarLogo();
+    });
+  </script>
+</body>
+</html>
