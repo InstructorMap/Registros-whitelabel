@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="saas-core.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -888,16 +889,13 @@
 
     <script>
         // ============================================================
-        // 1. CONFIGURACIÓN DE SUPABASE Y VARIABLES GLOBALES
+        // 1. BOOTSTRAPPER SaaS (inyectado por saas-core.js)
         // ============================================================
-        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
-        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+        lucide.createIcons();
 
         // ⚠️ LÍMITE GLOBAL DE DIPLOMAS (sincronizado con el index público)
         const MAX_DIPLOMAS = 30;
 
-        let currentTenantId = null;
         let adminUser = null;
         let padronCompleto = [];
         let datosExcel = [];
@@ -910,92 +908,14 @@
         let suscriptoresCache = [];
 
         // ============================================================
-        // 2. UTILIDADES CORE (Tailwind Hex -> RGB)
+        // 2. BOOTSTRAPPER SaaS — APLICAR LOGO Y HERO
         // ============================================================
-        const hexToRgb = (hex) => {
-            if (!hex) return '59 130 246'; 
-            hex = hex.replace('#', '');
-            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-            return `${parseInt(hex.substring(0,2), 16)} ${parseInt(hex.substring(2,4), 16)} ${parseInt(hex.substring(4,6), 16)}`;
-        };
-
-        // ============================================================
-        // 3. BOOTSTRAPPER SaaS
-        // ============================================================
-        async function initTenantPanel() {
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                let tenantSlug = urlParams.get('tenant');
-
-                if (!tenantSlug) {
-                    const hostname = window.location.hostname;
-                    const parts = hostname.split('.');
-
-                    if (parts.length > 2 && !hostname.includes('github.io') && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-                        tenantSlug = parts[0];
-                    } else {
-                        tenantSlug = 'instructormap';
-                    }
-                }
-
-                console.log("Cargando entorno SaaS para:", tenantSlug);
-
-                const { data: tenantConfig, error } = await db
-                    .from('saas_tenants')
-                    .select('*')
-                    .eq('slug', tenantSlug)
-                    .eq('activo', true)
-                    .single();
-
-                if (error || !tenantConfig) {
-                    throw new Error("Institución no encontrada o inactiva.");
-                }
-
-                currentTenantId = tenantConfig.id;
-                localStorage.setItem('saas_current_tenant', currentTenantId);
-
-                document.documentElement.style.setProperty('--wl-secondary', hexToRgb(tenantConfig.color_secundario || '#fbbf24'));
-                document.documentElement.style.setProperty('--wl-tertiary', hexToRgb(tenantConfig.color_terciario || '#1e3a8a'));
-
-                const institucionNombres = document.querySelectorAll('#wl-institucion-nombre, #wl-title-institucion, #wl-sidebar-institucion, #modal-institucion-nombre');
-                institucionNombres.forEach(el => {
-                    if (el) el.innerText = tenantConfig.nombre_institucion;
-                });
-
-                if (document.title.includes('·')) {
-                    const prefijo = document.title.split('·')[0];
-                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
-                } else {
-                    document.title = `Panel de Administración · ${tenantConfig.nombre_institucion}`;
-                }
-
-                window._saasTenantFallback = {
-                    logo_url: tenantConfig.logo_url || null,
-                    hero_image_url: tenantConfig.hero_image_url || null
-                };
-
-                await aplicarLogoYHero();
-                document.body.classList.add('ready');
-
-            } catch (err) {
-                console.error("Error Bootstrapper SaaS:", err);
-                document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
-                        <div>
-                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
-                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
-                        </div>
-                    </div>`;
-                document.body.classList.add('ready');
-            }
-        }
-
         async function aplicarLogoYHero() {
             try {
-                const { data: conf } = await db
+                const { data: conf } = await window.db
                     .from('renmcycf_config')
                     .select('logo_url, hero_image_url')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
 
                 const fallback = window._saasTenantFallback || {};
@@ -1029,16 +949,17 @@
         }
 
         // ============================================================
-        // 4. INICIALIZACIÓN
+        // 3. INICIALIZACIÓN
         // ============================================================
         window.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
-            await initTenantPanel();
+            await window.initTenant();
+            await aplicarLogoYHero();
             await verificarSesion();
         });
 
         // ==========================================
-        // 5. AUTENTICACIÓN Y ROLES
+        // 4. AUTENTICACIÓN Y ROLES
         // ==========================================
         async function iniciarSesion(e) {
             e.preventDefault();
@@ -1051,7 +972,7 @@
             btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i>'; btn.disabled = true;
 
             try {
-                const { error } = await db.auth.signInWithPassword({ email, password: pass });
+                const { error } = await window.db.auth.signInWithPassword({ email, password: pass });
                 if (error) throw error;
                 await verificarSesion();
             } catch (err) {
@@ -1063,13 +984,13 @@
         }
 
         async function verificarSesion() {
-            const { data: { session }, error } = await db.auth.getSession();
+            const { data: { session }, error } = await window.db.auth.getSession();
             if (error || !session) { document.getElementById('login-screen').style.display = 'flex'; return; }
             
-            const { data: rolData } = await db.from('renmcycf_roles')
+            const { data: rolData } = await window.db.from('renmcycf_roles')
                 .select('rol, activo, nombres, modulos_permitidos')
                 .eq('user_id', session.user.id)
-                .eq('tenant_id', currentTenantId)
+                .eq('tenant_id', window.currentTenantId)
                 .single();
             
             if (!rolData || !rolData.activo) { 
@@ -1140,7 +1061,7 @@
         }
 
         async function cerrarSesion(redirect = true) { 
-            await db.auth.signOut(); 
+            await window.db.auth.signOut(); 
             adminUser = null;
             if (redirect) {
                 document.getElementById('login-email').value = '';
@@ -1153,9 +1074,9 @@
 
         async function cargarWhatsappRegistro() {
             try {
-                const { data } = await db.from('renmcycf_config')
+                const { data } = await window.db.from('renmcycf_config')
                     .select('whatsapp')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
                     
                 if (data && data.whatsapp) {
@@ -1165,7 +1086,7 @@
         }
 
         // ==========================================
-        // 6. NAVEGACIÓN Y DASHBOARD
+        // 5. NAVEGACIÓN Y DASHBOARD
         // ==========================================
         function showTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1219,25 +1140,25 @@
 
         async function actualizarDashboard() {
             try {
-                const { count: activos } = await db.from('renmcycf_padron')
+                const { count: activos } = await window.db.from('renmcycf_padron')
                     .select('*', { count: 'exact', head: true })
                     .eq('estado_legal', 'ACTIVO')
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
-                const { count: pendientes } = await db.from('renmcycf_solicitudes')
+                const { count: pendientes } = await window.db.from('renmcycf_solicitudes')
                     .select('*', { count: 'exact', head: true })
                     .in('estado', ['PENDIENTE', 'RENOVACION_PENDIENTE'])
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
-                const { data: conf } = await db.from('renmcycf_config')
+                const { data: conf } = await window.db.from('renmcycf_config')
                     .select('arancel_a1, arancel_a2, arancel_a3, arancel_a4, visitas')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
                     
-                const { data: padronActivo } = await db.from('renmcycf_padron')
+                const { data: padronActivo } = await window.db.from('renmcycf_padron')
                     .select('categoria')
                     .eq('estado_legal', 'ACTIVO')
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 
                 const aranceles = {
                     'A1': conf?.arancel_a1 || 0,
@@ -1276,9 +1197,9 @@
 
         async function actualizarGraficos() {
             try {
-                const { data: padron } = await db.from('renmcycf_padron')
+                const { data: padron } = await window.db.from('renmcycf_padron')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('id', { ascending: false });
                 
                 if (padron && padron.length > 0) {
@@ -1338,14 +1259,14 @@
 
         async function descargarReporteExcel() {
             try {
-                const { data: padron } = await db.from('renmcycf_padron')
+                const { data: padron } = await window.db.from('renmcycf_padron')
                     .select('*')
                     .eq('estado_legal', 'ACTIVO')
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
-                const { data: config } = await db.from('renmcycf_config')
+                const { data: config } = await window.db.from('renmcycf_config')
                     .select('arancel_a1, arancel_a2, arancel_a3, arancel_a4')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
                 
                 const aranceles = {
@@ -1383,16 +1304,16 @@
         }
 
         // ==========================================
-        // 7. CRM TRÁMITES Y DOSSIER
+        // 6. CRM TRÁMITES Y DOSSIER
         // ==========================================
         async function cargarSolicitudes() {
             const tbody = document.getElementById('crm-body');
             tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data, error } = await db.from('renmcycf_solicitudes')
+                const { data, error } = await window.db.from('renmcycf_solicitudes')
                     .select('*')
                     .in('estado', ['PENDIENTE', 'OBSERVADO', 'RENOVACION_PENDIENTE'])
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('id', { ascending: false });
                     
                 if (error) throw error;
@@ -1435,10 +1356,10 @@
         async function aprobarRenovacion(idSol, dni) {
             if(!confirm("¿Desea aprobar este pago y extender la matrícula 1 año?")) return;
             try {
-                const { data: padron, error: errPad } = await db.from('renmcycf_padron')
+                const { data: padron, error: errPad } = await window.db.from('renmcycf_padron')
                     .select('fecha_vencimiento')
                     .eq('dni', dni)
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .single();
                     
                 if(errPad) throw errPad;
@@ -1447,15 +1368,15 @@
                 if (baseDate < new Date()) baseDate = new Date();
                 baseDate.setFullYear(baseDate.getFullYear() + 1);
 
-                await db.from('renmcycf_padron')
+                await window.db.from('renmcycf_padron')
                     .update({ fecha_vencimiento: baseDate.toISOString(), estado_legal: 'ACTIVO' })
                     .eq('dni', dni)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
-                await db.from('renmcycf_solicitudes')
+                await window.db.from('renmcycf_solicitudes')
                     .update({ estado: 'APROBADO' })
                     .eq('id', idSol)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 
                 alert("✅ Renovación aprobada. El padrón ha sido actualizado.");
                 cargarSolicitudes();
@@ -1466,10 +1387,10 @@
             const tbody = document.getElementById('auditoria-body');
             tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data, error } = await db.from('renmcycf_solicitudes')
+                const { data, error } = await window.db.from('renmcycf_solicitudes')
                     .select('*')
                     .eq('estado', 'EN AUDITORIA')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('id', { ascending: false });
                     
                 if (error) throw error;
@@ -1587,7 +1508,7 @@
                     const ext = file.name.split('.').pop().toLowerCase();
                     const nombreArchivo = `diploma_${itemDossierActual.dni}_${Date.now()}.${ext}`;
                     
-                    const { error: upErr } = await db.storage
+                    const { error: upErr } = await window.db.storage
                         .from('renmcycf-documentos')
                         .upload(nombreArchivo, file, { cacheControl: '3600', upsert: false });
                     if (upErr) throw upErr;
@@ -1599,10 +1520,10 @@
                         .includes(itemDossierActual.estado);
                     const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
                     
-                    const { error: dbErr } = await db.from(tablaDestino)
+                    const { error: dbErr } = await window.db.from(tablaDestino)
                         .update({ diplomas_urls: JSON.stringify(arr) })
                         .eq('id', itemDossierActual.id)
-                        .eq('tenant_id', currentTenantId);
+                        .eq('tenant_id', window.currentTenantId);
                     if (dbErr) throw dbErr;
                     
                     itemDossierActual.diplomas_urls = JSON.stringify(arr);
@@ -1640,13 +1561,13 @@
                     try {
                         const nombreViejo = urlVieja.split('/').pop().split('?')[0];
                         if (nombreViejo) {
-                            await db.storage.from('renmcycf-documentos').remove([nombreViejo]);
+                            await window.db.storage.from('renmcycf-documentos').remove([nombreViejo]);
                         }
                     } catch(e) { console.warn('No se pudo borrar el viejo:', e.message); }
                     
                     const ext = file.name.split('.').pop().toLowerCase();
                     const nombreNuevo = `diploma_${itemDossierActual.dni}_${Date.now()}.${ext}`;
-                    const { error: upErr } = await db.storage
+                    const { error: upErr } = await window.db.storage
                         .from('renmcycf-documentos')
                         .upload(nombreNuevo, file, { cacheControl: '3600', upsert: false });
                     if (upErr) throw upErr;
@@ -1658,10 +1579,10 @@
                         .includes(itemDossierActual.estado);
                     const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
                     
-                    const { error: dbErr } = await db.from(tablaDestino)
+                    const { error: dbErr } = await window.db.from(tablaDestino)
                         .update({ diplomas_urls: JSON.stringify(arr) })
                         .eq('id', itemDossierActual.id)
-                        .eq('tenant_id', currentTenantId);
+                        .eq('tenant_id', window.currentTenantId);
                     if (dbErr) throw dbErr;
                     
                     itemDossierActual.diplomas_urls = JSON.stringify(arr);
@@ -1689,7 +1610,7 @@
             try {
                 const nombreArchivo = urlEliminar.split('/').pop().split('?')[0];
                 if (nombreArchivo) {
-                    await db.storage.from('renmcycf-documentos').remove([nombreArchivo]);
+                    await window.db.storage.from('renmcycf-documentos').remove([nombreArchivo]);
                 }
                 
                 arr.splice(idx, 1);
@@ -1698,10 +1619,10 @@
                     .includes(itemDossierActual.estado);
                 const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
                 
-                const { error: dbErr } = await db.from(tablaDestino)
+                const { error: dbErr } = await window.db.from(tablaDestino)
                     .update({ diplomas_urls: JSON.stringify(arr) })
                     .eq('id', itemDossierActual.id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 if (dbErr) throw dbErr;
                 
                 itemDossierActual.diplomas_urls = JSON.stringify(arr);
@@ -1901,10 +1822,10 @@
         async function elevarAComite() {
             if (!itemDossierActual) return;
             try {
-                await db.from('renmcycf_solicitudes')
+                await window.db.from('renmcycf_solicitudes')
                     .update({ estado: 'EN AUDITORIA' })
                     .eq('id', itemDossierActual.id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
                 alert("✅ Solicitud elevada a Comité de Auditoría.");
                 cerrarExpediente(); cargarSolicitudes(); cargarAuditoria();
@@ -1916,10 +1837,10 @@
             if(!confirm("Esto enviará el trámite a estado OBSERVADO. El usuario verá el mensaje en rojo en su panel de tracking. ¿Proceder?")) return;
             
             try {
-                await db.from('renmcycf_solicitudes')
+                await window.db.from('renmcycf_solicitudes')
                     .update({ estado: 'OBSERVADO' })
                     .eq('id', itemDossierActual.id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
                 const numero = itemDossierActual.telefono || whatsappRegistro || '5490000000000';
                 const mensaje = encodeURIComponent(`Estimado/a ${itemDossierActual.nombres} ${itemDossierActual.apellidos}, le solicitamos que ingrese a la sección 'Seguimiento' de nuestra web para corregir la documentación presentada.`);
@@ -1932,10 +1853,10 @@
             if (!itemDossierActual) return;
             if (!confirm("¿Rechazar esta solicitud definitivamente?")) return;
             try {
-                await db.from('renmcycf_solicitudes')
+                await window.db.from('renmcycf_solicitudes')
                     .update({ estado: 'RECHAZADO' })
                     .eq('id', itemDossierActual.id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
                 alert("✅ Solicitud rechazada.");
                 cerrarExpediente(); cargarAuditoria();
@@ -1952,10 +1873,10 @@
             lucide.createIcons();
 
             try {
-                const { data: matriculas, error: errorConsulta } = await db
+                const { data: matriculas, error: errorConsulta } = await window.db
                     .from('renmcycf_padron')
                     .select('matricula_oficial')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .not('matricula_oficial', 'is', null);
                 
                 if (errorConsulta) throw errorConsulta;
@@ -2001,8 +1922,8 @@
                 // Consolidar diplomas: array JSON + fallback legacy
                 const diplomasFinales = extraerDiplomasDeItem(itemDossierActual);
                 
-                const { error: insErr } = await db.from('renmcycf_padron').insert([{
-                    tenant_id: currentTenantId,
+                const { error: insErr } = await window.db.from('renmcycf_padron').insert([{
+                    tenant_id: window.currentTenantId,
                     solicitud_id: itemDossierActual.id,
                     matricula_oficial: mat,
                     fecha_alta: new Date().toISOString(),
@@ -2027,10 +1948,10 @@
                 }]);
                 if (insErr) throw insErr;
                 
-                await db.from('renmcycf_solicitudes')
+                await window.db.from('renmcycf_solicitudes')
                     .update({ estado: 'APROBADO' })
                     .eq('id', itemDossierActual.id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 
                 alert(`✅ Matrícula ${mat} aprobada con ${diplomasFinales.length} diploma(s) integrado(s).`);
                 cerrarExpediente(); cargarAuditoria(); cargarPadron(); actualizarDashboard();
@@ -2064,7 +1985,7 @@
                         try {
                             const nombreViejo = urlVieja.split('/').pop().split('?')[0];
                             if (nombreViejo) {
-                                await db.storage.from('renmcycf-documentos').remove([nombreViejo]);
+                                await window.db.storage.from('renmcycf-documentos').remove([nombreViejo]);
                             }
                         } catch (eDel) { console.warn(eDel.message); }
                     }
@@ -2072,7 +1993,7 @@
                     const ext = file.name.split('.').pop().toLowerCase();
                     const nombreNuevo = `${itemDossierActual.dni}_${campo}_${Date.now()}.${ext}`;
                     
-                    const { error: upErr } = await db.storage
+                    const { error: upErr } = await window.db.storage
                         .from('renmcycf-documentos')
                         .upload(nombreNuevo, file, { cacheControl: '3600', upsert: true });
                     
@@ -2085,11 +2006,11 @@
                     
                     const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
                     
-                    const { error: dbErr } = await db
+                    const { error: dbErr } = await window.db
                         .from(tablaDestino)
                         .update({ [campo]: urlNueva })
                         .eq('id', itemDossierActual.id)
-                        .eq('tenant_id', currentTenantId);
+                        .eq('tenant_id', window.currentTenantId);
                     
                     if (dbErr) throw dbErr;
                     
@@ -2132,7 +2053,7 @@
             try {
                 const nombreArchivo = urlActual.split('/').pop().split('?')[0];
                 if (nombreArchivo) {
-                    await db.storage.from('renmcycf-documentos').remove([nombreArchivo]);
+                    await window.db.storage.from('renmcycf-documentos').remove([nombreArchivo]);
                 }
                 
                 const esSolicitud = ['PENDIENTE', 'EN AUDITORIA', 'OBSERVADO', 'RECHAZADO', 'RENOVACION_PENDIENTE']
@@ -2140,11 +2061,11 @@
                 
                 const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
                 
-                const { error: dbErr } = await db
+                const { error: dbErr } = await window.db
                     .from(tablaDestino)
                     .update({ [campo]: null })
                     .eq('id', itemDossierActual.id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 
                 if (dbErr) throw dbErr;
                 
@@ -2162,15 +2083,15 @@
         }
 
         // ==========================================
-        // 8. PADRÓN GLOBAL Y EDICIÓN COMPLETA
+        // 7. PADRÓN GLOBAL Y EDICIÓN COMPLETA
         // ==========================================
         async function cargarPadron(filtro = '') {
             const tbody = document.getElementById('padron-body');
             tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center">Cargando...</td></tr>';
             try {
-                let query = db.from('renmcycf_padron')
+                let query = window.db.from('renmcycf_padron')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('id', { ascending: false })
                     .limit(100);
                     
@@ -2213,10 +2134,10 @@
 
         async function abrirModalEdicion(id) {
             try {
-                const { data: p } = await db.from('renmcycf_padron')
+                const { data: p } = await window.db.from('renmcycf_padron')
                     .select('*')
                     .eq('id', id)
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .single();
                     
                 if (!p) return;
@@ -2264,7 +2185,7 @@
                 let fotoUrl = null;
                 if (file) {
                     const fileName = `foto_edit_${Date.now()}.${file.name.split('.').pop()}`;
-                    await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
+                    await window.db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
                     fotoUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 }
                 
@@ -2291,10 +2212,10 @@
                 };
                 if (fotoUrl) payload.foto_perfil_url = fotoUrl;
                 
-                await db.from('renmcycf_padron')
+                await window.db.from('renmcycf_padron')
                     .update(payload)
                     .eq('id', id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
                 alert("✅ Datos actualizados con éxito.");
                 cerrarModalEdicion(); cargarPadron();
@@ -2303,16 +2224,16 @@
         }
 
         // ==========================================
-        // 9. ALIADOS (INSTITUCIONES)
+        // 8. ALIADOS (INSTITUCIONES)
         // ==========================================
         async function cargarAliadosPanel() {
             const tbody = document.getElementById('aliados-body'); 
             if (!tbody) return;
             tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data, error } = await db.from('renmcycf_aliados')
+                const { data, error } = await window.db.from('renmcycf_aliados')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
                     
                 if (error) throw error;
@@ -2339,11 +2260,11 @@
                 const imgFile = document.getElementById('aliado-logo').files[0];
                 if (!imgFile) throw new Error("Logo obligatorio.");
                 const fileName = `aliado_${Date.now()}.${imgFile.name.split('.').pop()}`;
-                await db.storage.from('renmcycf-media').upload(fileName, imgFile);
+                await window.db.storage.from('renmcycf-media').upload(fileName, imgFile);
                 const imgUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 
-                await db.from('renmcycf_aliados').insert([{ 
-                    tenant_id: currentTenantId,
+                await window.db.from('renmcycf_aliados').insert([{ 
+                    tenant_id: window.currentTenantId,
                     nombre: document.getElementById('aliado-nombre').value, 
                     logo_url: imgUrl,
                     activo: document.getElementById('aliado-activo').checked
@@ -2353,32 +2274,32 @@
         }
 
         async function toggleAliado(id, estado) { 
-            await db.from('renmcycf_aliados')
+            await window.db.from('renmcycf_aliados')
                 .update({ activo: estado })
                 .eq('id', id)
-                .eq('tenant_id', currentTenantId); 
+                .eq('tenant_id', window.currentTenantId); 
             cargarAliadosPanel(); 
         }
         
         async function eliminarAliado(id) { 
             if (!confirm("¿Eliminar aliado definitivamente?")) return; 
-            await db.from('renmcycf_aliados')
+            await window.db.from('renmcycf_aliados')
                 .delete()
                 .eq('id', id)
-                .eq('tenant_id', currentTenantId); 
+                .eq('tenant_id', window.currentTenantId); 
             cargarAliadosPanel(); 
         }
 
         // ==========================================
-        // 10. COMITÉ EVALUADOR
+        // 9. COMITÉ EVALUADOR
         // ==========================================
         async function cargarComitePanel() {
             const tbody = document.getElementById('comite-body');
             tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data, error } = await db.from('renmcycf_comite')
+                const { data, error } = await window.db.from('renmcycf_comite')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
                     
                 if (error) throw error;
@@ -2436,19 +2357,19 @@
                 
                 if (fotoFile) {
                     const fileName = `comite_${Date.now()}.${fotoFile.name.split('.').pop()}`;
-                    await db.storage.from('renmcycf-media').upload(fileName, fotoFile);
+                    await window.db.storage.from('renmcycf-media').upload(fileName, fotoFile);
                     payload.foto_url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 }
                 
                 if (id) {
-                    const { error } = await db.from('renmcycf_comite')
+                    const { error } = await window.db.from('renmcycf_comite')
                         .update(payload)
                         .eq('id', id)
-                        .eq('tenant_id', currentTenantId);
+                        .eq('tenant_id', window.currentTenantId);
                     if (error) throw error;
                 } else {
-                    payload.tenant_id = currentTenantId;
-                    const { error } = await db.from('renmcycf_comite').insert([payload]);
+                    payload.tenant_id = window.currentTenantId;
+                    const { error } = await window.db.from('renmcycf_comite').insert([payload]);
                     if (error) throw error;
                 }
                 
@@ -2470,10 +2391,10 @@
 
         async function toggleEstadoComite(id, estado) {
             try {
-                await db.from('renmcycf_comite')
+                await window.db.from('renmcycf_comite')
                     .update({ activo: estado })
                     .eq('id', id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 cargarComitePanel();
             } catch (err) { alert("Error: " + err.message); }
         }
@@ -2481,23 +2402,23 @@
         async function eliminarMiembroComite(id) {
             if (!confirm("¿Eliminar miembro del comité definitivamente?")) return;
             try {
-                await db.from('renmcycf_comite')
+                await window.db.from('renmcycf_comite')
                     .delete()
                     .eq('id', id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 cargarComitePanel();
             } catch (err) { alert("Error: " + err.message); }
         }
 
         // ==========================================
-        // 11. PORTAL CIENTÍFICO Y DIVULGACIÓN
+        // 10. PORTAL CIENTÍFICO Y DIVULGACIÓN
         // ==========================================
         async function cargarNoticiasPanel() {
             const tbody = document.getElementById('campus-body'); tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data, error } = await db.from('renmcycf_noticias')
+                const { data, error } = await window.db.from('renmcycf_noticias')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
                     
                 if (error) throw error;
@@ -2513,11 +2434,11 @@
                 const imgFile = document.getElementById('camp-portada').files[0]; let imgUrl = null;
                 if (imgFile) {
                     const fileName = `portada_pub_${Date.now()}.${imgFile.name.split('.').pop()}`;
-                    await db.storage.from('renmcycf-campus').upload(fileName, imgFile);
+                    await window.db.storage.from('renmcycf-campus').upload(fileName, imgFile);
                     imgUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-campus/${fileName}`;
                 }
-                await db.from('renmcycf_noticias').insert([{ 
-                    tenant_id: currentTenantId,
+                await window.db.from('renmcycf_noticias').insert([{ 
+                    tenant_id: window.currentTenantId,
                     titulo: document.getElementById('camp-titulo').value, 
                     descripcion: document.getElementById('camp-desc').value, 
                     categoria_requerida: document.getElementById('camp-cat').value, 
@@ -2529,10 +2450,10 @@
 
         async function eliminarNoticia(id) { 
             if (!confirm("¿Eliminar publicación?")) return; 
-            await db.from('renmcycf_noticias')
+            await window.db.from('renmcycf_noticias')
                 .delete()
                 .eq('id', id)
-                .eq('tenant_id', currentTenantId); 
+                .eq('tenant_id', window.currentTenantId); 
             cargarNoticiasPanel(); 
         }
 
@@ -2548,10 +2469,10 @@
         async function cargarClasesList(cursoId) {
             const tbody = document.getElementById('clases-body'); tbody.innerHTML = '<tr><td colspan="3">Cargando...</td></tr>';
             try {
-                const { data, error } = await db.from('renmcycf_clases')
+                const { data, error } = await window.db.from('renmcycf_clases')
                     .select('*')
                     .eq('curso_id', cursoId)
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: true });
                     
                 if (error) throw error;
@@ -2572,11 +2493,11 @@
                 if (tipo === 'PDF') {
                     const file = document.getElementById('clase-file').files[0]; if (!file) throw new Error("Debe seleccionar un PDF.");
                     const fileName = `material_pdf_${Date.now()}.${file.name.split('.').pop()}`;
-                    await db.storage.from('renmcycf-campus').upload(fileName, file);
+                    await window.db.storage.from('renmcycf-campus').upload(fileName, file);
                     finalUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-campus/${fileName}`;
                 } else { finalUrl = document.getElementById('clase-url').value; }
-                await db.from('renmcycf_clases').insert([{ 
-                    tenant_id: currentTenantId,
+                await window.db.from('renmcycf_clases').insert([{ 
+                    tenant_id: window.currentTenantId,
                     curso_id: cursoId, 
                     titulo: document.getElementById('clase-titulo').value, 
                     tipo_recurso: tipo, 
@@ -2588,22 +2509,22 @@
         
         async function eliminarClase(id, cursoId) { 
             if (!confirm("¿Eliminar adjunto?")) return; 
-            await db.from('renmcycf_clases')
+            await window.db.from('renmcycf_clases')
                 .delete()
                 .eq('id', id)
-                .eq('tenant_id', currentTenantId); 
+                .eq('tenant_id', window.currentTenantId); 
             cargarClasesList(cursoId); 
         }
 
         // ==========================================
-        // 12. GESTIÓN BIBLIOTECA
+        // 11. GESTIÓN BIBLIOTECA
         // ==========================================
         async function cargarBibliotecaPanel() {
             const tbody = document.getElementById('biblioteca-body'); tbody.innerHTML = '<tr><td colspan="3" class="text-center">Cargando...</td></tr>';
             try {
-                const { data } = await db.from('renmcycf_biblioteca')
+                const { data } = await window.db.from('renmcycf_biblioteca')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
                     
                 if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-slate-500">Biblioteca vacía.</td></tr>'; return; }
@@ -2616,12 +2537,12 @@
             e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerHTML; btn.innerHTML = 'SUBIENDO...'; btn.disabled = true;
             try {
                 const pdfFile = document.getElementById('bib-pdf').files[0]; const pdfName = `libro_${Date.now()}.${pdfFile.name.split('.').pop()}`;
-                await db.storage.from('renmcycf-pdfs').upload(pdfName, pdfFile); const pdfUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-pdfs/${pdfName}`;
+                await window.db.storage.from('renmcycf-pdfs').upload(pdfName, pdfFile); const pdfUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-pdfs/${pdfName}`;
                 let portadaUrl = null;
                 const portadaFile = document.getElementById('bib-portada').files[0];
-                if (portadaFile) { const imgName = `cover_${Date.now()}.${portadaFile.name.split('.').pop()}`; await db.storage.from('renmcycf-media').upload(imgName, portadaFile); portadaUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${imgName}`; }
-                await db.from('renmcycf_biblioteca').insert([{ 
-                    tenant_id: currentTenantId,
+                if (portadaFile) { const imgName = `cover_${Date.now()}.${portadaFile.name.split('.').pop()}`; await window.db.storage.from('renmcycf-media').upload(imgName, portadaFile); portadaUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${imgName}`; }
+                await window.db.from('renmcycf_biblioteca').insert([{ 
+                    tenant_id: window.currentTenantId,
                     titulo: document.getElementById('bib-titulo').value, 
                     autor: document.getElementById('bib-autor').value, 
                     tipo_acceso: document.getElementById('bib-acceso').value, 
@@ -2635,22 +2556,22 @@
         
         async function eliminarLibro(id) { 
             if(!confirm("¿Eliminar archivo?")) return; 
-            await db.from('renmcycf_biblioteca')
+            await window.db.from('renmcycf_biblioteca')
                 .delete()
                 .eq('id', id)
-                .eq('tenant_id', currentTenantId); 
+                .eq('tenant_id', window.currentTenantId); 
             cargarBibliotecaPanel(); 
         }
 
         // ==========================================
-        // 13. AUDITORÍA TESIS
+        // 12. AUDITORÍA TESIS
         // ==========================================
         async function cargarTesisPanel() {
             const tbody = document.getElementById('tesis-body'); tbody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando...</td></tr>';
             try {
-                const { data } = await db.from('renmcycf_publicaciones')
+                const { data } = await window.db.from('renmcycf_publicaciones')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
                     
                 if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-slate-400">No hay tesis.</td></tr>'; return; }
@@ -2661,15 +2582,15 @@
         
         async function auditarTesis(id, estado) { 
             if(!confirm(`¿Marcar como ${estado}?`)) return; 
-            await db.from('renmcycf_publicaciones')
+            await window.db.from('renmcycf_publicaciones')
                 .update({ estado })
                 .eq('id', id)
-                .eq('tenant_id', currentTenantId); 
+                .eq('tenant_id', window.currentTenantId); 
             cargarTesisPanel(); 
         }
 
         // ==========================================
-        // 14. CARGA MASIVA
+        // 13. CARGA MASIVA
         // ==========================================
         function procesarExcel() {
             const file = document.getElementById('input-excel').files[0]; if (!file) return;
@@ -2687,7 +2608,7 @@
             if (!datosExcel.length) return; if (!confirm(`¿Inyectar ${datosExcel.length} registros?`)) return;
             try {
                 const payload = datosExcel.map(r => ({ 
-                    tenant_id: currentTenantId,
+                    tenant_id: window.currentTenantId,
                     dni: (r.dni||r.DNI||'').toString().replace(/\D/g,''), 
                     nombres: r.nombres||r.NOMBRES||'', 
                     apellidos: r.apellidos||r.APELLIDOS||'', 
@@ -2696,19 +2617,19 @@
                     matricula_oficial: r.matricula||r.MATRICULA||'', 
                     estado_legal: 'ACTIVO' 
                 })).filter(r => r.dni && r.nombres);
-                await db.from('renmcycf_padron').insert(payload);
+                await window.db.from('renmcycf_padron').insert(payload);
                 alert(`✅ ${payload.length} profesionales inyectados.`); document.getElementById('input-excel').value = ''; document.getElementById('preview-area').classList.add('hidden'); datosExcel = [];
             } catch (err) { alert("Error: " + err.message); }
         }
 
         // ==========================================
-        // 15. CONFIGURACIÓN CORE Y TEXTOS
+        // 14. CONFIGURACIÓN CORE Y TEXTOS
         // ============================================
         async function cargarConfiguracionForm() {
             try {
-                const { data } = await db.from('renmcycf_config')
+                const { data } = await window.db.from('renmcycf_config')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
                     
                 if (data) { 
@@ -2753,7 +2674,7 @@
             e.preventDefault(); 
             const btn = e.target.querySelector('button[type="submit"]'); const orig = btn.innerHTML; btn.innerHTML = 'GUARDANDO...'; btn.disabled = true;
             try { 
-                await db.from('renmcycf_config').update({ 
+                await window.db.from('renmcycf_config').update({ 
                     arancel_a1: document.getElementById('conf-arancel-a1').value, 
                     arancel_a2: document.getElementById('conf-arancel-a2').value, 
                     arancel_a3: document.getElementById('conf-arancel-a3').value, 
@@ -2774,7 +2695,7 @@
                     instagram: document.getElementById('conf-instagram').value,
                     twitter: document.getElementById('conf-twitter').value,
                     linkedin: document.getElementById('conf-linkedin').value
-                }).eq('tenant_id', currentTenantId); 
+                }).eq('tenant_id', window.currentTenantId); 
                 alert("✅ Configuración actualizada."); 
                 cargarWhatsappRegistro();
             } catch (err) { alert("Error: " + err.message); }
@@ -2784,11 +2705,11 @@
         async function previewYGuardarImagen(input, previewId, key) {
             const file = input.files[0]; 
             if (!file) { alert("⚠️ No seleccionaste ningún archivo."); return; }
-            if (!currentTenantId) { alert("❌ Error: el tenant no está cargado."); return; }
+            if (!window.currentTenantId) { alert("❌ Error: el tenant no está cargado."); return; }
 
             try {
                 const fileName = `${key}_${Date.now()}.${file.name.split('.').pop()}`;
-                const { error: uploadError } = await db.storage
+                const { error: uploadError } = await window.db.storage
                     .from('renmcycf-media')
                     .upload(fileName, file);
                 if (uploadError) throw new Error(`Error subiendo a Storage: ${uploadError.message}`);
@@ -2796,10 +2717,10 @@
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 const columna = key === 'logo' ? 'logo_url' : 'hero_image_url';
                 
-                const { data: existente } = await db
+                const { data: existente } = await window.db
                     .from('renmcycf_config')
                     .select('tenant_id')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
 
                 let updateError = null;
@@ -2807,23 +2728,23 @@
 
                 if (existente) {
                     const payload = {}; payload[columna] = url;
-                    const { data, error } = await db
+                    const { data, error } = await window.db
                         .from('renmcycf_config')
                         .update(payload)
-                        .eq('tenant_id', currentTenantId)
+                        .eq('tenant_id', window.currentTenantId)
                         .select();
                     updateError = error;
                     updatedRows = data;
                 } else {
                     const payload = {
-                        tenant_id: currentTenantId,
+                        tenant_id: window.currentTenantId,
                         arancel_a1: 0, arancel_a2: 0, arancel_a3: 0, arancel_a4: 0,
                         mostrar_wpp: true, mostrar_email: true,
                         mostrar_facebook: false, mostrar_instagram: false,
                         visitas: 0
                     };
                     payload[columna] = url;
-                    const { data, error } = await db
+                    const { data, error } = await window.db
                         .from('renmcycf_config')
                         .insert([payload])
                         .select();
@@ -2862,9 +2783,9 @@
 
         async function cargarContenidoForm() {
             try {
-                const { data } = await db.from('renmcycf_contenido')
+                const { data } = await window.db.from('renmcycf_contenido')
                     .select('clave, valor')
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
                 if (!data) return;
                 const map = { 
@@ -2891,29 +2812,29 @@
                 'footer_texto':'cont-footer-texto' 
             };
             const payload = Object.keys(map).map(k => ({ 
-                tenant_id: currentTenantId,
+                tenant_id: window.currentTenantId,
                 clave: k, 
                 valor: document.getElementById(map[k]).value, 
                 tipo: 'texto' 
             }));
             
             try { 
-                await db.from('renmcycf_contenido').upsert(payload, { onConflict: 'clave,tenant_id' }); 
+                await window.db.from('renmcycf_contenido').upsert(payload, { onConflict: 'clave,tenant_id' }); 
                 alert("✅ Contenido actualizado."); 
             } catch (err) { alert("Error: " + err.message); } 
             finally { btn.innerHTML = orig; btn.disabled = false; lucide.createIcons(); }
         }
 
         // ==========================================
-        // 16. GESTIÓN DE USUARIOS Y ROLES
+        // 15. GESTIÓN DE USUARIOS Y ROLES
         // ==========================================
         async function cargarUsuarios() {
             const tbody = document.getElementById('usuarios-body');
             tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data } = await db.from('renmcycf_roles')
+                const { data } = await window.db.from('renmcycf_roles')
                     .select('*')
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                     
                 if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-500">Sin usuarios.</td></tr>'; return; }
                 tbody.innerHTML = data.map(u => {
@@ -2946,10 +2867,10 @@
         }
 
         async function toggleEstadoUsuario(id, estado) { 
-            await db.from('renmcycf_roles')
+            await window.db.from('renmcycf_roles')
                 .update({ activo: estado })
                 .eq('id', id)
-                .eq('tenant_id', currentTenantId); 
+                .eq('tenant_id', window.currentTenantId); 
             cargarUsuarios(); 
         }
 
@@ -3009,15 +2930,15 @@
                 const uid = document.getElementById('usr-uid').value.trim();
 
                 if (dbId) {
-                    const { error } = await db.from('renmcycf_roles').update({
+                    const { error } = await window.db.from('renmcycf_roles').update({
                         rol: rol, nombres: nombres, apellidos: apellidos,
                         modulos_permitidos: modulosFinales
-                    }).eq('id', dbId).eq('tenant_id', currentTenantId);
+                    }).eq('id', dbId).eq('tenant_id', window.currentTenantId);
                     if (error) throw error;
                 } else {
                     if (!uid) throw new Error("Debe pegar el UID de Supabase Auth para crear un usuario nuevo.");
-                    const { error } = await db.from('renmcycf_roles').insert([{
-                        tenant_id: currentTenantId,
+                    const { error } = await window.db.from('renmcycf_roles').insert([{
+                        tenant_id: window.currentTenantId,
                         user_id: uid, email: email, rol: rol,
                         nombres: nombres, apellidos: apellidos,
                         activo: true, modulos_permitidos: modulosFinales
@@ -3044,7 +2965,7 @@
         }
 
         // ==========================================
-        // 17. DISEÑO CREDENCIAL
+        // 16. DISEÑO CREDENCIAL
         // ==========================================
         const defaultStyle = {
             foto: { top: 325, left: 185, width: 230, height: 230, align: 'center', lado: 'frente' },
@@ -3092,7 +3013,7 @@
             const file = input.files[0]; if (!file) return;
             try {
                 const ext = file.name.split('.').pop(); const fileName = `bg_${lado}_${Date.now()}.${ext}`;
-                await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
+                await window.db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 if (lado === 'frente') bgFrenteUrl = url; else bgDorsoUrl = url;
                 actualizarPreviewCred();
@@ -3103,25 +3024,25 @@
             const file = input.files[0]; if (!file) return;
             try {
                 const ext = file.name.split('.').pop(); const fileName = `roseta_${Date.now()}.${ext}`;
-                await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
+                await window.db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
                 rosetaUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 actualizarPreviewCred();
             } catch (err) { alert('Error subiendo roseta: ' + err.message); }
         }
 
         async function cargarDisenoCredencial() {
-            const { data: bgF } = await db.from('renmcycf_contenido')
-                .select('valor').eq('clave', 'credencial_bg').eq('tenant_id', currentTenantId).maybeSingle();
-            const { data: bgD } = await db.from('renmcycf_contenido')
-                .select('valor').eq('clave', 'credencial_bg_dorso').eq('tenant_id', currentTenantId).maybeSingle();
+            const { data: bgF } = await window.db.from('renmcycf_contenido')
+                .select('valor').eq('clave', 'credencial_bg').eq('tenant_id', window.currentTenantId).maybeSingle();
+            const { data: bgD } = await window.db.from('renmcycf_contenido')
+                .select('valor').eq('clave', 'credencial_bg_dorso').eq('tenant_id', window.currentTenantId).maybeSingle();
             if (bgF && bgF.valor) bgFrenteUrl = bgF.valor; if (bgD && bgD.valor) bgDorsoUrl = bgD.valor;
 
-            const { data: ros } = await db.from('renmcycf_contenido')
-                .select('valor').eq('clave', 'credencial_roseta').eq('tenant_id', currentTenantId).maybeSingle();
+            const { data: ros } = await window.db.from('renmcycf_contenido')
+                .select('valor').eq('clave', 'credencial_roseta').eq('tenant_id', window.currentTenantId).maybeSingle();
             if (ros && ros.valor) rosetaUrl = ros.valor;
 
-            const { data: style } = await db.from('renmcycf_contenido')
-                .select('valor').eq('clave', 'credencial_style').eq('tenant_id', currentTenantId).maybeSingle();
+            const { data: style } = await window.db.from('renmcycf_contenido')
+                .select('valor').eq('clave', 'credencial_style').eq('tenant_id', window.currentTenantId).maybeSingle();
             if (style && style.valor) { try { currentCredStyle = { ...defaultStyle, ...JSON.parse(style.valor) }; } catch(e) {} }
             switchEditorTab('frente');
         }
@@ -3161,16 +3082,16 @@
 
         async function guardarDiseno() {
             try {
-                await db.from('renmcycf_contenido').upsert({ tenant_id: currentTenantId, clave: 'credencial_style', valor: JSON.stringify(currentCredStyle), tipo: 'json' }, { onConflict: 'clave,tenant_id' });
-                if (bgFrenteUrl) await db.from('renmcycf_contenido').upsert({ tenant_id: currentTenantId, clave: 'credencial_bg', valor: bgFrenteUrl, tipo: 'texto' }, { onConflict: 'clave,tenant_id' });
-                if (bgDorsoUrl) await db.from('renmcycf_contenido').upsert({ tenant_id: currentTenantId, clave: 'credencial_bg_dorso', valor: bgDorsoUrl, tipo: 'texto' }, { onConflict: 'clave,tenant_id' });
-                if (rosetaUrl) await db.from('renmcycf_contenido').upsert({ tenant_id: currentTenantId, clave: 'credencial_roseta', valor: rosetaUrl, tipo: 'texto' }, { onConflict: 'clave,tenant_id' });
+                await window.db.from('renmcycf_contenido').upsert({ tenant_id: window.currentTenantId, clave: 'credencial_style', valor: JSON.stringify(currentCredStyle), tipo: 'json' }, { onConflict: 'clave,tenant_id' });
+                if (bgFrenteUrl) await window.db.from('renmcycf_contenido').upsert({ tenant_id: window.currentTenantId, clave: 'credencial_bg', valor: bgFrenteUrl, tipo: 'texto' }, { onConflict: 'clave,tenant_id' });
+                if (bgDorsoUrl) await window.db.from('renmcycf_contenido').upsert({ tenant_id: window.currentTenantId, clave: 'credencial_bg_dorso', valor: bgDorsoUrl, tipo: 'texto' }, { onConflict: 'clave,tenant_id' });
+                if (rosetaUrl) await window.db.from('renmcycf_contenido').upsert({ tenant_id: window.currentTenantId, clave: 'credencial_roseta', valor: rosetaUrl, tipo: 'texto' }, { onConflict: 'clave,tenant_id' });
                 alert("✅ Diseño guardado exitosamente.");
             } catch(e) { alert("Error: " + e.message); }
         }
 
         // ==========================================
-        // 18. CONVENIOS B2B (RED JUDICIAL)
+        // 17. CONVENIOS B2B (RED JUDICIAL)
         // ==========================================
         async function cargarConveniosPanel() {
             const tbody = document.getElementById('convenios-body');
@@ -3178,9 +3099,9 @@
             tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Cargando solicitudes...</td></tr>';
 
             try {
-                const { data, error } = await db.from('renmcycf_convenios')
+                const { data, error } = await window.db.from('renmcycf_convenios')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
                 if (error) throw error;
 
@@ -3253,10 +3174,10 @@
                     : '¿Revertir a estado PENDIENTE? La entidad deberá ser re-evaluada.';
             if (!confirm(confirmMsg)) return;
             try {
-                const { error } = await db.from('renmcycf_convenios')
+                const { error } = await window.db.from('renmcycf_convenios')
                     .update({ estado: estado })
                     .eq('id', id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 if (error) throw error;
                 alert(`✅ Convenio marcado como ${estado}.`);
                 cargarConveniosPanel();
@@ -3266,20 +3187,20 @@
         }
 
         // ==========================================
-        // 19. CURSOS B2B (AUDITORÍA)
+        // 18. CURSOS B2B (AUDITORÍA)
         // ==========================================
         async function cargarCursosB2BPanel() {
             const tbody = document.getElementById('cursos-b2b-body'); 
             if (!tbody) return;
             tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data: cursos, error: errCursos } = await db.from('renmcycf_aliados_cursos')
+                const { data: cursos, error: errCursos } = await window.db.from('renmcycf_aliados_cursos')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
-                const { data: aliados } = await db.from('renmcycf_aliados')
+                const { data: aliados } = await window.db.from('renmcycf_aliados')
                     .select('id, nombre')
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 if (errCursos) throw errCursos;
                 
                 if (!cursos || cursos.length === 0) { 
@@ -3340,25 +3261,25 @@
         async function auditarCursoB2B(id, estado) {
             if(!confirm(`¿Marcar este curso como ${estado}?`)) return;
             try {
-                await db.from('renmcycf_aliados_cursos')
+                await window.db.from('renmcycf_aliados_cursos')
                     .update({ estado: estado })
                     .eq('id', id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 cargarCursosB2BPanel();
             } catch(err) { alert("Error: " + err.message); }
         }
 
         // ==========================================
-        // 20. RED DE EMPRESAS
+        // 19. RED DE EMPRESAS
         // ==========================================
         async function cargarEmpresasPanel() {
             const tbody = document.getElementById('empresas-body');
             if (!tbody) return;
             tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data, error } = await db.from('renmcycf_empresas')
+                const { data, error } = await window.db.from('renmcycf_empresas')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('orden', { ascending: true })
                     .order('created_at', { ascending: false });
                 if (error) throw error;
@@ -3405,19 +3326,19 @@
 
                 if (logoFile) {
                     const fileName = `empresa_${Date.now()}.${logoFile.name.split('.').pop()}`;
-                    await db.storage.from('renmcycf-media').upload(fileName, logoFile, { cacheControl: '3600', upsert: true });
+                    await window.db.storage.from('renmcycf-media').upload(fileName, logoFile, { cacheControl: '3600', upsert: true });
                     payload.logo_url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 } else if (!id) {
                     throw new Error("Debe subir un logo para crear la empresa.");
                 }
 
                 if (id) {
-                    const { error } = await db.from('renmcycf_empresas').update(payload).eq('id', id).eq('tenant_id', currentTenantId);
+                    const { error } = await window.db.from('renmcycf_empresas').update(payload).eq('id', id).eq('tenant_id', window.currentTenantId);
                     if (error) throw error;
                     alert("✅ Empresa actualizada.");
                 } else {
-                    payload.tenant_id = currentTenantId;
-                    const { error } = await db.from('renmcycf_empresas').insert([payload]);
+                    payload.tenant_id = window.currentTenantId;
+                    const { error } = await window.db.from('renmcycf_empresas').insert([payload]);
                     if (error) throw error;
                     alert("✅ Empresa creada.");
                 }
@@ -3447,27 +3368,27 @@
         }
 
         async function toggleEmpresa(id, estado) {
-            await db.from('renmcycf_empresas').update({ activo: estado }).eq('id', id).eq('tenant_id', currentTenantId);
+            await window.db.from('renmcycf_empresas').update({ activo: estado }).eq('id', id).eq('tenant_id', window.currentTenantId);
             cargarEmpresasPanel();
         }
 
         async function eliminarEmpresa(id) {
             if (!confirm("¿Eliminar empresa definitivamente?")) return;
-            await db.from('renmcycf_empresas').delete().eq('id', id).eq('tenant_id', currentTenantId);
+            await window.db.from('renmcycf_empresas').delete().eq('id', id).eq('tenant_id', window.currentTenantId);
             cargarEmpresasPanel();
         }
 
         // ==========================================
-        // 21. BENEFICIOS
+        // 20. BENEFICIOS
         // ==========================================
         async function cargarBeneficiosPanel() {
             const tbody = document.getElementById('beneficios-body');
             if (!tbody) return;
             tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data, error } = await db.from('renmcycf_beneficios')
+                const { data, error } = await window.db.from('renmcycf_beneficios')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('orden', { ascending: true });
                 if (error) throw error;
                 if (!data || data.length === 0) {
@@ -3509,12 +3430,12 @@
                     activo: document.getElementById('beneficio-activo').checked
                 };
                 if (id) {
-                    const { error } = await db.from('renmcycf_beneficios').update(payload).eq('id', id).eq('tenant_id', currentTenantId);
+                    const { error } = await window.db.from('renmcycf_beneficios').update(payload).eq('id', id).eq('tenant_id', window.currentTenantId);
                     if (error) throw error;
                     alert("✅ Beneficio actualizado.");
                 } else {
-                    payload.tenant_id = currentTenantId;
-                    const { error } = await db.from('renmcycf_beneficios').insert([payload]);
+                    payload.tenant_id = window.currentTenantId;
+                    const { error } = await window.db.from('renmcycf_beneficios').insert([payload]);
                     if (error) throw error;
                     alert("✅ Beneficio creado.");
                 }
@@ -3544,27 +3465,27 @@
         }
 
         async function toggleBeneficio(id, estado) {
-            await db.from('renmcycf_beneficios').update({ activo: estado }).eq('id', id).eq('tenant_id', currentTenantId);
+            await window.db.from('renmcycf_beneficios').update({ activo: estado }).eq('id', id).eq('tenant_id', window.currentTenantId);
             cargarBeneficiosPanel();
         }
 
         async function eliminarBeneficio(id) {
             if (!confirm("¿Eliminar beneficio definitivamente?")) return;
-            await db.from('renmcycf_beneficios').delete().eq('id', id).eq('tenant_id', currentTenantId);
+            await window.db.from('renmcycf_beneficios').delete().eq('id', id).eq('tenant_id', window.currentTenantId);
             cargarBeneficiosPanel();
         }
 
         // ==========================================
-        // 22. SUSCRIPTORES NEWSLETTER
+        // 21. SUSCRIPTORES NEWSLETTER
         // ==========================================
         async function cargarSuscriptoresPanel() {
             const tbody = document.getElementById('suscriptores-body');
             if (!tbody) return;
             tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
             try {
-                const { data, error } = await db.from('renmcycf_suscriptores')
+                const { data, error } = await window.db.from('renmcycf_suscriptores')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
                 if (error) throw error;
                 suscriptoresCache = data || [];
@@ -3602,13 +3523,13 @@
         }
 
         async function toggleSuscriptor(id, estado) {
-            await db.from('renmcycf_suscriptores').update({ activo: estado }).eq('id', id).eq('tenant_id', currentTenantId);
+            await window.db.from('renmcycf_suscriptores').update({ activo: estado }).eq('id', id).eq('tenant_id', window.currentTenantId);
             cargarSuscriptoresPanel();
         }
 
         async function eliminarSuscriptor(id) {
             if (!confirm("¿Eliminar suscriptor definitivamente?")) return;
-            await db.from('renmcycf_suscriptores').delete().eq('id', id).eq('tenant_id', currentTenantId);
+            await window.db.from('renmcycf_suscriptores').delete().eq('id', id).eq('tenant_id', window.currentTenantId);
             cargarSuscriptoresPanel();
         }
 
