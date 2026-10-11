@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="saas-core.js"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -1986,14 +1987,10 @@
         AOS.init({ once: true, duration: 700, easing: 'ease-out-cubic' });
         lucide.createIcons();
 
-        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
-        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
         const MAX_DIPLOMAS_INDEX = 30;
 
         document.documentElement.style.setProperty('--hero-bg-url', "url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80')");
 
-        let currentTenantId = null;
         let configGlobal = {};
         let mapInstance = null;
         let peritosMapaDB = [];
@@ -2028,78 +2025,8 @@
             }
         };
 
-        async function initTenant() {
-            try {
-                const urlParams = new URLSearchParams(window.location.search);
-                let tenantSlug = urlParams.get('tenant');
-
-                if (!tenantSlug) {
-                    const hostname = window.location.hostname;
-                    const parts = hostname.split('.');
-
-                    if (parts.length > 2 && !hostname.includes('github.io') && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-                        tenantSlug = parts[0];
-                    } else {
-                        tenantSlug = 'instructormap';
-                    }
-                }
-
-                console.log("Cargando entorno SaaS para:", tenantSlug);
-
-                const { data: tenantConfig, error } = await db
-                    .from('saas_tenants')
-                    .select('*')
-                    .eq('slug', tenantSlug)
-                    .eq('activo', true)
-                    .maybeSingle();
-
-                if (error) {
-                    console.warn("Tenant no encontrado (no bloqueante):", error);
-                    document.body.classList.add('ready');
-                    return;
-                }
-
-                if (!tenantConfig) {
-                    console.warn("Tenant inactivo o inexistente. Se usa el default.");
-                    document.body.classList.add('ready');
-                    return;
-                }
-
-                currentTenantId = tenantConfig.id;
-                localStorage.setItem('saas_current_tenant', currentTenantId);
-
-                document.documentElement.style.setProperty('--wl-primary', hexToRgb(tenantConfig.color_primario || '#0f172a'));
-                document.documentElement.style.setProperty('--wl-secondary', hexToRgb(tenantConfig.color_secundario || '#d4af37'));
-                document.documentElement.style.setProperty('--wl-tertiary', hexToRgb(tenantConfig.color_terciario || '#1e3a8a'));
-                document.documentElement.style.setProperty('--wl-background', hexToRgb(tenantConfig.color_background || '#f8fafc'));
-
-                const institucionNombres = document.querySelectorAll('#wl-institucion-nombre-top, #wl-institucion-nombre-footer, #wl-title-institucion');
-                institucionNombres.forEach(el => {
-                    if (el) el.innerText = tenantConfig.nombre_institucion;
-                });
-
-                if (document.title.includes('·')) {
-                    const prefijo = document.title.split('·')[0];
-                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
-                } else {
-                    document.title = tenantConfig.nombre_institucion;
-                }
-
-                window._saasTenantFallback = {
-                    logo_url: tenantConfig.logo_url || null,
-                    hero_image_url: tenantConfig.hero_image_url || null
-                };
-
-                document.body.classList.add('ready');
-
-            } catch (err) {
-                console.error("Error Bootstrapper SaaS:", err);
-                document.body.classList.add('ready');
-            }
-        }
-
         window.addEventListener('DOMContentLoaded', async () => {
-            await initTenant();
+            await window.initTenant();
             try { await cargarTextosPublicos(); } catch(e) { console.warn(e); }
             try { await cargarConfiguracionPublica(); } catch(e) { console.warn(e); }
             try { await cargarArancelesPublicos(); } catch(e) { console.warn(e); }
@@ -2120,9 +2047,9 @@
 
         async function cargarTextosPublicos() {
             try {
-                const { data, error } = await db.from('renmcycf_contenido')
+                const { data, error } = await window.db.from('renmcycf_contenido')
                     .select('clave, valor')
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
 
                 if (error) throw error;
                 if (!data) return;
@@ -2168,9 +2095,9 @@
 
         async function cargarConfiguracionPublica() {
             try {
-                const { data: conf, error } = await db.from('renmcycf_config')
+                const { data: conf, error } = await window.db.from('renmcycf_config')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
 
                 if (error) throw error;
@@ -2225,7 +2152,7 @@
             const grid = document.getElementById('grid-aranceles-publicos');
             if (!grid) return;
             try {
-                const { data } = await db.from('renmcycf_config').select('arancel_a1, arancel_a2, arancel_a3, arancel_a4').eq('tenant_id', currentTenantId).maybeSingle();
+                const { data } = await window.db.from('renmcycf_config').select('arancel_a1, arancel_a2, arancel_a3, arancel_a4').eq('tenant_id', window.currentTenantId).maybeSingle();
                 if (!data) { grid.innerHTML = '<p class="col-span-full text-center text-slate-400 text-sm py-8">Aranceles en actualización.</p>'; return; }
 
                 const categorias = [
@@ -2268,7 +2195,7 @@
             const promoHash = params.get('promo_hash');
             if (!promoHash || promoHash.trim() === '') return;
             try {
-                const { data: cert, error } = await db.from('renmcycf_certificados_b2b').select('*').eq('hash_cert', promoHash.trim()).eq('tenant_id', currentTenantId).single();
+                const { data: cert, error } = await window.db.from('renmcycf_certificados_b2b').select('*').eq('hash_cert', promoHash.trim()).eq('tenant_id', window.currentTenantId).single();
                 if (error || !cert) return;
                 descuentoB2CActivo = true;
                 switchSection('seccion-inscripcion');
@@ -2326,8 +2253,8 @@
 
             try {
                 const [aliadosRes, cursosRes] = await Promise.all([
-                    db.from('renmcycf_aliados').select('*').eq('activo', true).eq('tenant_id', currentTenantId).order('estado_auditoria', { ascending: true }),
-                    db.from('renmcycf_aliados_cursos').select('id, aliado_id, nombre_curso, carga_horaria, estado, programa_url, analitico_url, diploma_base_url').eq('estado', 'APROBADO').eq('tenant_id', currentTenantId)
+                    window.db.from('renmcycf_aliados').select('*').eq('activo', true).eq('tenant_id', window.currentTenantId).order('estado_auditoria', { ascending: true }),
+                    window.db.from('renmcycf_aliados_cursos').select('id, aliado_id, nombre_curso, carga_horaria, estado, programa_url, analitico_url, diploma_base_url').eq('estado', 'APROBADO').eq('tenant_id', window.currentTenantId)
                 ]);
 
                 if (aliadosRes.error) throw aliadosRes.error;
@@ -2493,7 +2420,7 @@
             const bloque = document.getElementById('seccion-red-empresas');
             if (!contenedor || !bloque) return;
             try {
-                const { data } = await db.from('renmcycf_empresas').select('*').eq('activo', true).eq('tenant_id', currentTenantId).order('orden').order('nombre');
+                const { data } = await window.db.from('renmcycf_empresas').select('*').eq('activo', true).eq('tenant_id', window.currentTenantId).order('orden').order('nombre');
                 if (!data || data.length === 0) { bloque.classList.add('hidden'); return; }
                 bloque.classList.remove('hidden');
                 contenedor.innerHTML = data.map(e => {
@@ -2543,7 +2470,7 @@
             const contenedor = document.getElementById('contenedor-beneficios');
             if (!contenedor) return;
             try {
-                const { data } = await db.from('renmcycf_beneficios').select('*').eq('activo', true).eq('tenant_id', currentTenantId).order('orden');
+                const { data } = await window.db.from('renmcycf_beneficios').select('*').eq('activo', true).eq('tenant_id', window.currentTenantId).order('orden');
                 if (!data || data.length === 0) {
                     contenedor.innerHTML = '<p class="col-span-full text-center text-slate-400 text-sm py-8">Información en actualización.</p>';
                     return;
@@ -2567,7 +2494,7 @@
             const contenedor = document.getElementById('contenedor-noticias-publicas');
             if (!contenedor) return;
             try {
-                const { data } = await db.from('renmcycf_noticias').select('*').eq('tenant_id', currentTenantId).order('created_at', { ascending: false }).limit(6);
+                const { data } = await window.db.from('renmcycf_noticias').select('*').eq('tenant_id', window.currentTenantId).order('created_at', { ascending: false }).limit(6);
                 if (!data || data.length === 0) {
                     contenedor.innerHTML = '<p class="col-span-full text-center text-slate-400 text-sm py-8">No hay publicaciones todavía.</p>';
                     return;
@@ -2632,7 +2559,7 @@
             heroCarouselData = [];
 
             try {
-                const { data: noticias } = await db.from('renmcycf_noticias').select('*').eq('tenant_id', currentTenantId).order('created_at', { ascending: false }).limit(5);
+                const { data: noticias } = await window.db.from('renmcycf_noticias').select('*').eq('tenant_id', window.currentTenantId).order('created_at', { ascending: false }).limit(5);
                 if (noticias && noticias.length > 0) {
                     noticias.forEach(n => {
                         heroCarouselData.push({
@@ -2774,7 +2701,7 @@
             const contenedor = document.getElementById('contenedor-biblioteca-ordenada');
             if (!contenedor) return;
             try {
-                const { data } = await db.from('renmcycf_biblioteca').select('*').eq('activo', true).eq('tenant_id', currentTenantId).order('created_at', { ascending: false });
+                const { data } = await window.db.from('renmcycf_biblioteca').select('*').eq('activo', true).eq('tenant_id', window.currentTenantId).order('created_at', { ascending: false });
                 if (!data || data.length === 0) {
                     contenedor.innerHTML = '<p class="text-center text-slate-400 text-sm py-8">Biblioteca en construcción.</p>';
                     return;
@@ -2826,7 +2753,7 @@
             const contenedor = document.getElementById('contenedor-tesis-publicas');
             if (!contenedor) return;
             try {
-                const { data } = await db.from('renmcycf_publicaciones').select('*').eq('estado', 'APROBADO').eq('tenant_id', currentTenantId).order('created_at', { ascending: false }).limit(20);
+                const { data } = await window.db.from('renmcycf_publicaciones').select('*').eq('estado', 'APROBADO').eq('tenant_id', window.currentTenantId).order('created_at', { ascending: false }).limit(20);
                 if (!data || data.length === 0) {
                     contenedor.innerHTML = `
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center text-slate-500 text-sm">
@@ -2863,7 +2790,7 @@
             const seccion = document.getElementById('seccion-comite');
             if (!contenedor || !seccion) return;
             try {
-                const { data } = await db.from('renmcycf_comite').select('*').eq('activo', true).eq('tenant_id', currentTenantId).order('created_at', { ascending: true });
+                const { data } = await window.db.from('renmcycf_comite').select('*').eq('activo', true).eq('tenant_id', window.currentTenantId).order('created_at', { ascending: true });
                 if (!data || data.length === 0) {
                     seccion.style.display = 'none';
                     return;
@@ -2890,8 +2817,8 @@
             if (!select) return;
             try {
                 const [aliadosRes, empresasRes] = await Promise.all([
-                    db.from('renmcycf_aliados').select('nombre').eq('activo', true).eq('tenant_id', currentTenantId).order('nombre'),
-                    db.from('renmcycf_empresas').select('nombre').eq('activo', true).eq('tenant_id', currentTenantId).order('nombre')
+                    window.db.from('renmcycf_aliados').select('nombre').eq('activo', true).eq('tenant_id', window.currentTenantId).order('nombre'),
+                    window.db.from('renmcycf_empresas').select('nombre').eq('activo', true).eq('tenant_id', window.currentTenantId).order('nombre')
                 ]);
 
                 let html = '<option value="" disabled selected>Seleccione su entidad avalada...</option>';
@@ -3041,9 +2968,9 @@
             if (!file) return null;
             const ext = file.name.split('.').pop();
             const nombre = `${carpeta}/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${ext}`;
-            const { error } = await db.storage.from(bucket).upload(nombre, file, { cacheControl: '3600', upsert: false });
+            const { error } = await window.db.storage.from(bucket).upload(nombre, file, { cacheControl: '3600', upsert: false });
             if (error) throw error;
-            const { data: urlData } = db.storage.from(bucket).getPublicUrl(nombre);
+            const { data: urlData } = window.db.storage.from(bucket).getPublicUrl(nombre);
             return urlData.publicUrl;
         }
 
@@ -3063,7 +2990,7 @@
             try {
                 const dni = document.getElementById('ins-dni').value.trim();
 
-                const { data: existente } = await db.from('renmcycf_solicitudes').select('id, estado').eq('dni', dni).eq('tenant_id', currentTenantId).maybeSingle();
+                const { data: existente } = await window.db.from('renmcycf_solicitudes').select('id, estado').eq('dni', dni).eq('tenant_id', window.currentTenantId).maybeSingle();
                 if (existente) {
                     alert('Ya existe un expediente con ese DNI. Podés consultar su estado en la sección Seguimiento.');
                     btn.disabled = false;
@@ -3099,7 +3026,7 @@
                 const entidadRef = document.getElementById('ins-entidad-referente');
 
                 const payload = {
-                    tenant_id: currentTenantId,
+                    tenant_id: window.currentTenantId,
                     nombres: document.getElementById('ins-nombres').value.trim().toUpperCase(),
                     apellidos: document.getElementById('ins-apellidos').value.trim().toUpperCase(),
                     dni: dni,
@@ -3125,7 +3052,7 @@
                     created_at: new Date().toISOString()
                 };
 
-                const { error } = await db.from('renmcycf_solicitudes').insert([payload]);
+                const { error } = await window.db.from('renmcycf_solicitudes').insert([payload]);
                 if (error) throw error;
 
                 btn.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> ¡Expediente Enviado!';
@@ -3172,7 +3099,7 @@
 
             try {
                 const esDni = /^\d+$/.test(term) && term.length <= 9;
-                let query = db.from('renmcycf_padron').select('*').eq('estado_legal', 'ACTIVO').eq('tenant_id', currentTenantId);
+                let query = window.db.from('renmcycf_padron').select('*').eq('estado_legal', 'ACTIVO').eq('tenant_id', window.currentTenantId);
                 if (esDni) {
                     query = query.eq('dni', term);
                 } else {
@@ -3233,7 +3160,7 @@
             result.classList.add('hidden');
 
             try {
-                const { data: solicitud } = await db.from('renmcycf_solicitudes').select('*').eq('dni', dni).eq('tenant_id', currentTenantId).order('created_at', { ascending: false }).limit(1).maybeSingle();
+                const { data: solicitud } = await window.db.from('renmcycf_solicitudes').select('*').eq('dni', dni).eq('tenant_id', window.currentTenantId).order('created_at', { ascending: false }).limit(1).maybeSingle();
 
                 if (solicitud) {
                     const estados = {
@@ -3289,7 +3216,7 @@
                     return;
                 }
 
-                const { data: padron } = await db.from('renmcycf_padron').select('*').eq('dni', dni).eq('tenant_id', currentTenantId).maybeSingle();
+                const { data: padron } = await window.db.from('renmcycf_padron').select('*').eq('dni', dni).eq('tenant_id', window.currentTenantId).maybeSingle();
                 if (padron) {
                     result.innerHTML = `
                         <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-6 shadow-sm">
@@ -3329,11 +3256,11 @@
             if (!file) { alert("Seleccione un archivo para subir."); return; }
             try {
                 const fileName = `correccion/${solicitudId}_${Date.now()}.${file.name.split('.').pop()}`;
-                const { error: upErr } = await db.storage.from('renmcycf-documentos').upload(fileName, file);
+                const { error: upErr } = await window.db.storage.from('renmcycf-documentos').upload(fileName, file);
                 if (upErr) throw upErr;
-                const { data: urlData } = db.storage.from('renmcycf-documentos').getPublicUrl(fileName);
+                const { data: urlData } = window.db.storage.from('renmcycf-documentos').getPublicUrl(fileName);
                 const url = urlData.publicUrl;
-                const { error: updErr } = await db.from('renmcycf_solicitudes').update({ estado: 'PENDIENTE', correccion_url: url }).eq('id', solicitudId).eq('tenant_id', currentTenantId);
+                const { error: updErr } = await window.db.from('renmcycf_solicitudes').update({ estado: 'PENDIENTE', correccion_url: url }).eq('id', solicitudId).eq('tenant_id', window.currentTenantId);
                 if (updErr) throw updErr;
                 alert("✅ Corrección subida. Su expediente ha vuelto a la Mesa de Entrada.");
                 buscarTracking();
@@ -3362,11 +3289,11 @@
         async function cargarPeritosMapa() {
             const loading = document.getElementById('map-loading');
             try {
-                const { data } = await db.from('renmcycf_padron')
+                const { data } = await window.db.from('renmcycf_padron')
                     .select('nombres, apellidos, profesion, categoria, especialidades, provincia_laboral, telefono, email, foto_perfil_url, facebook_url, instagram_url, linkedin_url')
                     .eq('estado_legal', 'ACTIVO')
                     .eq('figurar_directorio', true)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 peritosMapaDB = data || [];
                 renderizarMarcadores(peritosMapaDB);
                 if (loading) loading.style.display = 'none';
@@ -3480,7 +3407,7 @@
             const el = document.getElementById('hero-counter-matriculados');
             if (!el) return;
             try {
-                const { count, error } = await db.from('renmcycf_padron').select('*', { count: 'exact', head: true }).eq('estado_legal', 'ACTIVO').eq('tenant_id', currentTenantId);
+                const { count, error } = await window.db.from('renmcycf_padron').select('*', { count: 'exact', head: true }).eq('estado_legal', 'ACTIVO').eq('tenant_id', window.currentTenantId);
                 if (error) throw error;
                 if (count === 0 || count === null) { el.innerText = count || 0; return; }
 
@@ -3516,12 +3443,12 @@
             lucide.createIcons();
 
             try {
-                const { data: existe } = await db.from('renmcycf_suscriptores').select('id, confirmado').eq('email', email).eq('tenant_id', currentTenantId).maybeSingle();
+                const { data: existe } = await window.db.from('renmcycf_suscriptores').select('id, confirmado').eq('email', email).eq('tenant_id', window.currentTenantId).maybeSingle();
                 if (existe) {
                     alert(existe.confirmado ? "Ya estás suscripto con este email. ¡Gracias!" : "Ya te registraste, revisá tu email para confirmar.");
                 } else {
-                    await db.from('renmcycf_suscriptores').insert([{
-                        tenant_id: currentTenantId,
+                    await window.db.from('renmcycf_suscriptores').insert([{
+                        tenant_id: window.currentTenantId,
                         email: email,
                         telefono: tel,
                         confirmado: false,
@@ -3560,9 +3487,9 @@
             }
 
             try {
-                const { data } = await db.from('renmcycf_noticias').select('likes').eq('id', noticiaId).eq('tenant_id', currentTenantId).single();
+                const { data } = await window.db.from('renmcycf_noticias').select('likes').eq('id', noticiaId).eq('tenant_id', window.currentTenantId).single();
                 const likesActuales = Number(data?.likes) || 0;
-                await db.from('renmcycf_noticias').update({ likes: likesActuales + 1 }).eq('id', noticiaId).eq('tenant_id', currentTenantId);
+                await window.db.from('renmcycf_noticias').update({ likes: likesActuales + 1 }).eq('id', noticiaId).eq('tenant_id', window.currentTenantId);
             } catch (err) {
                 console.warn("Error al registrar like:", err);
                 if (icon) icon.classList.remove('fill-red-500', 'text-red-500', 'scale-125');
@@ -3646,22 +3573,22 @@
         });
 
         async function registrarVisitaSitio() {
-            if (!currentTenantId) return;
-            const sesionKey = `visita_registrada_${currentTenantId}`;
+            if (!window.currentTenantId) return;
+            const sesionKey = `visita_registrada_${window.currentTenantId}`;
             if (sessionStorage.getItem(sesionKey)) return;
             try {
-                const { data: conf, error: errLectura } = await db
+                const { data: conf, error: errLectura } = await window.db
                     .from('renmcycf_config')
                     .select('visitas')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
                 if (errLectura) throw errLectura;
                 const visitasActuales = Number(conf?.visitas) || 0;
                 const nuevasVisitas = visitasActuales + 1;
-                const { error: errUpdate } = await db
+                const { error: errUpdate } = await window.db
                     .from('renmcycf_config')
                     .update({ visitas: nuevasVisitas })
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 if (errUpdate) throw errUpdate;
                 sessionStorage.setItem(sesionKey, 'true');
                 console.log('✅ Visita registrada. Total:', nuevasVisitas);
