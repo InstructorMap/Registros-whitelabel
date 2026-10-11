@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="saas-core.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <script>
@@ -379,88 +380,14 @@
     <!-- SCRIPT -->
     <script>
         // ============================================================
-        // 1. CONFIGURACIÓN SUPABASE (SaaS multi-tenant)
+        // 1. BOOTSTRAPPER SaaS (inyectado por saas-core.js)
         // ============================================================
-        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
-        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
-
-        let currentTenantId = null;
-        let tenantConfigGlobal = null;
 
         document.getElementById('year').textContent = new Date().getFullYear();
         lucide.createIcons();
 
-        // ============================================================
-        // 2. BOOTSTRAPPER SaaS
-        // ============================================================
-        async function initTenant() {
-            try {
-                const hostname = window.location.hostname;
-                let tenantSlug = 'default';
-
-                if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
-                } else {
-                    const parts = hostname.split('.');
-                    if (parts.length > 2 && !hostname.includes('github.io')) {
-                        tenantSlug = parts[0];
-                    } else {
-                        tenantSlug = 'renmcycf';
-                    }
-                }
-
-                console.log("Cargando entorno SaaS para:", tenantSlug);
-
-                const { data: tenantConfig, error } = await db
-                    .from('saas_tenants')
-                    .select('*')
-                    .eq('slug', tenantSlug)
-                    .eq('activo', true)
-                    .single();
-
-                if (error || !tenantConfig) throw new Error("Institución no encontrada o inactiva.");
-
-                currentTenantId = tenantConfig.id;
-                tenantConfigGlobal = tenantConfig;
-                localStorage.setItem('saas_current_tenant', currentTenantId);
-
-                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
-                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
-                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
-                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#f1f5f9');
-
-                const institucionNombres = document.querySelectorAll(
-                    '.wl-institucion-nombre, #wl-institucion-nombre, #wl-title-institucion'
-                );
-                institucionNombres.forEach(el => {
-                    if (el) el.innerText = tenantConfig.nombre_institucion;
-                });
-
-                if (document.title.includes('·')) {
-                    const prefijo = document.title.split('·')[0];
-                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
-                } else {
-                    document.title = tenantConfig.nombre_institucion;
-                }
-
-                return tenantConfig;
-            } catch (err) {
-                console.error("Error Bootstrapper SaaS:", err);
-                document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
-                        <div>
-                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
-                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
-                        </div>
-                    </div>`;
-                throw err;
-            }
-        }
-
         // ==========================================
-        // 3. HELPERS
+        // 2. HELPERS
         // ==========================================
         function mostrarError(titulo = 'URL Inválida', mensaje = 'No se ha podido encontrar un código de certificado para verificar.') {
             document.getElementById('loader-view').classList.add('hidden');
@@ -501,7 +428,7 @@
         };
 
         // ==========================================
-        // 4. VERIFICACIÓN PRINCIPAL
+        // 3. VERIFICACIÓN PRINCIPAL
         // ==========================================
         async function verificarCertificado() {
             const params = new URLSearchParams(window.location.search);
@@ -517,13 +444,13 @@
 
             try {
                 // 1) Consultar el certificado por hash (aislado por tenant)
-                let queryCert = db
+                let queryCert = window.db
                     .from('renmcycf_certificados_b2b')
                     .select('*')
                     .eq('hash_cert', hash.trim());
 
-                if (currentTenantId) {
-                    queryCert = queryCert.eq('tenant_id', currentTenantId);
+                if (window.currentTenantId) {
+                    queryCert = queryCert.eq('tenant_id', window.currentTenantId);
                 }
 
                 const { data: cert, error: certError } = await queryCert.single();
@@ -539,7 +466,7 @@
                 // 2) Consultar aliado (instituto emisor)
                 let aliado = null;
                 if (cert.aliado_id) {
-                    let queryAliado = db
+                    let queryAliado = window.db
                         .from('renmcycf_aliados')
                         .select('nombre, logo_url')
                         .eq('id', cert.aliado_id);
@@ -555,7 +482,7 @@
                 // 3) Consultar curso
                 let curso = null;
                 if (cert.curso_id) {
-                    let queryCurso = db
+                    let queryCurso = window.db
                         .from('renmcycf_aliados_cursos')
                         .select('nombre_curso, carga_horaria')
                         .eq('id', cert.curso_id);
@@ -607,7 +534,7 @@
                 // 5) MAGIA B2C: link al index con promo_hash
                 const btnPromo = document.getElementById('btn-promo');
                 if (btnPromo) {
-                    btnPromo.href = `index.html?promo_hash=${encodeURIComponent(cert.hash_cert)}${currentTenantId ? '' : ''}`;
+                    btnPromo.href = `index.html?promo_hash=${encodeURIComponent(cert.hash_cert)}${window.currentTenantId ? '' : ''}`;
                 }
 
                 mostrarResultado();
@@ -622,10 +549,10 @@
         }
 
         // ==========================================
-        // 5. INIT
+        // 4. INIT
         // ==========================================
         window.addEventListener('DOMContentLoaded', async () => {
-            await initTenant();
+            await window.initTenant();
             lucide.createIcons();
             verificarCertificado();
         });
