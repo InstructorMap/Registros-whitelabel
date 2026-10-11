@@ -88,14 +88,16 @@
         .permission-checkbox { display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid var(--glass-border); }
         .permission-checkbox label { margin-bottom: 0; color: #e2e8f0; }
         input[readonly] { background: rgba(0,0,0,0.5); cursor: not-allowed; opacity: 0.6; }
+        .diploma-card { transition: all 0.2s ease; }
+        .diploma-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--wl-secondary) / 0.15); }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
-    <!-- LOGIN CON SUPABASE AUTH -->
+    <!-- LOGIN -->
     <div id="login-screen">
         <div class="login-box">
-            <div class="w-20 h-20 bg-blue-900/30 border border-blue-500/50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                <i data-lucide="shield-check" class="w-10 h-10 text-blue-400"></i>
+            <div class="w-20 h-20 bg-wlPrimary/30 border border-wlPrimary/50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(var(--wl-primary)/0.3)]">
+                <i data-lucide="shield-check" class="w-10 h-10 text-wlPrimary"></i>
             </div>
             <h1 class="text-2xl font-black text-white mb-2 tracking-widest uppercase">Panel SaaS</h1>
             <p class="text-xs text-slate-400 mb-8 uppercase font-bold">Control de Acceso Restringido</p>
@@ -103,12 +105,12 @@
                 <div><input type="email" id="login-email" placeholder="Correo Electrónico" required class="text-center"></div>
                 <div><input type="password" id="login-password" placeholder="Clave de Seguridad" required class="text-center"></div>
                 <div id="login-error" class="text-red-400 text-xs font-bold hidden bg-red-900/20 p-2 rounded border border-red-500/30"></div>
-                <button type="submit" id="btn-login" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black uppercase tracking-widest py-3 rounded-lg shadow-lg shadow-blue-900/50 transition-all">INGRESAR</button>
+                <button type="submit" id="btn-login" class="w-full bg-gradient-to-r from-wlPrimary to-wlTertiary hover:opacity-90 text-white font-black uppercase tracking-widest py-3 rounded-lg shadow-lg transition-all">INGRESAR</button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL EXPEDIENTE / DOSSIER DIGITAL -->
+    <!-- MODAL EXPEDIENTE -->
     <div id="modal-expediente" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto print:block print:bg-white print:p-0">
         <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col my-auto print-container" id="dossier-print-area">
             <div class="bg-wlPrimary text-white p-6 border-b-8 border-wlSecondary text-center relative rounded-t-2xl print:rounded-none overflow-hidden">
@@ -158,7 +160,6 @@
                     <h3 class="text-lg font-black uppercase tracking-wider text-red-800 mb-4 flex items-center gap-2 border-b-2 border-red-200 pb-2"><i data-lucide="alert-triangle" class="text-red-600"></i> Corrección Adjunta</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="dos-correccion-img"></div>
                 </div>
-
             </div>
             <div class="bg-slate-100 p-6 rounded-b-2xl flex justify-between items-center print:hidden border-t border-slate-300">
                 <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest"><i data-lucide="shield-check" class="inline w-3 h-3 mb-0.5"></i> Control Interno</p>
@@ -173,11 +174,11 @@
         </div>
     </div>
 
-    <!-- MODAL GESTION PORTAL CIENTIFICO -->
+    <!-- MODAL CLASES (PORTAL CIENTÍFICO) -->
     <div id="modal-clases" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-wlPrimary border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             <div class="p-5 border-b border-white/10 flex justify-between items-center bg-black/40">
-                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i data-lucide="layers" class="text-blue-400"></i> Materiales: <span id="modal-curso-titulo" class="text-wlSecondary font-normal"></span></h3>
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i data-lucide="layers" class="text-wlPrimary"></i> Materiales: <span id="modal-curso-titulo" class="text-wlSecondary font-normal"></span></h3>
                 <button onclick="cerrarModalClases()" class="text-slate-400 hover:text-red-400 transition-colors"><i data-lucide="x-circle" class="w-6 h-6"></i></button>
             </div>
             <div class="p-6 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -198,7 +199,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDICIÓN RÁPIDA DE MATRICULADO -->
+    <!-- MODAL EDICIÓN PADRÓN -->
     <div id="modal-editar-padron" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-wlPrimary border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="p-5 border-b border-white/10 flex justify-between items-center bg-black/40 sticky top-0 z-10">
@@ -263,7 +264,7 @@
     <!-- SIDEBAR -->
     <aside class="w-64 glass-panel m-4 mr-0 flex flex-col z-20 hidden md:flex border-r border-white/5">
         <div class="h-28 flex flex-col justify-center px-6 border-b border-white/5 relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-wlSecondary"></div>
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-wlPrimary to-wlSecondary"></div>
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded bg-white p-1 flex-shrink-0 border border-white/20 hidden" id="sidebar-logo-container">
                     <img id="sidebar-dyn-logo" src="" class="w-full h-full object-contain">
@@ -282,19 +283,28 @@
             <button onclick="showTab('padron')" id="nav-padron" class="sidebar-link w-full"><i data-lucide="database" class="w-4 h-4"></i> Padrón Oficial</button>
             
             <div id="menu-admin-section">
-                <div class="px-2 py-2 text-[9px] font-bold text-blue-400 uppercase tracking-widest mt-6">Divulgación & Ciencia</div>
+                <div class="px-2 py-2 text-[9px] font-bold text-wlSecondary uppercase tracking-widest mt-6">Divulgación & Ciencia</div>
                 <button onclick="showTab('campus')" id="nav-campus" class="sidebar-link w-full"><i data-lucide="book-open" class="w-4 h-4"></i> Portal Científico</button>
                 <button onclick="showTab('biblioteca')" id="nav-biblioteca" class="sidebar-link w-full"><i data-lucide="library" class="w-4 h-4"></i> Biblioteca</button>
                 <button onclick="showTab('tesis')" id="nav-tesis" class="sidebar-link w-full"><i data-lucide="microscope" class="w-4 h-4"></i> Auditoría Tesis</button>
 
+                <div class="px-2 py-2 text-[9px] font-bold text-wlSecondary uppercase tracking-widest mt-6">Red Judicial (B2B)</div>
+                <button onclick="showTab('convenios')" id="nav-convenios" class="sidebar-link w-full"><i data-lucide="scale" class="w-4 h-4"></i> Solicitudes de Entidades</button>
+
                 <div class="px-2 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-6">Sistema</div>
                 <button onclick="showTab('aliados')" id="nav-aliados" class="sidebar-link w-full"><i data-lucide="award" class="w-4 h-4"></i> Gestión Aliados</button>
+                <button onclick="showTab('cursos-b2b')" id="nav-cursos-b2b" class="sidebar-link w-full"><i data-lucide="book-check" class="w-4 h-4"></i> Cursos Institutos</button>
+                <button onclick="showTab('empresas')" id="nav-empresas" class="sidebar-link w-full"><i data-lucide="building-2" class="w-4 h-4"></i> Red de Empresas</button>
                 <button onclick="showTab('comite')" id="nav-comite" class="sidebar-link w-full"><i data-lucide="users-round" class="w-4 h-4"></i> Comité Evaluador</button>
                 <button onclick="showTab('masiva')" id="nav-masiva" class="sidebar-link w-full"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Carga Masiva</button>
                 <button onclick="showTab('diseno')" id="nav-diseno" class="sidebar-link w-full"><i data-lucide="layout-template" class="w-4 h-4"></i> Diseño Credencial</button>
                 <button onclick="showTab('configuracion')" id="nav-configuracion" class="sidebar-link w-full"><i data-lucide="settings" class="w-4 h-4"></i> Configuración Core</button>
                 <button onclick="showTab('contenido')" id="nav-contenido" class="sidebar-link w-full"><i data-lucide="palette" class="w-4 h-4"></i> Textos del Sitio</button>
                 <button onclick="showTab('usuarios')" id="nav-usuarios" class="sidebar-link w-full"><i data-lucide="users" class="w-4 h-4"></i> Usuarios y Roles</button>
+
+                <div class="px-2 py-2 text-[9px] font-bold text-purple-400 uppercase tracking-widest mt-6">Divulgación</div>
+                <button onclick="showTab('beneficios')" id="nav-beneficios" class="sidebar-link w-full"><i data-lucide="award" class="w-4 h-4"></i> Beneficios</button>
+                <button onclick="showTab('suscriptores')" id="nav-suscriptores" class="sidebar-link w-full"><i data-lucide="mail" class="w-4 h-4"></i> Suscriptores</button>
             </div>
         </nav>
     </aside>
@@ -385,7 +395,7 @@
                 </div>
             </div>
 
-            <!-- ALIADOS / INSTITUCIONES -->
+            <!-- ALIADOS -->
             <div id="view-aliados" class="tab-content space-y-6">
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     <div class="glass-card p-6 xl:col-span-1">
@@ -397,7 +407,7 @@
                                 <input type="checkbox" id="aliado-activo" checked class="w-5 h-5">
                                 <label for="aliado-activo" class="text-sm font-bold text-white mb-0 cursor-pointer">Visible en el Index Público</label>
                             </div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl">GUARDAR ALIADO</button>
+                            <button type="submit" class="w-full bg-wlPrimary hover:opacity-90 border border-wlSecondary/30 text-wlSecondary font-bold py-3 rounded-xl">GUARDAR ALIADO</button>
                         </form>
                     </div>
                     <div class="glass-card p-6 xl:col-span-2">
@@ -423,7 +433,7 @@
                                 <input type="checkbox" id="comite-activo" checked class="w-5 h-5">
                                 <label for="comite-activo" class="text-sm font-bold text-white mb-0 cursor-pointer">Miembro Activo</label>
                             </div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl">GUARDAR MIEMBRO</button>
+                            <button type="submit" class="w-full bg-wlPrimary hover:opacity-90 border border-wlSecondary/30 text-wlSecondary font-bold py-3 rounded-xl">GUARDAR MIEMBRO</button>
                         </form>
                     </div>
                     <div class="glass-card p-6 xl:col-span-2">
@@ -435,11 +445,11 @@
 
             <!-- CARGA MASIVA -->
             <div id="view-masiva" class="tab-content space-y-6">
-                <div class="glass-card p-8 max-w-2xl mx-auto text-center border-blue-500/30">
-                    <h3 class="text-xl font-black text-white mb-2"><i data-lucide="upload-cloud" class="inline-block w-6 h-6 text-blue-400 mb-1"></i> Inyección Masiva</h3>
-                    <input type="file" id="input-excel" accept=".xlsx,.xls" class="block w-full text-sm mb-6 text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white" onchange="procesarExcel()">
+                <div class="glass-card p-8 max-w-2xl mx-auto text-center border-wlPrimary/30">
+                    <h3 class="text-xl font-black text-white mb-2"><i data-lucide="upload-cloud" class="inline-block w-6 h-6 text-wlPrimary mb-1"></i> Inyección Masiva</h3>
+                    <input type="file" id="input-excel" accept=".xlsx,.xls" class="block w-full text-sm mb-6 text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-wlPrimary file:text-white" onchange="procesarExcel()">
                     <div id="preview-area" class="hidden text-left bg-black/30 p-4 rounded-xl border border-white/5">
-                        <div class="flex justify-between items-center mb-2"><span class="text-sm font-bold text-white">Detectados: <span id="count-preview" class="text-blue-400">0</span></span><button onclick="confirmarCargaMasiva()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg font-bold text-xs"><i data-lucide="check" class="w-3 h-3"></i> EJECUTAR</button></div>
+                        <div class="flex justify-between items-center mb-2"><span class="text-sm font-bold text-white">Detectados: <span id="count-preview" class="text-wlPrimary">0</span></span><button onclick="confirmarCargaMasiva()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg font-bold text-xs"><i data-lucide="check" class="w-3 h-3"></i> EJECUTAR</button></div>
                         <div class="max-h-40 overflow-y-auto"><table class="w-full text-xs font-mono"><tbody id="tabla-preview"></tbody></table></div>
                     </div>
                 </div>
@@ -461,7 +471,7 @@
                                 </select>
                             </div>
                             <div><label>Imagen Portada</label><input type="file" id="camp-portada" accept="image/*" class="text-slate-400"></div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl">PUBLICAR</button>
+                            <button type="submit" class="w-full bg-wlPrimary hover:opacity-90 border border-wlSecondary/30 text-wlSecondary font-bold py-3 rounded-xl">PUBLICAR</button>
                         </form>
                     </div>
                     <div class="glass-card p-6 xl:col-span-2">
@@ -482,7 +492,7 @@
                             <div><label>Tipo Acceso</label><select id="bib-acceso"><option value="GRATUITO">Público</option><option value="PREMIUM">Premium (Solo Matriculados)</option></select></div>
                             <div><label>Portada (Opcional)</label><input type="file" id="bib-portada" accept="image/*" class="text-slate-400"></div>
                             <div><label>Archivo PDF</label><input type="file" id="bib-pdf" accept=".pdf" required class="text-slate-400"></div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl">PUBLICAR</button>
+                            <button type="submit" class="w-full bg-wlPrimary hover:opacity-90 border border-wlSecondary/30 text-wlSecondary font-bold py-3 rounded-xl">PUBLICAR</button>
                         </form>
                     </div>
                     <div class="glass-card p-6 xl:col-span-2">
@@ -506,7 +516,7 @@
                     <div class="glass-card p-6 xl:col-span-4 h-[750px] overflow-y-auto flex flex-col">
                         <h3 class="text-white font-bold mb-4 border-b border-white/10 pb-2">Calibración Visual</h3>
                         <div class="flex bg-black/30 rounded-lg p-1 mb-5">
-                            <button class="flex-1 py-2 text-xs font-bold uppercase rounded-md text-white bg-blue-600 shadow" id="btn-tab-frente" onclick="switchEditorTab('frente')">Frente</button>
+                            <button class="flex-1 py-2 text-xs font-bold uppercase rounded-md text-white bg-wlPrimary shadow" id="btn-tab-frente" onclick="switchEditorTab('frente')">Frente</button>
                             <button class="flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-400 hover:text-white" id="btn-tab-dorso" onclick="switchEditorTab('dorso')">Dorso</button>
                         </div>
                         <div class="mb-5 space-y-3 p-4 bg-black/20 rounded-xl border border-white/5">
@@ -576,31 +586,23 @@
 
                         <div class="bg-black/20 p-4 rounded-xl border border-white/5">
                             <h4 class="text-wlSecondary font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="eye" class="w-4 h-4"></i> Visibilidad de Botones de Contacto</h4>
-                            <p class="text-xs text-slate-400 mb-4">Controla qué botones de contacto aparecen en el sitio público (menú flotante y secciones).</p>
+                            <p class="text-xs text-slate-400 mb-4">Controla qué botones de contacto aparecen en el sitio público.</p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="bg-black/30 p-3 rounded-lg border border-white/10 flex items-center gap-3">
                                     <input type="checkbox" id="conf-mostrar-wpp" class="w-5 h-5 rounded text-emerald-500 focus:ring-emerald-500 border-slate-600">
-                                    <label for="conf-mostrar-wpp" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2">
-                                        <i data-lucide="message-circle" class="w-5 h-5 text-green-500"></i> Mostrar WhatsApp
-                                    </label>
+                                    <label for="conf-mostrar-wpp" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2"><i data-lucide="message-circle" class="w-5 h-5 text-green-500"></i> Mostrar WhatsApp</label>
                                 </div>
                                 <div class="bg-black/30 p-3 rounded-lg border border-white/10 flex items-center gap-3">
                                     <input type="checkbox" id="conf-mostrar-email" class="w-5 h-5 rounded text-sky-500 focus:ring-sky-500 border-slate-600">
-                                    <label for="conf-mostrar-email" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2">
-                                        <i data-lucide="mail" class="w-5 h-5 text-sky-500"></i> Mostrar Email
-                                    </label>
+                                    <label for="conf-mostrar-email" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2"><i data-lucide="mail" class="w-5 h-5 text-sky-500"></i> Mostrar Email</label>
                                 </div>
                                 <div class="bg-black/30 p-3 rounded-lg border border-white/10 flex items-center gap-3">
                                     <input type="checkbox" id="conf-mostrar-facebook" class="w-5 h-5 rounded text-blue-500 focus:ring-blue-500 border-slate-600">
-                                    <label for="conf-mostrar-facebook" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2">
-                                        <i data-lucide="globe" class="w-5 h-5 text-blue-500"></i> Mostrar Facebook
-                                    </label>
+                                    <label for="conf-mostrar-facebook" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2"><i data-lucide="globe" class="w-5 h-5 text-blue-500"></i> Mostrar Facebook</label>
                                 </div>
                                 <div class="bg-black/30 p-3 rounded-lg border border-white/10 flex items-center gap-3">
                                     <input type="checkbox" id="conf-mostrar-instagram" class="w-5 h-5 rounded text-pink-500 focus:ring-pink-500 border-slate-600">
-                                    <label for="conf-mostrar-instagram" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2">
-                                        <i data-lucide="camera" class="w-5 h-5 text-pink-500"></i> Mostrar Instagram
-                                    </label>
+                                    <label for="conf-mostrar-instagram" class="text-sm font-bold text-white mb-0 cursor-pointer flex items-center gap-2"><i data-lucide="camera" class="w-5 h-5 text-pink-500"></i> Mostrar Instagram</label>
                                 </div>
                             </div>
                         </div>
@@ -615,7 +617,6 @@
                                     <input type="file" id="input-hero-image" accept="image/*" onchange="previewYGuardarImagen(this, 'preview-hero', 'hero_image')" style="display:none;">
                                 </div>
                                 <img id="preview-hero" class="preview-img" src="" alt="Preview" style="display:none;">
-                                <input type="hidden" id="conf-hero-image-url">
                             </div>
                             <div class="mt-4">
                                 <label>Logo del Registro</label>
@@ -625,7 +626,6 @@
                                     <input type="file" id="input-logo" accept="image/*" onchange="previewYGuardarImagen(this, 'preview-logo', 'logo')" style="display:none;">
                                 </div>
                                 <img id="preview-logo" class="preview-img" src="" alt="Preview" style="display:none;">
-                                <input type="hidden" id="conf-logo-url">
                             </div>
                         </div>
 
@@ -648,7 +648,7 @@
 
             <!-- CONTENIDO DEL SITIO -->
             <div id="view-contenido" class="tab-content space-y-6">
-                <div class="glass-card p-8 border-blue-500/30">
+                <div class="glass-card p-8 border-wlPrimary/30">
                     <h3 class="text-white font-bold mb-6 border-b border-white/10 pb-2">Editar Contenido</h3>
                     <form id="form-contenido" class="space-y-6" onsubmit="guardarContenido(event)">
                         <div><label>Badge del Hero</label><input type="text" id="cont-hero-badge-text"></div>
@@ -666,12 +666,12 @@
                         <div><label>Descripción Categoría A4</label><textarea id="cont-cat-a4-desc" rows="3"></textarea></div>
                         <div><label>Texto Footer</label><textarea id="cont-footer-texto" rows="2"></textarea></div>
                         <div class="flex justify-end pt-4">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl">ACTUALIZAR TEXTOS</button>
+                            <button type="submit" class="bg-wlPrimary hover:opacity-90 border border-wlSecondary/30 text-wlSecondary font-black px-6 py-3 rounded-xl">ACTUALIZAR TEXTOS</button>
                         </div>
                     </form>
                 </div>
             </div>
-            
+
             <!-- USUARIOS Y ROLES -->
             <div id="view-usuarios" class="tab-content space-y-6">
                 <div class="glass-card p-8 border-emerald-500/30">
@@ -696,45 +696,25 @@
                         
                         <div class="md:col-span-2" id="box-uid">
                             <label>UID de Supabase Auth (Requerido al crear nuevo)</label>
-                            <input type="text" id="usr-uid" placeholder="Ej: dd057f27-a081-4c3a-8810-10152c712f3a" class="font-mono text-sm text-blue-400">
+                            <input type="text" id="usr-uid" placeholder="Ej: dd057f27-a081-4c3a-8810-10152c712f3a" class="font-mono text-sm text-wlPrimary">
                             <p class="text-[9px] text-slate-400 mt-1">Copia el User UID desde Supabase > Authentication > Users.</p>
                         </div>
                         
                         <div class="border-t border-white/10 pt-4">
                             <label class="text-emerald-400 text-sm font-bold uppercase tracking-widest mb-3">Permisos de Acceso (Módulos)</label>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                <div class="permission-checkbox">
-                                    <input type="checkbox" id="perm-dashboard" value="mod-dashboard" class="w-4 h-4">
-                                    <label for="perm-dashboard" class="text-sm mb-0">Dashboard</label>
-                                </div>
-                                <div class="permission-checkbox">
-                                    <input type="checkbox" id="perm-solicitudes" value="mod-solicitudes" class="w-4 h-4">
-                                    <label for="perm-solicitudes" class="text-sm mb-0">Solicitudes</label>
-                                </div>
-                                <div class="permission-checkbox">
-                                    <input type="checkbox" id="perm-auditoria" value="mod-auditoria" class="w-4 h-4">
-                                    <label for="perm-auditoria" class="text-sm mb-0">Auditoría</label>
-                                </div>
-                                <div class="permission-checkbox">
-                                    <input type="checkbox" id="perm-padron" value="mod-padron" class="w-4 h-4">
-                                    <label for="perm-padron" class="text-sm mb-0">Padrón</label>
-                                </div>
-                                <div class="permission-checkbox">
-                                    <input type="checkbox" id="perm-campus" value="mod-campus" class="w-4 h-4">
-                                    <label for="perm-campus" class="text-sm mb-0">Portal Científico</label>
-                                </div>
-                                <div class="permission-checkbox">
-                                    <input type="checkbox" id="perm-biblioteca" value="mod-biblioteca" class="w-4 h-4">
-                                    <label for="perm-biblioteca" class="text-sm mb-0">Biblioteca</label>
-                                </div>
-                                <div class="permission-checkbox">
-                                    <input type="checkbox" id="perm-tesis" value="mod-tesis" class="w-4 h-4">
-                                    <label for="perm-tesis" class="text-sm mb-0">Tesis</label>
-                                </div>
-                                <div class="permission-checkbox">
-                                    <input type="checkbox" id="perm-sistema" value="mod-sistema" class="w-4 h-4">
-                                    <label for="perm-sistema" class="text-sm mb-0">Sistema Completo</label>
-                                </div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-dashboard" value="mod-dashboard" class="w-4 h-4"><label for="perm-dashboard" class="text-sm mb-0">Dashboard</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-solicitudes" value="mod-solicitudes" class="w-4 h-4"><label for="perm-solicitudes" class="text-sm mb-0">Solicitudes</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-auditoria" value="mod-auditoria" class="w-4 h-4"><label for="perm-auditoria" class="text-sm mb-0">Auditoría</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-padron" value="mod-padron" class="w-4 h-4"><label for="perm-padron" class="text-sm mb-0">Padrón</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-campus" value="mod-campus" class="w-4 h-4"><label for="perm-campus" class="text-sm mb-0">Portal Científico</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-biblioteca" value="mod-biblioteca" class="w-4 h-4"><label for="perm-biblioteca" class="text-sm mb-0">Biblioteca</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-tesis" value="mod-tesis" class="w-4 h-4"><label for="perm-tesis" class="text-sm mb-0">Tesis</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-convenios" value="mod-convenios" class="w-4 h-4"><label for="perm-convenios" class="text-sm mb-0">Red Judicial B2B</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-aliados" value="mod-aliados" class="w-4 h-4"><label for="perm-aliados" class="text-sm mb-0">Institutos Aliados</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-cursos-b2b" value="mod-cursos-b2b" class="w-4 h-4"><label for="perm-cursos-b2b" class="text-sm mb-0">Auditoría Cursos</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-empresas" value="mod-empresas" class="w-4 h-4"><label for="perm-empresas" class="text-sm mb-0">Red de Empresas</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-sistema" value="mod-sistema" class="w-4 h-4"><label for="perm-sistema" class="text-sm mb-0">Sistema Completo</label></div>
                             </div>
                         </div>
                         
@@ -752,6 +732,157 @@
                 </div>
             </div>
 
+            <!-- CONVENIOS B2B -->
+            <div id="view-convenios" class="tab-content space-y-6">
+                <div class="glass-card p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-white/10">
+                        <div>
+                            <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                                <i data-lucide="scale" class="text-wlSecondary w-5 h-5"></i>
+                                Solicitudes de Entidades Judiciales
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Colegios de Abogados y Estudios Jurídicos que solicitan acceso al padrón federal de profesionales.</p>
+                        </div>
+                        <button onclick="cargarConveniosPanel()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> REFRESCAR
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="glass-card p-4 border-l-4 border-amber-500/60">
+                            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Pendientes</p>
+                            <h3 class="text-2xl font-black text-amber-400 mt-1 font-mono" id="stat-conv-pendientes">0</h3>
+                        </div>
+                        <div class="glass-card p-4 border-l-4 border-emerald-500/60">
+                            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Aprobados</p>
+                            <h3 class="text-2xl font-black text-emerald-400 mt-1 font-mono" id="stat-conv-aprobados">0</h3>
+                        </div>
+                        <div class="glass-card p-4 border-l-4 border-red-500/60">
+                            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Rechazados</p>
+                            <h3 class="text-2xl font-black text-red-400 mt-1 font-mono" id="stat-conv-rechazados">0</h3>
+                        </div>
+                        <div class="glass-card p-4 border-l-4 border-wlSecondary/60">
+                            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Total</p>
+                            <h3 class="text-2xl font-black text-wlSecondary mt-1 font-mono" id="stat-conv-total">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="p-3">Institución / Estudio</th>
+                                    <th class="p-3">Tipo</th>
+                                    <th class="p-3">Autoridad Solicitante</th>
+                                    <th class="p-3">Email</th>
+                                    <th class="p-3">Estado</th>
+                                    <th class="p-3 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="convenios-body">
+                                <tr><td colspan="6" class="p-4 text-center text-slate-400">Cargando solicitudes...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CURSOS B2B -->
+            <div id="view-cursos-b2b" class="tab-content space-y-6">
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-white">Auditoría de Programas y Cursos</h3>
+                            <p class="text-xs text-slate-400">Aprueba los temarios para que las instituciones puedan emitir Doble Certificación.</p>
+                        </div>
+                        <button onclick="cargarCursosB2BPanel()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead><tr><th class="p-3">Instituto</th><th class="p-3">Curso y Docentes</th><th class="p-3">Temario</th><th class="p-3">Estado</th><th class="p-3 text-right">Auditar</th></tr></thead>
+                            <tbody id="cursos-b2b-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EMPRESAS -->
+            <div id="view-empresas" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 xl:col-span-1">
+                        <h3 class="text-white font-bold mb-4 border-b border-white/10 pb-2">Nueva Empresa</h3>
+                        <form id="form-empresa" onsubmit="crearEmpresa(event)" class="space-y-4">
+                            <input type="hidden" id="empresa-id">
+                            <div><label>Nombre de la Empresa</label><input type="text" id="empresa-nombre" required></div>
+                            <div><label>Link a su Web</label><input type="url" id="empresa-web" placeholder="https://..." required></div>
+                            <div><label>Descripción Corta (opcional)</label><textarea id="empresa-desc" rows="2" placeholder="Rubro o servicio"></textarea></div>
+                            <div><label>Logo</label><input type="file" id="empresa-logo" accept="image/*" class="text-slate-400"></div>
+                            <div><label>Orden (menor = primero)</label><input type="number" id="empresa-orden" value="0"></div>
+                            <div class="bg-black/30 p-4 rounded-xl border border-white/10 flex items-center gap-3">
+                                <input type="checkbox" id="empresa-activo" checked class="w-5 h-5">
+                                <label for="empresa-activo" class="text-sm font-bold text-white mb-0 cursor-pointer">Visible en el Index Público</label>
+                            </div>
+                            <button type="submit" class="w-full bg-wlPrimary hover:opacity-90 border border-wlSecondary/30 text-wlSecondary font-bold py-3 rounded-xl">GUARDAR EMPRESA</button>
+                            <button type="button" onclick="resetFormEmpresa()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-xl text-xs">CANCELAR EDICIÓN</button>
+                        </form>
+                    </div>
+                    <div class="glass-card p-6 xl:col-span-2">
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg text-white">Empresas Cargadas</h3><button onclick="cargarEmpresasPanel()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button></div>
+                        <p class="text-xs text-slate-400 mb-4">Si no hay empresas activas, el bloque "Red de Empresas" se ocultará del index.</p>
+                        <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Logo</th><th class="p-3">Empresa</th><th class="p-3">Orden</th><th class="p-3">Estado</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="empresas-body"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BENEFICIOS -->
+            <div id="view-beneficios" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="glass-card p-6 xl:col-span-1">
+                        <h3 class="text-white font-bold mb-4 border-b border-white/10 pb-2">Nuevo / Editar Beneficio</h3>
+                        <form id="form-beneficio" onsubmit="guardarBeneficio(event)" class="space-y-4">
+                            <input type="hidden" id="beneficio-id">
+                            <div><label>Título</label><input type="text" id="beneficio-titulo" required></div>
+                            <div><label>Descripción</label><textarea id="beneficio-desc" rows="3"></textarea></div>
+                            <div><label>Ícono (nombre Lucide)</label><input type="text" id="beneficio-icono" placeholder="Ej: shield-check, award, qr-code" value="check-circle"></div>
+                            <div><label>Orden</label><input type="number" id="beneficio-orden" value="0"></div>
+                            <div class="bg-black/30 p-4 rounded-xl border border-white/10 flex items-center gap-3">
+                                <input type="checkbox" id="beneficio-activo" checked class="w-5 h-5">
+                                <label for="beneficio-activo" class="text-sm font-bold text-white mb-0 cursor-pointer">Visible en el Index</label>
+                            </div>
+                            <button type="submit" class="w-full bg-wlPrimary hover:opacity-90 border border-wlSecondary/30 text-wlSecondary font-bold py-3 rounded-xl">GUARDAR BENEFICIO</button>
+                            <button type="button" onclick="resetFormBeneficio()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-xl text-xs">CANCELAR EDICIÓN</button>
+                        </form>
+                    </div>
+                    <div class="glass-card p-6 xl:col-span-2">
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg text-white">Beneficios Cargados</h3><button onclick="cargarBeneficiosPanel()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button></div>
+                        <p class="text-xs text-slate-400 mb-4">Los beneficios aparecen en la sección Institucional del index. Podés agregar más o reordenar.</p>
+                        <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Ícono</th><th class="p-3">Título</th><th class="p-3">Orden</th><th class="p-3">Estado</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="beneficios-body"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUSCRIPTORES -->
+            <div id="view-suscriptores" class="tab-content space-y-6">
+                <div class="glass-card p-6">
+                    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                        <div>
+                            <h3 class="font-bold text-lg text-white">Suscriptores del Newsletter</h3>
+                            <p class="text-xs text-slate-400">Personas que dejaron su email para recibir novedades del registro.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="cargarSuscriptoresPanel()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2"><i data-lucide="refresh-cw" class="w-4 h-4"></i> REFRESCAR</button>
+                            <button onclick="exportarSuscriptores()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> EXPORTAR EXCEL</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="glass-card p-4"><p class="text-slate-400 text-[10px] font-bold uppercase">Total</p><h3 class="text-2xl font-black text-white mt-1 font-mono" id="stat-subs-total">0</h3></div>
+                        <div class="glass-card p-4"><p class="text-slate-400 text-[10px] font-bold uppercase">Confirmados</p><h3 class="text-2xl font-black text-emerald-400 mt-1 font-mono" id="stat-subs-confirmados">0</h3></div>
+                        <div class="glass-card p-4"><p class="text-slate-400 text-[10px] font-bold uppercase">Pendientes</p><h3 class="text-2xl font-black text-amber-400 mt-1 font-mono" id="stat-subs-pendientes">0</h3></div>
+                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr><th class="p-3">Email</th><th class="p-3">WhatsApp</th><th class="p-3">Estado</th><th class="p-3">Fecha</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="suscriptores-body"></tbody></table></div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -763,6 +894,9 @@
         const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
         const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
+        // ⚠️ LÍMITE GLOBAL DE DIPLOMAS (sincronizado con el index público)
+        const MAX_DIPLOMAS = 30;
+
         let currentTenantId = null;
         let adminUser = null;
         let padronCompleto = [];
@@ -773,6 +907,7 @@
         let chartCategorias = null;
         let whatsappRegistro = '';
         let configGlobal = {};
+        let suscriptoresCache = [];
 
         // ============================================================
         // 2. UTILIDADES CORE (Tailwind Hex -> RGB)
@@ -785,7 +920,7 @@
         };
 
         // ============================================================
-        // 3. BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
+        // 3. BOOTSTRAPPER SaaS
         // ============================================================
         async function initTenantPanel() {
             try {
@@ -834,16 +969,12 @@
                     document.title = `Panel de Administración · ${tenantConfig.nombre_institucion}`;
                 }
 
-                // Guardamos logo/hero de saas_tenants como FALLBACK
-                // La fuente principal será renmcycf_config (lo setea el director)
                 window._saasTenantFallback = {
                     logo_url: tenantConfig.logo_url || null,
                     hero_image_url: tenantConfig.hero_image_url || null
                 };
 
-                // Aplicamos logo/hero con prioridad renmcycf_config → fallback saas_tenants
                 await aplicarLogoYHero();
-
                 document.body.classList.add('ready');
 
             } catch (err) {
@@ -859,9 +990,6 @@
             }
         }
 
-        // ============================================================
-        // APLICAR LOGO Y HERO (prioridad renmcycf_config → saas_tenants fallback)
-        // ============================================================
         async function aplicarLogoYHero() {
             try {
                 const { data: conf } = await db
@@ -884,9 +1012,7 @@
 
                 if (logoFinal) {
                     inyectarSrcSeguro('modal-dyn-logo', logoFinal);
-                    const defaultLogos = document.querySelectorAll('#modal-default-logo');
-                    defaultLogos.forEach(el => el.classList.add('hidden'));
-
+                    document.querySelectorAll('#modal-default-logo').forEach(el => el.classList.add('hidden'));
                     inyectarSrcSeguro('sidebar-dyn-logo', logoFinal);
                     const sidebarLogoContainer = document.getElementById('sidebar-logo-container');
                     if (sidebarLogoContainer) sidebarLogoContainer.classList.remove('hidden');
@@ -965,7 +1091,11 @@
                 'mod-padron': 'nav-padron',
                 'mod-campus': 'nav-campus',
                 'mod-biblioteca': 'nav-biblioteca',
-                'mod-tesis': 'nav-tesis'
+                'mod-tesis': 'nav-tesis',
+                'mod-convenios': 'nav-convenios',
+                'mod-aliados': 'nav-aliados',
+                'mod-cursos-b2b': 'nav-cursos-b2b',
+                'mod-empresas': 'nav-empresas'
             };
 
             if (rolData.rol === 'superadmin') {
@@ -974,7 +1104,7 @@
                     const btn = document.getElementById(id);
                     if (btn) btn.style.display = 'flex';
                 });
-                ['nav-aliados', 'nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-usuarios'].forEach(id => {
+                ['nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-usuarios', 'nav-beneficios', 'nav-suscriptores'].forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn) btn.style.display = 'flex';
                 });
@@ -986,7 +1116,7 @@
                     if (navElement) navElement.style.display = permisos.includes(modulo) ? 'flex' : 'none';
                 });
                 
-                const sistemaButtons = ['nav-aliados', 'nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-usuarios'];
+                const sistemaButtons = ['nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-usuarios', 'nav-beneficios', 'nav-suscriptores'];
                 const tienePermisoSistema = permisos.includes('mod-sistema');
                 sistemaButtons.forEach(id => {
                     const el = document.getElementById(id);
@@ -1044,7 +1174,27 @@
             document.getElementById('view-' + id).classList.add('active');
             document.getElementById('nav-' + id)?.classList.add('active');
             
-            const titles = { 'dashboard':'Dashboard Estadístico', 'solicitudes':'Bandeja de CRM', 'auditoria':'Auditoría Comité', 'padron':'Padrón Nacional', 'aliados':'Gestión de Aliados', 'comite':'Comité Evaluador', 'campus':'Portal Científico', 'biblioteca':'Biblioteca', 'tesis':'Auditoría de Tesis', 'masiva':'Inyección Masiva', 'diseno':'Calibrador de Credenciales', 'configuracion':'Configuración', 'contenido':'Textos del Sitio', 'usuarios':'Usuarios y Roles' };
+            const titles = { 
+                'dashboard':'Dashboard Estadístico', 
+                'solicitudes':'Bandeja de CRM', 
+                'auditoria':'Auditoría Comité', 
+                'padron':'Padrón Nacional', 
+                'aliados':'Gestión de Aliados', 
+                'cursos-b2b':'Auditoría de Cursos B2B',
+                'convenios':'Red Judicial (B2B) · Solicitudes de Entidades',
+                'empresas':'Red de Empresas', 
+                'comite':'Comité Evaluador', 
+                'campus':'Portal Científico', 
+                'biblioteca':'Biblioteca', 
+                'tesis':'Auditoría de Tesis', 
+                'masiva':'Inyección Masiva', 
+                'diseno':'Calibrador de Credenciales', 
+                'configuracion':'Configuración', 
+                'contenido':'Textos del Sitio', 
+                'beneficios':'Beneficios del Registro', 
+                'suscriptores':'Suscriptores del Newsletter', 
+                'usuarios':'Usuarios y Roles' 
+            };
             document.getElementById('page-title').textContent = titles[id] || id;
             
             if(id === 'dashboard') actualizarDashboard();
@@ -1052,6 +1202,9 @@
             if(id === 'auditoria') cargarAuditoria();
             if(id === 'padron') cargarPadron();
             if(id === 'aliados') cargarAliadosPanel();
+            if(id === 'cursos-b2b') cargarCursosB2BPanel();
+            if(id === 'convenios') cargarConveniosPanel();
+            if(id === 'empresas') cargarEmpresasPanel();
             if(id === 'comite') cargarComitePanel();
             if(id === 'campus') cargarNoticiasPanel();
             if(id === 'biblioteca') cargarBibliotecaPanel();
@@ -1059,6 +1212,8 @@
             if(id === 'diseno') cargarDisenoCredencial();
             if(id === 'configuracion') cargarConfiguracionForm();
             if(id === 'contenido') cargarContenidoForm();
+            if(id === 'beneficios') cargarBeneficiosPanel();
+            if(id === 'suscriptores') cargarSuscriptoresPanel();
             if(id === 'usuarios') cargarUsuarios();
         }
 
@@ -1333,6 +1488,234 @@
             } catch (err) { tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-red-400">${err.message}</td></tr>`; }
         }
 
+        // ==========================================
+        // HELPER: OBTENER ARRAY DE DIPLOMAS DESDE UN ITEM
+        // ==========================================
+        function extraerDiplomasDeItem(item) {
+            let arr = [];
+            if (item.diplomas_urls && item.diplomas_urls !== 'null') {
+                try {
+                    arr = typeof item.diplomas_urls === 'string' 
+                        ? JSON.parse(item.diplomas_urls) 
+                        : item.diplomas_urls;
+                    if (!Array.isArray(arr)) arr = [];
+                } catch(e) { arr = []; }
+            }
+            if (arr.length === 0 && item.diploma_url && item.diploma_url.trim() !== '' && item.diploma_url !== 'null') {
+                arr = [item.diploma_url];
+            }
+            return arr;
+        }
+
+        // ==========================================
+        // RENDER DE UNA TARJETA DE DIPLOMA
+        // ==========================================
+        function renderDiplomaCard(url, idx) {
+            const esPDF = /\.pdf(\?|$)/i.test(url);
+            const contenidoVisual = esPDF
+                ? `<div class="w-full h-32 flex flex-col items-center justify-center bg-slate-100 rounded border border-slate-200">
+                       <i data-lucide="file-text" class="w-10 h-10 text-red-500"></i>
+                       <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest mt-1">PDF</span>
+                   </div>`
+                : `<img src="${url}" class="w-full h-32 object-contain rounded bg-slate-50" alt="Diploma ${idx+1}">`;
+
+            return `
+            <div class="diploma-card border border-slate-200 rounded-lg p-2 bg-white shadow-sm flex flex-col relative">
+                <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 px-1.5 py-0.5 rounded">#${idx+1}</span>
+                    <button type="button" onclick="eliminarDiploma(${idx})" 
+                            class="text-red-400 hover:text-red-600 transition-colors" title="Eliminar">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+                <a href="${url}" target="_blank" rel="noopener" class="block">
+                    ${contenidoVisual}
+                </a>
+                <button type="button" onclick="reemplazarDiploma(${idx})" 
+                        class="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-1 rounded text-[9px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-colors">
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i> Reemplazar
+                </button>
+            </div>`;
+        }
+
+        function getDiplomasActuales() {
+            return extraerDiplomasDeItem(itemDossierActual || {});
+        }
+
+        function refrescarGrillaDiplomas() {
+            const arr = getDiplomasActuales();
+            const grid = document.getElementById('diplomas-grid');
+            const counter = document.getElementById('diplomas-count');
+            if (!grid) return;
+            
+            if (counter) counter.innerText = arr.length;
+            
+            grid.innerHTML = arr.map((url, idx) => renderDiplomaCard(url, idx)).join('') 
+                + (arr.length === 0 ? `
+                    <div class="col-span-full text-center py-6 text-slate-400">
+                        <i data-lucide="file-question" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+                        <p class="text-xs font-bold uppercase">Sin diplomas cargados</p>
+                        <button type="button" onclick="agregarDiplomaManual()" 
+                                class="mt-3 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shadow">
+                            <i data-lucide="upload" class="w-3.5 h-3.5"></i> Subir primer diploma
+                        </button>
+                    </div>` : '');
+            lucide.createIcons();
+        }
+
+        async function agregarDiplomaManual() {
+            if (!itemDossierActual) return;
+            const arr = getDiplomasActuales();
+            
+            if (arr.length >= MAX_DIPLOMAS) {
+                alert(`⚠️ Límite alcanzado: máximo ${MAX_DIPLOMAS} diplomas por profesional.`);
+                return;
+            }
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,application/pdf';
+            
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('El archivo supera los 10MB.');
+                    return;
+                }
+                try {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    const nombreArchivo = `diploma_${itemDossierActual.dni}_${Date.now()}.${ext}`;
+                    
+                    const { error: upErr } = await db.storage
+                        .from('renmcycf-documentos')
+                        .upload(nombreArchivo, file, { cacheControl: '3600', upsert: false });
+                    if (upErr) throw upErr;
+                    
+                    const urlNueva = `${PROJECT_URL}/storage/v1/object/public/renmcycf-documentos/${nombreArchivo}`;
+                    arr.push(urlNueva);
+                    
+                    const esSolicitud = ['PENDIENTE', 'EN AUDITORIA', 'OBSERVADO', 'RECHAZADO', 'RENOVACION_PENDIENTE']
+                        .includes(itemDossierActual.estado);
+                    const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
+                    
+                    const { error: dbErr } = await db.from(tablaDestino)
+                        .update({ diplomas_urls: JSON.stringify(arr) })
+                        .eq('id', itemDossierActual.id)
+                        .eq('tenant_id', currentTenantId);
+                    if (dbErr) throw dbErr;
+                    
+                    itemDossierActual.diplomas_urls = JSON.stringify(arr);
+                    refrescarGrillaDiplomas();
+                    
+                    if (esSolicitud) { cargarSolicitudes(); cargarAuditoria(); }
+                    else { cargarPadron(); }
+                    
+                    alert('✅ Diploma agregado exitosamente.');
+                } catch (err) {
+                    alert('Error al subir diploma: ' + err.message);
+                }
+            };
+            input.click();
+        }
+
+        async function reemplazarDiploma(idx) {
+            if (!itemDossierActual) return;
+            const arr = getDiplomasActuales();
+            const urlVieja = arr[idx];
+            if (!urlVieja) return;
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,application/pdf';
+            
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('El archivo supera los 10MB.');
+                    return;
+                }
+                try {
+                    try {
+                        const nombreViejo = urlVieja.split('/').pop().split('?')[0];
+                        if (nombreViejo) {
+                            await db.storage.from('renmcycf-documentos').remove([nombreViejo]);
+                        }
+                    } catch(e) { console.warn('No se pudo borrar el viejo:', e.message); }
+                    
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    const nombreNuevo = `diploma_${itemDossierActual.dni}_${Date.now()}.${ext}`;
+                    const { error: upErr } = await db.storage
+                        .from('renmcycf-documentos')
+                        .upload(nombreNuevo, file, { cacheControl: '3600', upsert: false });
+                    if (upErr) throw upErr;
+                    
+                    const urlNueva = `${PROJECT_URL}/storage/v1/object/public/renmcycf-documentos/${nombreNuevo}`;
+                    arr[idx] = urlNueva;
+                    
+                    const esSolicitud = ['PENDIENTE', 'EN AUDITORIA', 'OBSERVADO', 'RECHAZADO', 'RENOVACION_PENDIENTE']
+                        .includes(itemDossierActual.estado);
+                    const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
+                    
+                    const { error: dbErr } = await db.from(tablaDestino)
+                        .update({ diplomas_urls: JSON.stringify(arr) })
+                        .eq('id', itemDossierActual.id)
+                        .eq('tenant_id', currentTenantId);
+                    if (dbErr) throw dbErr;
+                    
+                    itemDossierActual.diplomas_urls = JSON.stringify(arr);
+                    refrescarGrillaDiplomas();
+                    
+                    if (esSolicitud) { cargarSolicitudes(); cargarAuditoria(); }
+                    else { cargarPadron(); }
+                    
+                    alert('✅ Diploma reemplazado.');
+                } catch (err) {
+                    alert('Error al reemplazar: ' + err.message);
+                }
+            };
+            input.click();
+        }
+
+        async function eliminarDiploma(idx) {
+            if (!itemDossierActual) return;
+            const arr = getDiplomasActuales();
+            const urlEliminar = arr[idx];
+            if (!urlEliminar) return;
+            
+            if (!confirm(`⚠️ ¿Eliminar el diploma #${idx+1}?\nEsta acción no se puede deshacer.`)) return;
+            
+            try {
+                const nombreArchivo = urlEliminar.split('/').pop().split('?')[0];
+                if (nombreArchivo) {
+                    await db.storage.from('renmcycf-documentos').remove([nombreArchivo]);
+                }
+                
+                arr.splice(idx, 1);
+                
+                const esSolicitud = ['PENDIENTE', 'EN AUDITORIA', 'OBSERVADO', 'RECHAZADO', 'RENOVACION_PENDIENTE']
+                    .includes(itemDossierActual.estado);
+                const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
+                
+                const { error: dbErr } = await db.from(tablaDestino)
+                    .update({ diplomas_urls: JSON.stringify(arr) })
+                    .eq('id', itemDossierActual.id)
+                    .eq('tenant_id', currentTenantId);
+                if (dbErr) throw dbErr;
+                
+                itemDossierActual.diplomas_urls = JSON.stringify(arr);
+                refrescarGrillaDiplomas();
+                
+                if (esSolicitud) { cargarSolicitudes(); cargarAuditoria(); }
+                else { cargarPadron(); }
+                
+                alert('✅ Diploma eliminado.');
+            } catch (err) {
+                alert('Error al eliminar: ' + err.message);
+            }
+        }
+
         function abrirExpediente(item) {
             itemDossierActual = item;
             document.getElementById('dos-matricula').innerText = item.matricula_oficial || 'EN TRÁMITE';
@@ -1378,39 +1761,106 @@
             const containerFotos = document.getElementById('dos-imagenes');
             containerFotos.innerHTML = '';
             
+            // Documentos fijos (single)
             const urls = [
                 { url: item.foto_perfil_url, campo: 'foto_perfil_url', titulo: 'Foto de Perfil' },
                 { url: item.dni_frente_url, campo: 'dni_frente_url', titulo: 'DNI Frente' },
                 { url: item.dni_dorso_url, campo: 'dni_dorso_url', titulo: 'DNI Dorso' },
-                { url: item.diploma_url, campo: 'diploma_url', titulo: 'Título / Diploma' },
                 { url: item.comprobante_url, campo: 'comprobante_url', titulo: 'Comprobante de Pago' }
             ];
             
             urls.forEach((imgItem) => {
-                if (imgItem.url) {
+                const tieneArchivo = imgItem.url && imgItem.url.trim() !== '' && imgItem.url !== 'null';
+                
+                if (tieneArchivo) {
+                    const esPDF = /\.pdf(\?|$)/i.test(imgItem.url);
+                    const contenidoVisual = esPDF
+                        ? `<div class="w-full h-40 flex flex-col items-center justify-center bg-slate-100 rounded border border-slate-200 group-hover:bg-slate-200 transition-colors">
+                               <i data-lucide="file-text" class="w-16 h-16 text-red-500"></i>
+                               <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest mt-2">Documento PDF</span>
+                               <span class="text-[9px] text-slate-400 mt-1">Clic para abrir</span>
+                           </div>`
+                        : `<img src="${imgItem.url}" class="w-full h-40 object-contain rounded bg-slate-50 group-hover:opacity-90 transition-opacity" id="img-${imgItem.campo}" alt="${imgItem.titulo}">`;
+                    
                     containerFotos.innerHTML += `
                     <div class="border border-slate-200 rounded-lg p-3 bg-white shadow-sm text-center flex flex-col relative">
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 border-b border-slate-100 pb-1">${imgItem.titulo}</p>
-                        <a href="${imgItem.url}" target="_blank" class="block w-full relative group">
-                            <img src="${imgItem.url}" class="w-full h-40 object-contain rounded print:object-contain" id="img-${imgItem.campo}">
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
-                                <button onclick="event.preventDefault(); reemplazarDocumento('${imgItem.campo}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">Reemplazar</button>
-                            </div>
+                        <a href="${imgItem.url}" target="_blank" rel="noopener" class="block w-full relative group cursor-pointer">
+                            ${contenidoVisual}
                         </a>
+                        <div class="flex justify-center gap-2 mt-2 print:hidden">
+                            <button type="button" onclick="reemplazarDocumento('${imgItem.campo}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors">
+                                <i data-lucide="refresh-cw" class="w-3 h-3"></i> Reemplazar
+                            </button>
+                            <button type="button" onclick="eliminarDocumento('${imgItem.campo}')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors">
+                                <i data-lucide="trash-2" class="w-3 h-3"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>`;
+                } else {
+                    containerFotos.innerHTML += `
+                    <div class="border-2 border-dashed border-slate-300 rounded-lg p-3 bg-slate-50 shadow-sm text-center flex flex-col items-center justify-center min-h-[210px]">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">${imgItem.titulo}</p>
+                        <i data-lucide="file-question" class="w-12 h-12 text-slate-300 mb-2"></i>
+                        <span class="text-[10px] text-slate-400 uppercase font-bold mb-3">Sin archivo</span>
+                        <button type="button" onclick="reemplazarDocumento('${imgItem.campo}')" class="bg-wlPrimary hover:opacity-90 text-wlSecondary px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors shadow border border-wlSecondary/30">
+                            <i data-lucide="upload" class="w-3.5 h-3.5"></i> Subir Documento
+                        </button>
                     </div>`;
                 }
             });
 
+            // ═══════════════════════════════════════════════════════════════
+            // BLOQUE DE DIPLOMAS MÚLTIPLES
+            // ═══════════════════════════════════════════════════════════════
+            const diplomasArr = extraerDiplomasDeItem(item);
+            
+            containerFotos.innerHTML += `
+                <div class="col-span-2 border-2 border-dashed border-amber-400/60 rounded-xl p-4 bg-amber-50/40" id="bloque-diplomas-multiples">
+                    <div class="flex justify-between items-center mb-3 border-b border-amber-200 pb-2 flex-wrap gap-2">
+                        <p class="text-xs font-black text-wlPrimary uppercase tracking-widest flex items-center gap-2" id="diplomas-counter-label">
+                            <i data-lucide="award" class="w-4 h-4 text-amber-600"></i>
+                            Títulos y Certificados (<span id="diplomas-count">${diplomasArr.length}</span>/${MAX_DIPLOMAS})
+                        </p>
+                        <button type="button" onclick="agregarDiplomaManual()" 
+                                class="bg-wlPrimary text-wlSecondary hover:opacity-90 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors shadow border border-wlSecondary/30">
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Agregar Diploma
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="diplomas-grid">
+                        ${diplomasArr.map((url, idx) => renderDiplomaCard(url, idx)).join('')}
+                        ${diplomasArr.length === 0 ? `
+                            <div class="col-span-full text-center py-6 text-slate-400">
+                                <i data-lucide="file-question" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+                                <p class="text-xs font-bold uppercase">Sin diplomas cargados</p>
+                                <button type="button" onclick="agregarDiplomaManual()" 
+                                        class="mt-3 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shadow">
+                                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Subir primer diploma
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
             const bloqueCorreccion = document.getElementById('bloque-correccion');
             const containerCorreccion = document.getElementById('dos-correccion-img');
             containerCorreccion.innerHTML = '';
             if (item.correccion_url) {
+                const esPDFCorreccion = /\.pdf(\?|$)/i.test(item.correccion_url);
+                const contenidoCorreccion = esPDFCorreccion
+                    ? `<div class="w-full h-40 flex flex-col items-center justify-center bg-red-100 rounded border border-red-200">
+                           <i data-lucide="file-text" class="w-16 h-16 text-red-600"></i>
+                           <span class="text-[10px] font-black text-red-800 uppercase tracking-widest mt-2">Documento PDF</span>
+                       </div>`
+                    : `<img src="${item.correccion_url}" class="w-full h-40 object-contain rounded">`;
+                
                 bloqueCorreccion.classList.remove('hidden');
                 containerCorreccion.innerHTML = `
                     <div class="border border-red-200 rounded-lg p-3 bg-red-50 shadow-sm text-center flex flex-col relative md:col-span-2">
                         <p class="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-2 border-b border-red-100 pb-1">Archivo de Subsanación Enviado por Postulante</p>
-                        <a href="${item.correccion_url}" target="_blank" class="block w-full">
-                            <img src="${item.correccion_url}" class="w-full h-40 object-contain rounded">
+                        <a href="${item.correccion_url}" target="_blank" rel="noopener" class="block w-full">
+                            ${contenidoCorreccion}
                         </a>
                     </div>`;
             } else {
@@ -1548,6 +1998,9 @@
 
                 const vencimiento = new Date(); vencimiento.setFullYear(vencimiento.getFullYear() + 1);
                 
+                // Consolidar diplomas: array JSON + fallback legacy
+                const diplomasFinales = extraerDiplomasDeItem(itemDossierActual);
+                
                 const { error: insErr } = await db.from('renmcycf_padron').insert([{
                     tenant_id: currentTenantId,
                     solicitud_id: itemDossierActual.id,
@@ -1563,8 +2016,8 @@
                     foto_perfil_url: itemDossierActual.foto_perfil_url,
                     dni_frente_url: itemDossierActual.dni_frente_url,
                     dni_dorso_url: itemDossierActual.dni_dorso_url,
-                    diploma_url: itemDossierActual.diploma_url,
-                    diplomas_urls: itemDossierActual.diplomas_urls,
+                    diploma_url: itemDossierActual.diploma_url || (diplomasFinales[0] || null),
+                    diplomas_urls: JSON.stringify(diplomasFinales),
                     estado_legal: 'ACTIVO',
                     email: itemDossierActual.email,
                     telefono: itemDossierActual.telefono,
@@ -1579,7 +2032,7 @@
                     .eq('id', itemDossierActual.id)
                     .eq('tenant_id', currentTenantId);
                 
-                alert("✅ Matrícula aprobada y registrada en el Directorio exitosamente.");
+                alert(`✅ Matrícula ${mat} aprobada con ${diplomasFinales.length} diploma(s) integrado(s).`);
                 cerrarExpediente(); cargarAuditoria(); cargarPadron(); actualizarDashboard();
             } catch (err) { 
                 alert("Error: " + err.message); 
@@ -1592,32 +2045,120 @@
 
         async function reemplazarDocumento(campo) {
             if (!itemDossierActual) return;
+            
             const input = document.createElement('input');
-            input.type = 'file'; input.accept = 'image/*,application/pdf';
+            input.type = 'file';
+            input.accept = 'image/*,application/pdf';
+            
             input.onchange = async (e) => {
-                const file = e.target.files[0]; if (!file) return;
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('El archivo supera los 10MB.');
+                    return;
+                }
+                
                 try {
-                    const fileName = `${campo}_${Date.now()}.${file.name.split('.').pop()}`;
-                    await db.storage.from('renmcycf-media').upload(fileName, file);
-                    const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
-                    
-                    if (itemDossierActual.estado === 'PENDIENTE' || itemDossierActual.estado === 'EN AUDITORIA' || itemDossierActual.estado === 'OBSERVADO') {
-                        await db.from('renmcycf_solicitudes')
-                            .update({ [campo]: url })
-                            .eq('id', itemDossierActual.id)
-                            .eq('tenant_id', currentTenantId);
-                    } else {
-                        await db.from('renmcycf_padron')
-                            .update({ [campo]: url })
-                            .eq('id', itemDossierActual.id)
-                            .eq('tenant_id', currentTenantId);
+                    const urlVieja = itemDossierActual[campo];
+                    if (urlVieja && urlVieja.trim() !== '' && urlVieja !== 'null') {
+                        try {
+                            const nombreViejo = urlVieja.split('/').pop().split('?')[0];
+                            if (nombreViejo) {
+                                await db.storage.from('renmcycf-documentos').remove([nombreViejo]);
+                            }
+                        } catch (eDel) { console.warn(eDel.message); }
                     }
-                    itemDossierActual[campo] = url;
-                    const img = document.getElementById(`img-${campo}`); if (img) img.src = url;
-                    alert("✅ Documento reemplazado exitosamente.");
-                } catch (err) { alert("Error: " + err.message); }
+                    
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    const nombreNuevo = `${itemDossierActual.dni}_${campo}_${Date.now()}.${ext}`;
+                    
+                    const { error: upErr } = await db.storage
+                        .from('renmcycf-documentos')
+                        .upload(nombreNuevo, file, { cacheControl: '3600', upsert: true });
+                    
+                    if (upErr) throw upErr;
+                    
+                    const urlNueva = `${PROJECT_URL}/storage/v1/object/public/renmcycf-documentos/${nombreNuevo}`;
+                    
+                    const esSolicitud = ['PENDIENTE', 'EN AUDITORIA', 'OBSERVADO', 'RECHAZADO', 'RENOVACION_PENDIENTE']
+                        .includes(itemDossierActual.estado);
+                    
+                    const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
+                    
+                    const { error: dbErr } = await db
+                        .from(tablaDestino)
+                        .update({ [campo]: urlNueva })
+                        .eq('id', itemDossierActual.id)
+                        .eq('tenant_id', currentTenantId);
+                    
+                    if (dbErr) throw dbErr;
+                    
+                    itemDossierActual[campo] = urlNueva;
+                    
+                    alert('✅ Documento reemplazado exitosamente.');
+                    abrirExpediente(itemDossierActual);
+                    
+                    if (esSolicitud) { cargarSolicitudes(); cargarAuditoria(); }
+                    else { cargarPadron(); }
+                    
+                } catch (err) {
+                    alert('Error al reemplazar documento: ' + err.message);
+                }
             };
+            
             input.click();
+        }
+
+        async function eliminarDocumento(campo) {
+            if (!itemDossierActual) return;
+            
+            const urlActual = itemDossierActual[campo];
+            if (!urlActual || urlActual.trim() === '' || urlActual === 'null') {
+                alert('No hay documento que eliminar en este campo.');
+                return;
+            }
+            
+            const nombresCampos = {
+                foto_perfil_url: 'Foto de Perfil',
+                dni_frente_url: 'DNI Frente',
+                dni_dorso_url: 'DNI Dorso',
+                diploma_url: 'Título / Diploma',
+                comprobante_url: 'Comprobante de Pago'
+            };
+            const nombreLegible = nombresCampos[campo] || campo;
+            
+            if (!confirm(`⚠️ ¿Eliminar el documento "${nombreLegible}"?`)) return;
+            
+            try {
+                const nombreArchivo = urlActual.split('/').pop().split('?')[0];
+                if (nombreArchivo) {
+                    await db.storage.from('renmcycf-documentos').remove([nombreArchivo]);
+                }
+                
+                const esSolicitud = ['PENDIENTE', 'EN AUDITORIA', 'OBSERVADO', 'RECHAZADO', 'RENOVACION_PENDIENTE']
+                    .includes(itemDossierActual.estado);
+                
+                const tablaDestino = esSolicitud ? 'renmcycf_solicitudes' : 'renmcycf_padron';
+                
+                const { error: dbErr } = await db
+                    .from(tablaDestino)
+                    .update({ [campo]: null })
+                    .eq('id', itemDossierActual.id)
+                    .eq('tenant_id', currentTenantId);
+                
+                if (dbErr) throw dbErr;
+                
+                itemDossierActual[campo] = null;
+                
+                alert('✅ Documento eliminado.');
+                abrirExpediente(itemDossierActual);
+                
+                if (esSolicitud) { cargarSolicitudes(); cargarAuditoria(); }
+                else { cargarPadron(); }
+                
+            } catch (err) {
+                alert('Error al eliminar documento: ' + err.message);
+            }
         }
 
         // ==========================================
@@ -1647,6 +2188,7 @@
                 
                 tbody.innerHTML = data.map(p => {
                     const estadoColor = p.estado_legal === 'ACTIVO' ? 'text-emerald-400 bg-emerald-400/10 border border-emerald-400/20' : (p.estado_legal === 'SUSPENDIDO' ? 'text-yellow-400 bg-yellow-400/10 border border-yellow-400/20' : 'text-red-400 bg-red-400/10 border border-red-400/20');
+                    const numDiplomas = extraerDiplomasDeItem(p).length;
                     return `
                     <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
                         <td class="p-4 font-mono text-xs text-slate-300 font-bold">${p.matricula_oficial || 'S/D'}</td>
@@ -1654,7 +2196,7 @@
                         <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${estadoColor}">${p.estado_legal} (${p.categoria})</span></td>
                         <td class="p-4 text-[10px] space-y-1">
                             ${p.foto_perfil_url ? `<a href="${p.foto_perfil_url}" target="_blank" class="flex items-center gap-1 text-slate-400 hover:text-blue-400 transition-colors"><i data-lucide="camera" class="w-3 h-3"></i> Foto</a>` : ''}
-                            ${p.diploma_url ? `<a href="${p.diploma_url}" target="_blank" class="flex items-center gap-1 text-slate-400 hover:text-emerald-400 transition-colors"><i data-lucide="award" class="w-3 h-3"></i> Título</a>` : ''}
+                            ${numDiplomas > 0 ? `<span class="flex items-center gap-1 text-slate-400"><i data-lucide="award" class="w-3 h-3"></i> ${numDiplomas} título(s)</span>` : ''}
                         </td>
                         <td class="p-4 text-right flex justify-end gap-2">
                             <a href="https://wa.me/${p.telefono || whatsappRegistro || '5490000000000'}" target="_blank" class="bg-emerald-600/20 text-emerald-400 p-2 rounded hover:bg-emerald-600/40 transition-colors" title="Contactar por WhatsApp"><i data-lucide="message-circle" class="w-4 h-4"></i></a>
@@ -1722,7 +2264,7 @@
                 let fotoUrl = null;
                 if (file) {
                     const fileName = `foto_edit_${Date.now()}.${file.name.split('.').pop()}`;
-                    await db.storage.from('renmcycf-media').upload(fileName, file);
+                    await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
                     fotoUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 }
                 
@@ -1764,7 +2306,9 @@
         // 9. ALIADOS (INSTITUCIONES)
         // ==========================================
         async function cargarAliadosPanel() {
-            const tbody = document.getElementById('aliados-body'); tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
+            const tbody = document.getElementById('aliados-body'); 
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center">Cargando...</td></tr>';
             try {
                 const { data, error } = await db.from('renmcycf_aliados')
                     .select('*')
@@ -1868,9 +2412,7 @@
             document.getElementById('comite-activo').checked = m.activo || false;
             
             const btnSubmit = document.querySelector('#form-comite button[type="submit"]');
-            if (btnSubmit) {
-                btnSubmit.textContent = 'ACTUALIZAR MIEMBRO';
-            }
+            if (btnSubmit) btnSubmit.textContent = 'ACTUALIZAR MIEMBRO';
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
             document.getElementById('form-comite').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1890,12 +2432,7 @@
                 const activo = document.getElementById('comite-activo').checked;
                 const fotoFile = document.getElementById('comite-foto').files[0];
                 
-                const payload = {
-                    nombre: nombre,
-                    titulo: titulo,
-                    resena: resena,
-                    activo: activo
-                };
+                const payload = { nombre, titulo, resena, activo };
                 
                 if (fotoFile) {
                     const fileName = `comite_${Date.now()}.${fotoFile.name.split('.').pop()}`;
@@ -1926,9 +2463,7 @@
                 btn.disabled = false;
                 
                 const btnSubmit = document.querySelector('#form-comite button[type="submit"]');
-                if (btnSubmit) {
-                    btnSubmit.textContent = 'GUARDAR MIEMBRO';
-                }
+                if (btnSubmit) btnSubmit.textContent = 'GUARDAR MIEMBRO';
                 lucide.createIcons();
             }
         }
@@ -1940,9 +2475,7 @@
                     .eq('id', id)
                     .eq('tenant_id', currentTenantId);
                 cargarComitePanel();
-            } catch (err) {
-                alert("Error: " + err.message);
-            }
+            } catch (err) { alert("Error: " + err.message); }
         }
 
         async function eliminarMiembroComite(id) {
@@ -1953,9 +2486,7 @@
                     .eq('id', id)
                     .eq('tenant_id', currentTenantId);
                 cargarComitePanel();
-            } catch (err) {
-                alert("Error: " + err.message);
-            }
+            } catch (err) { alert("Error: " + err.message); }
         }
 
         // ==========================================
@@ -1971,7 +2502,7 @@
                     
                 if (error) throw error;
                 if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="p-3 text-center text-slate-400">No hay publicaciones.</td></tr>'; return; }
-                tbody.innerHTML = data.map(c => `<tr class="border-b border-white/5 hover:bg-white/5"><td class="p-3"><div class="flex items-center gap-3"><img src="${c.portada_url || 'https://placehold.co/150x80/0f172a/3b82f6?text=POST'}" class="w-16 h-10 rounded object-cover border border-white/10"><div><span class="text-white font-bold block text-xs">${c.titulo}</span><span class="text-[9px] text-slate-400 truncate block max-w-[200px]">${c.descripcion || ''}</span></div></div></td><td class="p-3"><span class="bg-blue-900/30 text-blue-400 px-2 py-1 rounded text-[9px] font-bold uppercase">${c.categoria_requerida}</span></td><td class="p-3 text-right"><div class="flex justify-end gap-1 items-center"><button class="bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded hover:bg-emerald-500/40 text-[10px] font-bold uppercase tracking-wider transition-colors" onclick="abrirModalClases('${c.id}', '${c.titulo.replace(/'/g, "\\'")}')"><i data-lucide="folder-open" class="w-3 h-3 inline mr-1"></i> Adjuntos</button><button class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40 transition-colors" onclick="eliminarNoticia('${c.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></td></tr>`).join('');
+                tbody.innerHTML = data.map(c => `<tr class="border-b border-white/5 hover:bg-white/5"><td class="p-3"><div class="flex items-center gap-3"><img src="${c.portada_url || 'https://placehold.co/150x80/0f172a/3b82f6?text=POST'}" class="w-16 h-10 rounded object-cover border border-white/10"><div><span class="text-white font-bold block text-xs">${c.titulo}</span><span class="text-[9px] text-slate-400 truncate block max-w-[200px]">${c.descripcion || ''}</span></div></div></td><td class="p-3"><span class="bg-wlPrimary/30 text-wlPrimary px-2 py-1 rounded text-[9px] font-bold uppercase">${c.categoria_requerida}</span></td><td class="p-3 text-right"><div class="flex justify-end gap-1 items-center"><button class="bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded hover:bg-emerald-500/40 text-[10px] font-bold uppercase tracking-wider transition-colors" onclick="abrirModalClases('${c.id}', '${c.titulo.replace(/'/g, "\\'")}')"><i data-lucide="folder-open" class="w-3 h-3 inline mr-1"></i> Adjuntos</button><button class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40 transition-colors" onclick="eliminarNoticia('${c.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></td></tr>`).join('');
                 lucide.createIcons();
             } catch (err) { tbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-red-400">Error: ${err.message}</td></tr>`; }
         }
@@ -2076,7 +2607,7 @@
                     .order('created_at', { ascending: false });
                     
                 if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-slate-500">Biblioteca vacía.</td></tr>'; return; }
-                tbody.innerHTML = data.map(b => `<tr class="border-b border-white/5 hover:bg-white/5"><td class="p-3"><div class="flex items-center gap-3"><img src="${b.portada_url || 'https://placehold.co/50x70/0f172a/3b82f6?text=PDF'}" class="w-10 h-14 object-cover rounded border border-white/10"><div><span class="font-bold text-white block text-xs">${b.titulo}</span><span class="text-[10px] text-slate-400">${b.autor || 'Sin autor'}</span></div></div></td><td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${b.tipo_acceso==='PREMIUM'?'bg-wlSecondary/20 text-wlSecondary':'bg-blue-500/20 text-blue-400'}">${b.tipo_acceso}</span></td><td class="p-3 text-right"><button onclick="eliminarLibro('${b.id}')" class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
+                tbody.innerHTML = data.map(b => `<tr class="border-b border-white/5 hover:bg-white/5"><td class="p-3"><div class="flex items-center gap-3"><img src="${b.portada_url || 'https://placehold.co/50x70/0f172a/3b82f6?text=PDF'}" class="w-10 h-14 object-cover rounded border border-white/10"><div><span class="font-bold text-white block text-xs">${b.titulo}</span><span class="text-[10px] text-slate-400">${b.autor || 'Sin autor'}</span></div></div></td><td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${b.tipo_acceso==='PREMIUM'?'bg-wlSecondary/20 text-wlSecondary border border-wlSecondary/30':'bg-blue-500/20 text-blue-400'}">${b.tipo_acceso}</span></td><td class="p-3 text-right"><button onclick="eliminarLibro('${b.id}')" class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
                 lucide.createIcons();
             } catch (err) {}
         }
@@ -2173,7 +2704,6 @@
         // ==========================================
         // 15. CONFIGURACIÓN CORE Y TEXTOS
         // ============================================
-
         async function cargarConfiguracionForm() {
             try {
                 const { data } = await db.from('renmcycf_config')
@@ -2203,7 +2733,6 @@
                     document.getElementById('conf-twitter').value = data.twitter || ''; 
                     document.getElementById('conf-linkedin').value = data.linkedin || ''; 
 
-                    // Preview de logo/hero desde renmcycf_config (con fallback a saas_tenants)
                     const fallback = window._saasTenantFallback || {};
                     const logoFinal = data.logo_url || fallback.logo_url;
                     const heroFinal = data.hero_image_url || fallback.hero_image_url;
@@ -2252,113 +2781,67 @@
             finally { btn.innerHTML = orig; btn.disabled = false; }
         }
 
-        // ============================================================
-        // GUARDADO DE IMÁGENES DE IDENTIDAD INSTITUCIONAL
-        // Usa UPSERT: si la fila no existe en renmcycf_config, la crea.
-        // ============================================================
         async function previewYGuardarImagen(input, previewId, key) {
             const file = input.files[0]; 
             if (!file) { alert("⚠️ No seleccionaste ningún archivo."); return; }
-
-            if (!currentTenantId) {
-                alert("❌ Error: el tenant no está cargado. Recargá la página (F5).");
-                console.error("[previewYGuardarImagen] currentTenantId es null");
-                return;
-            }
+            if (!currentTenantId) { alert("❌ Error: el tenant no está cargado."); return; }
 
             try {
-                // 1. Subir al bucket renmcycf-media
                 const fileName = `${key}_${Date.now()}.${file.name.split('.').pop()}`;
                 const { error: uploadError } = await db.storage
                     .from('renmcycf-media')
                     .upload(fileName, file);
-
                 if (uploadError) throw new Error(`Error subiendo a Storage: ${uploadError.message}`);
 
-                // 2. Construir URL pública
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
-
-                // 3. UPSERT en renmcycf_config
                 const columna = key === 'logo' ? 'logo_url' : 'hero_image_url';
                 
-                // Verificar si ya existe la fila
-                const { data: existente, error: errSelect } = await db
+                const { data: existente } = await db
                     .from('renmcycf_config')
                     .select('tenant_id')
                     .eq('tenant_id', currentTenantId)
                     .maybeSingle();
 
-                if (errSelect) {
-                    throw new Error(`Error consultando renmcycf_config: ${errSelect.message}`);
-                }
-
                 let updateError = null;
                 let updatedRows = null;
 
                 if (existente) {
-                    // La fila existe → UPDATE
-                    const payload = {};
-                    payload[columna] = url;
-                    
+                    const payload = {}; payload[columna] = url;
                     const { data, error } = await db
                         .from('renmcycf_config')
                         .update(payload)
                         .eq('tenant_id', currentTenantId)
                         .select();
-                    
                     updateError = error;
                     updatedRows = data;
                 } else {
-                    // La fila NO existe → INSERT con defaults
                     const payload = {
                         tenant_id: currentTenantId,
-                        arancel_a1: 0,
-                        arancel_a2: 0,
-                        arancel_a3: 0,
-                        arancel_a4: 0,
-                        mostrar_wpp: true,
-                        mostrar_email: true,
-                        mostrar_facebook: false,
-                        mostrar_instagram: false,
+                        arancel_a1: 0, arancel_a2: 0, arancel_a3: 0, arancel_a4: 0,
+                        mostrar_wpp: true, mostrar_email: true,
+                        mostrar_facebook: false, mostrar_instagram: false,
                         visitas: 0
                     };
                     payload[columna] = url;
-
                     const { data, error } = await db
                         .from('renmcycf_config')
                         .insert([payload])
                         .select();
-                    
                     updateError = error;
                     updatedRows = data;
                 }
 
-                if (updateError) {
-                    throw new Error(
-                        `Error guardando en renmcycf_config: ${updateError.message}`
-                    );
-                }
+                if (updateError) throw new Error(`Error guardando en renmcycf_config: ${updateError.message}`);
+                if (!updatedRows || updatedRows.length === 0) throw new Error(`No se pudo guardar el cambio.`);
 
-                if (!updatedRows || updatedRows.length === 0) {
-                    throw new Error(
-                        `No se pudo guardar el cambio en renmcycf_config.`
-                    );
-                }
-
-                // 4. Actualizar preview visual
                 const previewEl = document.getElementById(previewId);
-                if (previewEl) {
-                    previewEl.src = url;
-                    previewEl.style.display = 'block';
-                }
+                if (previewEl) { previewEl.src = url; previewEl.style.display = 'block'; }
 
-                // 5. Refrescar logo/hero en sidebar y modal
                 if (key === 'logo') {
                     const sidebarLogo = document.getElementById('sidebar-dyn-logo');
                     if (sidebarLogo) { sidebarLogo.src = url; sidebarLogo.style.display = 'block'; }
                     const container = document.getElementById('sidebar-logo-container');
                     if (container) container.classList.remove('hidden');
-                    
                     const modalLogo = document.getElementById('modal-dyn-logo');
                     if (modalLogo) { modalLogo.src = url; modalLogo.style.display = 'block'; }
                     document.querySelectorAll('#modal-default-logo').forEach(el => el.classList.add('hidden'));
@@ -2370,11 +2853,9 @@
                     if (overlay) overlay.classList.remove('hidden');
                 }
 
-                console.log("✅ Guardado OK:", { key, fileName, url, tenantId: currentTenantId, modo: existente ? 'UPDATE' : 'INSERT' });
                 alert(`✅ ${key === 'hero_image' ? 'Imagen de fondo (hero)' : 'Logo'} guardado correctamente.`);
-
             } catch (err) {
-                console.error("❌ [previewYGuardarImagen] Error:", err);
+                console.error("❌ Error:", err);
                 alert("❌ " + err.message);
             }
         }
@@ -2451,11 +2932,11 @@
                     return `
                     <tr class="border-b border-white/5 hover:bg-white/5">
                         <td class="p-3 text-xs text-slate-300">${u.email||'N/D'}<br><span class="text-[10px] text-slate-500">${u.nombres||''} ${u.apellidos||''}</span></td>
-                        <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase bg-blue-900/30 text-blue-400">${u.rol}</span></td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase bg-wlPrimary/30 text-wlPrimary">${u.rol}</span></td>
                         <td class="p-3">${permisosHTML}</td>
                         <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${u.activo?'bg-emerald-900/30 text-emerald-400':'bg-red-900/30 text-red-400'}">${u.activo?'ACTIVO':'INACTIVO'}</span></td>
                         <td class="p-3 text-right">
-                            <button onclick='editarUsuarioForm(${JSON.stringify(u).replace(/'/g, "&#39;")})' class="text-[10px] font-bold border border-blue-500/30 text-blue-400 px-2 py-1 rounded hover:bg-blue-500/10 transition-colors mr-2"><i data-lucide="edit" class="w-3 h-3 inline"></i> EDITAR</button>
+                            <button onclick='editarUsuarioForm(${JSON.stringify(u).replace(/'/g, "&#39;")})' class="text-[10px] font-bold border border-wlPrimary/30 text-wlPrimary px-2 py-1 rounded hover:bg-wlPrimary/10 transition-colors mr-2"><i data-lucide="edit" class="w-3 h-3 inline"></i> EDITAR</button>
                             <button onclick="toggleEstadoUsuario('${u.id}',${!u.activo})" class="text-[10px] font-bold border border-white/10 px-2 py-1 rounded hover:bg-white/5 transition-colors">${u.activo?'SUSPENDER':'ACTIVAR'}</button>
                         </td>
                     </tr>`;
@@ -2488,21 +2969,15 @@
             if (u.modulos_permitidos) {
                 try {
                     permisos = typeof u.modulos_permitidos === 'string' ? JSON.parse(u.modulos_permitidos) : u.modulos_permitidos;
-                } catch(e) {
-                    permisos = [];
-                }
+                } catch(e) { permisos = []; }
             }
             
             checkboxes.forEach(cb => {
-                if (permisos.includes(cb.value)) {
-                    cb.checked = true;
-                }
+                if (permisos.includes(cb.value)) cb.checked = true;
             });
             
             const btnSubmit = document.querySelector('#form-usuarios button[type="submit"]');
-            if (btnSubmit) {
-                btnSubmit.textContent = 'ACTUALIZAR USUARIO';
-            }
+            if (btnSubmit) btnSubmit.textContent = 'ACTUALIZAR USUARIO';
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
             document.getElementById('form-usuarios').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2527,7 +3002,7 @@
                 checkboxes.forEach(cb => permisosSeleccionados.push(cb.value));
                 
                 const modulosFinales = rol === 'superadmin' ? 
-                    ['mod-dashboard', 'mod-solicitudes', 'mod-auditoria', 'mod-padron', 'mod-campus', 'mod-biblioteca', 'mod-tesis', 'mod-sistema'] : 
+                    ['mod-dashboard', 'mod-solicitudes', 'mod-auditoria', 'mod-padron', 'mod-campus', 'mod-biblioteca', 'mod-tesis', 'mod-convenios', 'mod-aliados', 'mod-cursos-b2b', 'mod-empresas', 'mod-sistema'] : 
                     permisosSeleccionados;
                 
                 const dbId = document.getElementById('usr-db-id').value;
@@ -2535,9 +3010,7 @@
 
                 if (dbId) {
                     const { error } = await db.from('renmcycf_roles').update({
-                        rol: rol,
-                        nombres: nombres,
-                        apellidos: apellidos,
+                        rol: rol, nombres: nombres, apellidos: apellidos,
                         modulos_permitidos: modulosFinales
                     }).eq('id', dbId).eq('tenant_id', currentTenantId);
                     if (error) throw error;
@@ -2545,13 +3018,9 @@
                     if (!uid) throw new Error("Debe pegar el UID de Supabase Auth para crear un usuario nuevo.");
                     const { error } = await db.from('renmcycf_roles').insert([{
                         tenant_id: currentTenantId,
-                        user_id: uid,
-                        email: email,
-                        rol: rol,
-                        nombres: nombres,
-                        apellidos: apellidos,
-                        activo: true,
-                        modulos_permitidos: modulosFinales
+                        user_id: uid, email: email, rol: rol,
+                        nombres: nombres, apellidos: apellidos,
+                        activo: true, modulos_permitidos: modulosFinales
                     }]);
                     if (error) throw error;
                 }
@@ -2569,10 +3038,7 @@
                 btn.disabled = false;
                 
                 const btnSubmit = document.querySelector('#form-usuarios button[type="submit"]');
-                if (btnSubmit) {
-                    btnSubmit.textContent = 'CREAR USUARIO';
-                }
-                
+                if (btnSubmit) btnSubmit.textContent = 'CREAR USUARIO';
                 lucide.createIcons();
             }
         }
@@ -2597,8 +3063,8 @@
 
         function switchEditorTab(tab) {
             currentEditorTab = tab;
-            document.getElementById('btn-tab-frente').className = tab === 'frente' ? "flex-1 py-2 text-xs font-bold uppercase rounded-md text-white bg-blue-600 shadow" : "flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-400 hover:text-white";
-            document.getElementById('btn-tab-dorso').className = tab === 'dorso' ? "flex-1 py-2 text-xs font-bold uppercase rounded-md text-white bg-blue-600 shadow" : "flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-400 hover:text-white";
+            document.getElementById('btn-tab-frente').className = tab === 'frente' ? "flex-1 py-2 text-xs font-bold uppercase rounded-md text-white bg-wlPrimary shadow" : "flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-400 hover:text-white";
+            document.getElementById('btn-tab-dorso').className = tab === 'dorso' ? "flex-1 py-2 text-xs font-bold uppercase rounded-md text-white bg-wlPrimary shadow" : "flex-1 py-2 text-xs font-bold uppercase rounded-md text-slate-400 hover:text-white";
             document.getElementById('card-preview-frente').style.display = tab === 'frente' ? 'block' : 'none';
             document.getElementById('card-preview-dorso').style.display = tab === 'dorso' ? 'block' : 'none';
             document.getElementById('preview-indicator').innerText = `VISTA: ${tab.toUpperCase()}`;
@@ -2626,7 +3092,7 @@
             const file = input.files[0]; if (!file) return;
             try {
                 const ext = file.name.split('.').pop(); const fileName = `bg_${lado}_${Date.now()}.${ext}`;
-                await db.storage.from('renmcycf-media').upload(fileName, file);
+                await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
                 const url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 if (lado === 'frente') bgFrenteUrl = url; else bgDorsoUrl = url;
                 actualizarPreviewCred();
@@ -2637,7 +3103,7 @@
             const file = input.files[0]; if (!file) return;
             try {
                 const ext = file.name.split('.').pop(); const fileName = `roseta_${Date.now()}.${ext}`;
-                await db.storage.from('renmcycf-media').upload(fileName, file);
+                await db.storage.from('renmcycf-media').upload(fileName, file, { cacheControl:'3600', upsert:true });
                 rosetaUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                 actualizarPreviewCred();
             } catch (err) { alert('Error subiendo roseta: ' + err.message); }
@@ -2645,29 +3111,17 @@
 
         async function cargarDisenoCredencial() {
             const { data: bgF } = await db.from('renmcycf_contenido')
-                .select('valor')
-                .eq('clave', 'credencial_bg')
-                .eq('tenant_id', currentTenantId)
-                .maybeSingle();
+                .select('valor').eq('clave', 'credencial_bg').eq('tenant_id', currentTenantId).maybeSingle();
             const { data: bgD } = await db.from('renmcycf_contenido')
-                .select('valor')
-                .eq('clave', 'credencial_bg_dorso')
-                .eq('tenant_id', currentTenantId)
-                .maybeSingle();
+                .select('valor').eq('clave', 'credencial_bg_dorso').eq('tenant_id', currentTenantId).maybeSingle();
             if (bgF && bgF.valor) bgFrenteUrl = bgF.valor; if (bgD && bgD.valor) bgDorsoUrl = bgD.valor;
 
             const { data: ros } = await db.from('renmcycf_contenido')
-                .select('valor')
-                .eq('clave', 'credencial_roseta')
-                .eq('tenant_id', currentTenantId)
-                .maybeSingle();
+                .select('valor').eq('clave', 'credencial_roseta').eq('tenant_id', currentTenantId).maybeSingle();
             if (ros && ros.valor) rosetaUrl = ros.valor;
 
             const { data: style } = await db.from('renmcycf_contenido')
-                .select('valor')
-                .eq('clave', 'credencial_style')
-                .eq('tenant_id', currentTenantId)
-                .maybeSingle();
+                .select('valor').eq('clave', 'credencial_style').eq('tenant_id', currentTenantId).maybeSingle();
             if (style && style.valor) { try { currentCredStyle = { ...defaultStyle, ...JSON.parse(style.valor) }; } catch(e) {} }
             switchEditorTab('frente');
         }
@@ -2707,36 +3161,475 @@
 
         async function guardarDiseno() {
             try {
-                await db.from('renmcycf_contenido').upsert({ 
-                    tenant_id: currentTenantId,
-                    clave: 'credencial_style', 
-                    valor: JSON.stringify(currentCredStyle), 
-                    tipo: 'json' 
-                }, { onConflict: 'clave,tenant_id' });
-                
-                if (bgFrenteUrl) await db.from('renmcycf_contenido').upsert({ 
-                    tenant_id: currentTenantId,
-                    clave: 'credencial_bg', 
-                    valor: bgFrenteUrl, 
-                    tipo: 'texto' 
-                }, { onConflict: 'clave,tenant_id' });
-                
-                if (bgDorsoUrl) await db.from('renmcycf_contenido').upsert({ 
-                    tenant_id: currentTenantId,
-                    clave: 'credencial_bg_dorso', 
-                    valor: bgDorsoUrl, 
-                    tipo: 'texto' 
-                }, { onConflict: 'clave,tenant_id' });
-                
-                if (rosetaUrl) await db.from('renmcycf_contenido').upsert({ 
-                    tenant_id: currentTenantId,
-                    clave: 'credencial_roseta', 
-                    valor: rosetaUrl, 
-                    tipo: 'texto' 
-                }, { onConflict: 'clave,tenant_id' });
-                
+                await db.from('renmcycf_contenido').upsert({ tenant_id: currentTenantId, clave: 'credencial_style', valor: JSON.stringify(currentCredStyle), tipo: 'json' }, { onConflict: 'clave,tenant_id' });
+                if (bgFrenteUrl) await db.from('renmcycf_contenido').upsert({ tenant_id: currentTenantId, clave: 'credencial_bg', valor: bgFrenteUrl, tipo: 'texto' }, { onConflict: 'clave,tenant_id' });
+                if (bgDorsoUrl) await db.from('renmcycf_contenido').upsert({ tenant_id: currentTenantId, clave: 'credencial_bg_dorso', valor: bgDorsoUrl, tipo: 'texto' }, { onConflict: 'clave,tenant_id' });
+                if (rosetaUrl) await db.from('renmcycf_contenido').upsert({ tenant_id: currentTenantId, clave: 'credencial_roseta', valor: rosetaUrl, tipo: 'texto' }, { onConflict: 'clave,tenant_id' });
                 alert("✅ Diseño guardado exitosamente.");
             } catch(e) { alert("Error: " + e.message); }
+        }
+
+        // ==========================================
+        // 18. CONVENIOS B2B (RED JUDICIAL)
+        // ==========================================
+        async function cargarConveniosPanel() {
+            const tbody = document.getElementById('convenios-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Cargando solicitudes...</td></tr>';
+
+            try {
+                const { data, error } = await db.from('renmcycf_convenios')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+
+                const total = (data || []).length;
+                const pendientes = (data || []).filter(c => !c.estado || c.estado === 'PENDIENTE').length;
+                const aprobados = (data || []).filter(c => c.estado === 'APROBADO').length;
+                const rechazados = (data || []).filter(c => c.estado === 'RECHAZADO').length;
+                const statTotal = document.getElementById('stat-conv-total');
+                const statPend = document.getElementById('stat-conv-pendientes');
+                const statAprob = document.getElementById('stat-conv-aprobados');
+                const statRech = document.getElementById('stat-conv-rechazados');
+                if (statTotal) statTotal.innerText = total;
+                if (statPend) statPend.innerText = pendientes;
+                if (statAprob) statAprob.innerText = aprobados;
+                if (statRech) statRech.innerText = rechazados;
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400"><i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-600"></i>No hay solicitudes de entidades judiciales.</td></tr>';
+                    lucide.createIcons();
+                    return;
+                }
+
+                tbody.innerHTML = data.map(c => {
+                    const estado = c.estado || 'PENDIENTE';
+                    const estadoClass = estado === 'APROBADO'
+                        ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-500/30'
+                        : estado === 'RECHAZADO'
+                            ? 'bg-red-900/30 text-red-400 border border-red-500/30'
+                            : 'bg-amber-900/30 text-amber-400 border border-amber-500/30';
+                    const tipoClass = (c.tipo === 'ESTUDIO_JURIDICO' || (c.tipo || '').toLowerCase().includes('estudio'))
+                        ? 'bg-purple-900/30 text-purple-300 border border-purple-500/30'
+                        : 'bg-blue-900/30 text-blue-300 border border-blue-500/30';
+                    const tipoLabel = (c.tipo || '').toLowerCase().includes('estudio') ? 'Estudio Jurídico' : (c.tipo || '').toLowerCase().includes('colegio') ? 'Colegio' : (c.tipo || 'Entidad');
+                    const fecha = c.created_at ? new Date(c.created_at).toLocaleDateString('es-AR') : '—';
+
+                    return `
+                    <tr class="border-b border-white/5 hover:bg-wlSecondary/[0.02]">
+                        <td class="p-3">
+                            <span class="text-white font-bold block">${c.institucion || c.nombre_institucion || 'S/D'}</span>
+                            <span class="text-[10px] text-slate-400">Solicitud del ${fecha}</span>
+                        </td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${tipoClass}">${tipoLabel}</span></td>
+                        <td class="p-3 text-xs text-slate-300">${c.autoridad || c.autoridad_solicitante || 'S/D'}</td>
+                        <td class="p-3 text-xs font-mono text-slate-400">
+                            ${c.email ? `<a href="mailto:${c.email}" class="hover:text-wlSecondary transition-colors">${c.email}</a>` : '—'}
+                        </td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${estadoClass}">${estado}</span></td>
+                        <td class="p-3 text-right">
+                            <div class="flex justify-end gap-1.5 flex-wrap">
+                                ${estado !== 'APROBADO' ? `<button onclick="auditarConvenio('${c.id}', 'APROBADO')" class="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors"><i data-lucide="check" class="w-3 h-3"></i> Aprobar</button>` : ''}
+                                ${estado !== 'RECHAZADO' ? `<button onclick="auditarConvenio('${c.id}', 'RECHAZADO')" class="bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors"><i data-lucide="x" class="w-3 h-3"></i> Rechazar</button>` : ''}
+                                ${estado !== 'PENDIENTE' ? `<button onclick="auditarConvenio('${c.id}', 'PENDIENTE')" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors"><i data-lucide="rotate-ccw" class="w-3 h-3"></i> Revertir</button>` : ''}
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join('');
+                lucide.createIcons();
+            } catch (err) {
+                console.warn('Error cargando convenios:', err);
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-amber-400 text-xs font-bold"><i data-lucide="database" class="w-6 h-6 mx-auto mb-2"></i>Tabla 'renmcycf_convenios' en configuración.</td></tr>`;
+                lucide.createIcons();
+            }
+        }
+
+        async function auditarConvenio(id, estado) {
+            const confirmMsg = estado === 'APROBADO'
+                ? '¿Aprobar esta solicitud de convenio B2B? La entidad tendrá acceso al padrón federal de profesionales.'
+                : estado === 'RECHAZADO'
+                    ? '¿Rechazar esta solicitud? La entidad no tendrá acceso al padrón.'
+                    : '¿Revertir a estado PENDIENTE? La entidad deberá ser re-evaluada.';
+            if (!confirm(confirmMsg)) return;
+            try {
+                const { error } = await db.from('renmcycf_convenios')
+                    .update({ estado: estado })
+                    .eq('id', id)
+                    .eq('tenant_id', currentTenantId);
+                if (error) throw error;
+                alert(`✅ Convenio marcado como ${estado}.`);
+                cargarConveniosPanel();
+            } catch (err) {
+                alert('Error al actualizar convenio: ' + err.message);
+            }
+        }
+
+        // ==========================================
+        // 19. CURSOS B2B (AUDITORÍA)
+        // ==========================================
+        async function cargarCursosB2BPanel() {
+            const tbody = document.getElementById('cursos-b2b-body'); 
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data: cursos, error: errCursos } = await db.from('renmcycf_aliados_cursos')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
+                const { data: aliados } = await db.from('renmcycf_aliados')
+                    .select('id, nombre')
+                    .eq('tenant_id', currentTenantId);
+                if (errCursos) throw errCursos;
+                
+                if (!cursos || cursos.length === 0) { 
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">No hay cursos propuestos.</td></tr>'; return; 
+                }
+
+                const aliadosMap = {};
+                if (aliados) aliados.forEach(a => aliadosMap[a.id] = a.nombre);
+
+                tbody.innerHTML = cursos.map(c => {
+                    const renderTemarioLink = (url, label, icono) => {
+                        if (url && url.trim() !== '' && url !== 'null') {
+                            return `<a href="${url}" target="_blank" class="text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1.5 text-[11px] font-bold transition-colors">
+                                        <i data-lucide="${icono}" class="w-3.5 h-3.5 shrink-0"></i> ${label}
+                                    </a>`;
+                        } else {
+                            return `<span class="text-slate-500 text-[11px] flex items-center gap-1.5 font-medium">
+                                        <i data-lucide="minus-circle" class="w-3.5 h-3.5 shrink-0"></i> Falta ${label}
+                                    </span>`;
+                        }
+                    };
+
+                    const temarioHTML = `
+                        <div class="flex flex-col gap-1.5">
+                            ${renderTemarioLink(c.programa_url, 'Programa', 'file-text')}
+                            ${renderTemarioLink(c.analitico_url, 'Analítico', 'file-spreadsheet')}
+                            ${renderTemarioLink(c.diploma_base_url, 'Diploma Base', 'file-badge')}
+                        </div>`;
+
+                    return `
+                    <tr class="border-b border-white/5 hover:bg-white/5">
+                        <td class="p-3 font-bold text-white text-xs">${aliadosMap[c.aliado_id] || 'S/D'}</td>
+                        <td class="p-3">
+                            <span class="text-white font-bold block text-sm">${c.nombre_curso}</span>
+                            <span class="text-[10px] text-slate-400 block"><i data-lucide="clock" class="inline w-3 h-3"></i> Carga: ${c.carga_horaria || 'S/D'}</span>
+                            <span class="text-[10px] text-blue-400 block mt-1"><i data-lucide="users" class="inline w-3 h-3"></i> Docentes: ${c.cuerpo_docente || 'S/D'}</span>
+                        </td>
+                        <td class="p-3">${temarioHTML}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${c.estado==='APROBADO'?'bg-emerald-900/30 text-emerald-400':(c.estado==='RECHAZADO'?'bg-red-900/30 text-red-400':'bg-amber-900/30 text-amber-400')}">
+                                ${c.estado || 'PENDIENTE'}
+                            </span>
+                        </td>
+                        <td class="p-3 text-right">
+                            ${c.estado === 'PENDIENTE' ? `
+                                <button onclick="auditarCursoB2B('${c.id}', 'APROBADO')" class="bg-emerald-500/20 text-emerald-400 p-1.5 rounded hover:bg-emerald-500/40 mx-1" title="Aprobar"><i data-lucide="check" class="w-4 h-4"></i></button>
+                                <button onclick="auditarCursoB2B('${c.id}', 'RECHAZADO')" class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40" title="Rechazar"><i data-lucide="x" class="w-4 h-4"></i></button>
+                            ` : `
+                                <button onclick="auditarCursoB2B('${c.id}', 'PENDIENTE')" class="border border-white/20 text-slate-400 px-2 py-1 rounded text-[9px] hover:text-white transition-colors" title="Revertir a Pendiente"><i data-lucide="rotate-ccw" class="w-3 h-3 inline mr-1"></i> Revocar</button>
+                            `}
+                        </td>
+                    </tr>`;
+                }).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-red-400">Error: ${err.message}</td></tr>`; }
+        }
+
+        async function auditarCursoB2B(id, estado) {
+            if(!confirm(`¿Marcar este curso como ${estado}?`)) return;
+            try {
+                await db.from('renmcycf_aliados_cursos')
+                    .update({ estado: estado })
+                    .eq('id', id)
+                    .eq('tenant_id', currentTenantId);
+                cargarCursosB2BPanel();
+            } catch(err) { alert("Error: " + err.message); }
+        }
+
+        // ==========================================
+        // 20. RED DE EMPRESAS
+        // ==========================================
+        async function cargarEmpresasPanel() {
+            const tbody = document.getElementById('empresas-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data, error } = await db.from('renmcycf_empresas')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('orden', { ascending: true })
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">No hay empresas cargadas.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(e => `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="p-3"><img src="${e.logo_url}" class="w-16 h-12 object-contain bg-white rounded p-1"></td>
+                    <td class="p-3">
+                        <span class="text-white font-bold block">${e.nombre}</span>
+                        <span class="text-[10px] text-slate-400">${e.descripcion || 'Sin descripción'}</span>
+                        ${e.web_url ? `<a href="${e.web_url}" target="_blank" class="text-[10px] text-blue-400 hover:underline block mt-1">${e.web_url}</a>` : ''}
+                    </td>
+                    <td class="p-3 font-mono text-xs text-slate-400">${e.orden || 0}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${e.activo?'bg-emerald-900/30 text-emerald-400':'bg-red-900/30 text-red-400'}">${e.activo?'ACTIVA':'INACTIVA'}</span></td>
+                    <td class="p-3 text-right">
+                        <button class="border border-blue-500/30 text-blue-400 px-2 py-1 rounded text-[10px] uppercase mr-2 hover:bg-blue-500/10" onclick='editarEmpresa(${JSON.stringify(e).replace(/'/g, "&#39;")})'><i data-lucide="edit" class="w-3 h-3 inline"></i> EDITAR</button>
+                        <button class="border border-white/20 text-white px-2 py-1 rounded text-[10px] uppercase mr-2 hover:bg-white/10" onclick="toggleEmpresa('${e.id}', ${!e.activo})">${e.activo?'Ocultar':'Mostrar'}</button>
+                        <button class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40" onclick="eliminarEmpresa('${e.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>`).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-red-400">Error: ${err.message}</td></tr>`; }
+        }
+
+        async function crearEmpresa(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const orig = btn.innerHTML;
+            btn.innerHTML = 'GUARDANDO...';
+            btn.disabled = true;
+            try {
+                const id = document.getElementById('empresa-id').value;
+                const nombre = document.getElementById('empresa-nombre').value.trim();
+                const webUrl = document.getElementById('empresa-web').value.trim();
+                const descripcion = document.getElementById('empresa-desc').value.trim();
+                const orden = parseInt(document.getElementById('empresa-orden').value) || 0;
+                const activo = document.getElementById('empresa-activo').checked;
+                const logoFile = document.getElementById('empresa-logo').files[0];
+
+                const payload = { nombre, web_url: webUrl, descripcion, orden, activo };
+
+                if (logoFile) {
+                    const fileName = `empresa_${Date.now()}.${logoFile.name.split('.').pop()}`;
+                    await db.storage.from('renmcycf-media').upload(fileName, logoFile, { cacheControl: '3600', upsert: true });
+                    payload.logo_url = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
+                } else if (!id) {
+                    throw new Error("Debe subir un logo para crear la empresa.");
+                }
+
+                if (id) {
+                    const { error } = await db.from('renmcycf_empresas').update(payload).eq('id', id).eq('tenant_id', currentTenantId);
+                    if (error) throw error;
+                    alert("✅ Empresa actualizada.");
+                } else {
+                    payload.tenant_id = currentTenantId;
+                    const { error } = await db.from('renmcycf_empresas').insert([payload]);
+                    if (error) throw error;
+                    alert("✅ Empresa creada.");
+                }
+                resetFormEmpresa();
+                cargarEmpresasPanel();
+            } catch (err) { alert("Error: " + err.message); }
+            finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+
+        function editarEmpresa(e) {
+            document.getElementById('empresa-id').value = e.id || '';
+            document.getElementById('empresa-nombre').value = e.nombre || '';
+            document.getElementById('empresa-web').value = e.web_url || '';
+            document.getElementById('empresa-desc').value = e.descripcion || '';
+            document.getElementById('empresa-orden').value = e.orden || 0;
+            document.getElementById('empresa-activo').checked = e.activo !== false;
+            document.getElementById('empresa-logo').removeAttribute('required');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('form-empresa').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function resetFormEmpresa() {
+            document.getElementById('form-empresa').reset();
+            document.getElementById('empresa-id').value = '';
+            document.getElementById('empresa-activo').checked = true;
+            document.getElementById('empresa-orden').value = 0;
+        }
+
+        async function toggleEmpresa(id, estado) {
+            await db.from('renmcycf_empresas').update({ activo: estado }).eq('id', id).eq('tenant_id', currentTenantId);
+            cargarEmpresasPanel();
+        }
+
+        async function eliminarEmpresa(id) {
+            if (!confirm("¿Eliminar empresa definitivamente?")) return;
+            await db.from('renmcycf_empresas').delete().eq('id', id).eq('tenant_id', currentTenantId);
+            cargarEmpresasPanel();
+        }
+
+        // ==========================================
+        // 21. BENEFICIOS
+        // ==========================================
+        async function cargarBeneficiosPanel() {
+            const tbody = document.getElementById('beneficios-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data, error } = await db.from('renmcycf_beneficios')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('orden', { ascending: true });
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">No hay beneficios cargados.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(b => `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="p-3 text-center"><i data-lucide="${b.icono || 'check-circle'}" class="w-5 h-5 text-wlSecondary inline"></i></td>
+                    <td class="p-3">
+                        <span class="text-white font-bold block">${b.titulo}</span>
+                        <span class="text-[10px] text-slate-400">${b.descripcion || 'Sin descripción'}</span>
+                    </td>
+                    <td class="p-3 font-mono text-xs text-slate-400">${b.orden || 0}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${b.activo?'bg-emerald-900/30 text-emerald-400':'bg-red-900/30 text-red-400'}">${b.activo?'ACTIVO':'INACTIVO'}</span></td>
+                    <td class="p-3 text-right">
+                        <button class="border border-blue-500/30 text-blue-400 px-2 py-1 rounded text-[10px] uppercase mr-2 hover:bg-blue-500/10" onclick='editarBeneficio(${JSON.stringify(b).replace(/'/g, "&#39;")})'><i data-lucide="edit" class="w-3 h-3 inline"></i> EDITAR</button>
+                        <button class="border border-white/20 text-white px-2 py-1 rounded text-[10px] uppercase mr-2 hover:bg-white/10" onclick="toggleBeneficio('${b.id}', ${!b.activo})">${b.activo?'Ocultar':'Mostrar'}</button>
+                        <button class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40" onclick="eliminarBeneficio('${b.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>`).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-red-400">Error: ${err.message}</td></tr>`; }
+        }
+
+        async function guardarBeneficio(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const orig = btn.innerHTML;
+            btn.innerHTML = 'GUARDANDO...';
+            btn.disabled = true;
+            try {
+                const id = document.getElementById('beneficio-id').value;
+                const payload = {
+                    titulo: document.getElementById('beneficio-titulo').value.trim(),
+                    descripcion: document.getElementById('beneficio-desc').value.trim(),
+                    icono: document.getElementById('beneficio-icono').value.trim() || 'check-circle',
+                    orden: parseInt(document.getElementById('beneficio-orden').value) || 0,
+                    activo: document.getElementById('beneficio-activo').checked
+                };
+                if (id) {
+                    const { error } = await db.from('renmcycf_beneficios').update(payload).eq('id', id).eq('tenant_id', currentTenantId);
+                    if (error) throw error;
+                    alert("✅ Beneficio actualizado.");
+                } else {
+                    payload.tenant_id = currentTenantId;
+                    const { error } = await db.from('renmcycf_beneficios').insert([payload]);
+                    if (error) throw error;
+                    alert("✅ Beneficio creado.");
+                }
+                resetFormBeneficio();
+                cargarBeneficiosPanel();
+            } catch (err) { alert("Error: " + err.message); }
+            finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+
+        function editarBeneficio(b) {
+            document.getElementById('beneficio-id').value = b.id || '';
+            document.getElementById('beneficio-titulo').value = b.titulo || '';
+            document.getElementById('beneficio-desc').value = b.descripcion || '';
+            document.getElementById('beneficio-icono').value = b.icono || 'check-circle';
+            document.getElementById('beneficio-orden').value = b.orden || 0;
+            document.getElementById('beneficio-activo').checked = b.activo !== false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('form-beneficio').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function resetFormBeneficio() {
+            document.getElementById('form-beneficio').reset();
+            document.getElementById('beneficio-id').value = '';
+            document.getElementById('beneficio-icono').value = 'check-circle';
+            document.getElementById('beneficio-activo').checked = true;
+            document.getElementById('beneficio-orden').value = 0;
+        }
+
+        async function toggleBeneficio(id, estado) {
+            await db.from('renmcycf_beneficios').update({ activo: estado }).eq('id', id).eq('tenant_id', currentTenantId);
+            cargarBeneficiosPanel();
+        }
+
+        async function eliminarBeneficio(id) {
+            if (!confirm("¿Eliminar beneficio definitivamente?")) return;
+            await db.from('renmcycf_beneficios').delete().eq('id', id).eq('tenant_id', currentTenantId);
+            cargarBeneficiosPanel();
+        }
+
+        // ==========================================
+        // 22. SUSCRIPTORES NEWSLETTER
+        // ==========================================
+        async function cargarSuscriptoresPanel() {
+            const tbody = document.getElementById('suscriptores-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center">Cargando...</td></tr>';
+            try {
+                const { data, error } = await db.from('renmcycf_suscriptores')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                suscriptoresCache = data || [];
+                const total = suscriptoresCache.length;
+                const confirmados = suscriptoresCache.filter(s => s.confirmado).length;
+                const pendientes = total - confirmados;
+                const statTotal = document.getElementById('stat-subs-total');
+                const statConf = document.getElementById('stat-subs-confirmados');
+                const statPend = document.getElementById('stat-subs-pendientes');
+                if (statTotal) statTotal.innerText = total;
+                if (statConf) statConf.innerText = confirmados;
+                if (statPend) statPend.innerText = pendientes;
+
+                if (total === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Todavía no hay suscriptores.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = suscriptoresCache.map(s => `
+                <tr class="border-b border-white/5 hover:bg-white/5">
+                    <td class="p-3 text-white font-mono text-xs">${s.email}</td>
+                    <td class="p-3 text-slate-400 text-xs font-mono">${s.telefono || '—'}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded text-[9px] font-bold uppercase ${s.confirmado ? 'bg-emerald-900/30 text-emerald-400' : 'bg-amber-900/30 text-amber-400'}">
+                            ${s.confirmado ? 'CONFIRMADO' : 'PENDIENTE'}
+                        </span>
+                    </td>
+                    <td class="p-3 text-slate-400 text-[10px]">${new Date(s.created_at).toLocaleDateString('es-AR')}</td>
+                    <td class="p-3 text-right">
+                        <button class="border border-white/20 text-white px-2 py-1 rounded text-[10px] uppercase mr-2 hover:bg-white/10" onclick="toggleSuscriptor('${s.id}', ${!s.activo})">${s.activo?'Suspender':'Activar'}</button>
+                        <button class="bg-red-500/20 text-red-400 p-1.5 rounded hover:bg-red-500/40" onclick="eliminarSuscriptor('${s.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>`).join('');
+                lucide.createIcons();
+            } catch (err) { tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-red-400">Error: ${err.message}</td></tr>`; }
+        }
+
+        async function toggleSuscriptor(id, estado) {
+            await db.from('renmcycf_suscriptores').update({ activo: estado }).eq('id', id).eq('tenant_id', currentTenantId);
+            cargarSuscriptoresPanel();
+        }
+
+        async function eliminarSuscriptor(id) {
+            if (!confirm("¿Eliminar suscriptor definitivamente?")) return;
+            await db.from('renmcycf_suscriptores').delete().eq('id', id).eq('tenant_id', currentTenantId);
+            cargarSuscriptoresPanel();
+        }
+
+        function exportarSuscriptores() {
+            if (!suscriptoresCache || suscriptoresCache.length === 0) {
+                alert("No hay suscriptores para exportar.");
+                return;
+            }
+            const data = suscriptoresCache.map(s => ({
+                'Email': s.email,
+                'WhatsApp': s.telefono || '',
+                'Nombre': s.nombre || '',
+                'Confirmado': s.confirmado ? 'SÍ' : 'NO',
+                'Activo': s.activo ? 'SÍ' : 'NO',
+                'Fecha Suscripción': s.created_at ? new Date(s.created_at).toLocaleString('es-AR') : '',
+                'Fecha Confirmación': s.fecha_confirmacion ? new Date(s.fecha_confirmacion).toLocaleString('es-AR') : ''
+            }));
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Suscriptores');
+            XLSX.writeFile(wb, `suscriptores_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
     </script>
