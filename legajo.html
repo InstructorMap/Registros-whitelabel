@@ -13,6 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="saas-core.js"></script>
     
     <!-- Librerías para Credencial y Foto -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -847,118 +848,10 @@
     <!-- SCRIPTS -->
     <script>
         // ============================================================
-        // BOOTSTRAPPER SaaS: INYECCIÓN DINÁMICA POR SUBDOMINIO
+        // BOOTSTRAPPER SaaS (inyectado por saas-core.js)
         // ============================================================
-        let currentTenantId = null;
-
-        async function initTenant() {
-            try {
-                const hostname = window.location.hostname;
-                let tenantSlug = 'default';
-                
-                if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    tenantSlug = urlParams.get('tenant') || 'renmcycf';
-                } else {
-                    const parts = hostname.split('.');
-                    if (parts.length > 2) {
-                        tenantSlug = parts[0]; 
-                    } else {
-                        tenantSlug = 'renmcycf'; 
-                    }
-                }
-
-                console.log("Cargando entorno SaaS para:", tenantSlug);
-
-                const { data: tenantConfig, error } = await db
-                    .from('saas_tenants')
-                    .select('*')
-                    .eq('slug', tenantSlug)
-                    .eq('activo', true)
-                    .single();
-
-                if (error || !tenantConfig) {
-                    throw new Error("Institución no encontrada o inactiva.");
-                }
-
-                currentTenantId = tenantConfig.id;
-                localStorage.setItem('saas_current_tenant', currentTenantId);
-
-                document.documentElement.style.setProperty('--wl-primary', tenantConfig.color_primario || '#0f172a');
-                document.documentElement.style.setProperty('--wl-secondary', tenantConfig.color_secundario || '#d4af37');
-                document.documentElement.style.setProperty('--wl-tertiary', tenantConfig.color_terciario || '#1e3a8a');
-                document.documentElement.style.setProperty('--wl-background', tenantConfig.color_background || '#f1f5f9');
-
-                const institucionNombres = document.querySelectorAll('#wl-institucion-nombre, #wl-title-institucion');
-                institucionNombres.forEach(el => {
-                    if (el) el.innerText = tenantConfig.nombre_institucion;
-                });
-
-                if (document.title.includes('·')) {
-                    const prefijo = document.title.split('·')[0];
-                    document.title = `${prefijo} · ${tenantConfig.nombre_institucion}`;
-                } else {
-                    document.title = tenantConfig.nombre_institucion;
-                }
-
-                const inyectarSrcSeguro = (id, url) => {
-                    const el = document.getElementById(id);
-                    if (el && url) {
-                        el.src = url;
-                        el.style.display = 'block';
-                    }
-                };
-
-                if (tenantConfig.logo_url) {
-                    inyectarSrcSeguro('dynamic-logo', tenantConfig.logo_url);
-                    inyectarSrcSeguro('nav-mini-logo', tenantConfig.logo_url);
-                    inyectarSrcSeguro('watermark-logo-img', tenantConfig.logo_url);
-                    
-                    const defaultLogos = document.querySelectorAll('#header-default-logo, #default-logo');
-                    defaultLogos.forEach(el => el.classList.add('hidden'));
-                }
-
-                if (tenantConfig.hero_image_url) {
-                    inyectarSrcSeguro('dynamic-bg', tenantConfig.hero_image_url);
-                }
-
-                document.body.classList.add('ready');
-
-            } catch (err) {
-                console.error("Error Bootstrapper SaaS:", err);
-                document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
-                        <div>
-                            <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
-                            <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
-                        </div>
-                    </div>`;
-                document.body.classList.add('ready');
-            }
-        }
-
-        // ==========================================
-        // UTILIDADES BÁSICAS
-        // ==========================================
-        const el = id => document.getElementById(id);
-        
-        function safeClass(id, action, cls) {
-            const element = el(id);
-            if (element) {
-                if(action === 'add') element.classList.add(cls);
-                if(action === 'remove') element.classList.remove(cls);
-            }
-        }
-
         lucide.createIcons();
         const { jsPDF } = window.jspdf;
-        
-        // ============================================================
-        // CONFIGURACIÓN DE SUPABASE
-        // ============================================================
-        const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
-        const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
-        const db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
 
         // ==========================================
         // VARIABLES GLOBALES
@@ -971,6 +864,19 @@
         let bgCredencialDorso = '';
         let rosetaUrl = '';
         let cropperInstance = null;
+
+        // ==========================================
+        // UTILIDADES BÁSICAS
+        // ==========================================
+        const el = id => document.getElementById(id);
+
+        function safeClass(id, action, cls) {
+            const element = el(id);
+            if (element) {
+                if(action === 'add') element.classList.add(cls);
+                if(action === 'remove') element.classList.remove(cls);
+            }
+        }
 
         // ==========================================
         // SERVICE WORKER
@@ -987,7 +893,7 @@
         // INICIALIZACIÓN
         // ==========================================
         window.addEventListener('DOMContentLoaded', async () => {
-            await initTenant();
+            await window.initTenant();
             await cargarConfiguracionInicial();
             const savedDni = localStorage.getItem('session_dni');
             if (savedDni && el('input-dni')) {
@@ -998,9 +904,9 @@
 
         async function cargarConfiguracionInicial() {
             try {
-                const { data: config } = await db.from('renmcycf_config')
+                const { data: config } = await window.db.from('renmcycf_config')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
                     
                 if (config) {
@@ -1016,9 +922,9 @@
                     }
                 }
                 
-                const { data: cont } = await db.from('renmcycf_contenido')
+                const { data: cont } = await window.db.from('renmcycf_contenido')
                     .select('clave, valor')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .in('clave', ['credencial_style', 'credencial_bg', 'credencial_bg_dorso', 'credencial_roseta']);
                     
                 if (cont) {
@@ -1057,10 +963,10 @@
             lucide.createIcons();
 
             try {
-                const { data: padron, error } = await db.from('renmcycf_padron')
+                const { data: padron, error } = await window.db.from('renmcycf_padron')
                     .select('*')
                     .eq('dni', dni)
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
                 
                 if (error) throw new Error('Error de red. Revise su conexión.');
@@ -1137,13 +1043,13 @@
             lucide.createIcons();
             
             try {
-                await db.from('renmcycf_padron')
+                await window.db.from('renmcycf_padron')
                     .update({
                         terminos_aceptados: true,
                         fecha_aceptacion_terminos: new Date().toISOString()
                     })
                     .eq('id', alumnoActual.id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 
                 alumnoActual.terminos_aceptados = true;
                 
@@ -1345,13 +1251,13 @@
                 if (!file) throw new Error('Seleccione un archivo');
                 
                 const fileName = `renovacion_${alumnoActual.dni}_${Date.now()}.${file.name.split('.').pop()}`;
-                const { error: upErr } = await db.storage.from('renmcycf-documentos').upload(fileName, file);
+                const { error: upErr } = await window.db.storage.from('renmcycf-documentos').upload(fileName, file);
                 if (upErr) throw upErr;
                 
                 const urlComp = `${PROJECT_URL}/storage/v1/object/public/renmcycf-documentos/${fileName}`;
 
                 const payload = {
-                    tenant_id: currentTenantId,
+                    tenant_id: window.currentTenantId,
                     dni: alumnoActual.dni,
                     nombres: alumnoActual.nombres,
                     apellidos: alumnoActual.apellidos,
@@ -1363,7 +1269,7 @@
                     comprobante_url: urlComp
                 };
 
-                const { error: dbErr } = await db.from('renmcycf_solicitudes').insert([payload]);
+                const { error: dbErr } = await window.db.from('renmcycf_solicitudes').insert([payload]);
                 if (dbErr) throw dbErr;
 
                 alert("✅ Comprobante enviado. Administración actualizará su vencimiento a la brevedad.");
@@ -1642,7 +1548,7 @@
                     const fileName = `${alumnoActual.dni}_foto_${Date.now()}.jpg`;
                     const fileToUpload = new File([blob], fileName, { type: "image/jpeg" });
                     
-                    const { error: upErr } = await db.storage.from('renmcycf-media').upload(fileName, fileToUpload, {
+                    const { error: upErr } = await window.db.storage.from('renmcycf-media').upload(fileName, fileToUpload, {
                         cacheControl: '3600',
                         upsert: true
                     });
@@ -1651,10 +1557,10 @@
                     
                     const fotoUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
                     
-                    await db.from('renmcycf_padron')
+                    await window.db.from('renmcycf_padron')
                         .update({ foto_perfil_url: fotoUrl })
                         .eq('id', alumnoActual.id)
-                        .eq('tenant_id', currentTenantId);
+                        .eq('tenant_id', window.currentTenantId);
                     
                     alumnoActual.foto_perfil_url = fotoUrl;
                     alert("Foto de perfil actualizada con éxito.");
@@ -1693,7 +1599,7 @@
             const directorio = el('perfil-directorio').checked;
             
             try {
-                const { error } = await db.from('renmcycf_padron')
+                const { error } = await window.db.from('renmcycf_padron')
                     .update({
                         telefono: tel,
                         email: email,
@@ -1704,7 +1610,7 @@
                         figurar_directorio: directorio
                     })
                     .eq('id', alumnoActual.id)
-                    .eq('tenant_id', currentTenantId);
+                    .eq('tenant_id', window.currentTenantId);
                 
                 if (error) throw error;
                 
@@ -1974,9 +1880,9 @@
             }
             
             try {
-                const { data: noticias } = await db.from('renmcycf_noticias')
+                const { data: noticias } = await window.db.from('renmcycf_noticias')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false })
                     .limit(1);
                     
@@ -1997,10 +1903,10 @@
             } catch(e) {}
             
             try {
-                const { data: tesis } = await db.from('renmcycf_publicaciones')
+                const { data: tesis } = await window.db.from('renmcycf_publicaciones')
                     .select('*')
                     .eq('autor_id', alumnoActual.id)
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false })
                     .limit(1);
                     
@@ -2108,14 +2014,14 @@
                 if (!titulo) throw new Error('Ingrese el nombre de la formación');
 
                 const fileName = `actualizacion_${alumnoActual.dni}_${Date.now()}.${file.name.split('.').pop()}`;
-                const { error: upErr } = await db.storage.from('renmcycf-documentos').upload(fileName, file);
+                const { error: upErr } = await window.db.storage.from('renmcycf-documentos').upload(fileName, file);
                 if (upErr) throw upErr;
 
-                const { data: urlData } = db.storage.from('renmcycf-documentos').getPublicUrl(fileName);
+                const { data: urlData } = window.db.storage.from('renmcycf-documentos').getPublicUrl(fileName);
                 const diplomaUrl = urlData.publicUrl;
 
                 const payload = {
-                    tenant_id: currentTenantId,
+                    tenant_id: window.currentTenantId,
                     dni: alumnoActual.dni,
                     nombres: alumnoActual.nombres,
                     apellidos: alumnoActual.apellidos,
@@ -2133,7 +2039,7 @@
                     estado: 'PENDIENTE'
                 };
 
-                const { error: dbErr } = await db.from('renmcycf_solicitudes').insert([payload]);
+                const { error: dbErr } = await window.db.from('renmcycf_solicitudes').insert([payload]);
                 if (dbErr) throw dbErr;
 
                 alert("✅ Diploma enviado a auditoría. El Comité Evaluador lo revisará a la brevedad.");
@@ -2161,10 +2067,10 @@
             lucide.createIcons();
 
             try {
-                const { data, error } = await db.from('renmcycf_licitaciones')
+                const { data, error } = await window.db.from('renmcycf_licitaciones')
                     .select('*')
                     .eq('estado', 'ABIERTO')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -2236,7 +2142,7 @@
 
             try {
                 const payload = {
-                    tenant_id: currentTenantId,
+                    tenant_id: window.currentTenantId,
                     caso_id: casoId,
                     profesional_id: alumnoActual.id,
                     profesional_dni: alumnoActual.dni,
@@ -2244,7 +2150,7 @@
                     estado: 'POSTULADO'
                 };
 
-                const { error } = await db.from('renmcycf_postulaciones').insert([payload]);
+                const { error } = await window.db.from('renmcycf_postulaciones').insert([payload]);
                 if (error) throw error;
 
                 btn.innerHTML = '<i data-lucide="check-circle-2" class="w-4 h-4"></i> Postulación Enviada';
@@ -2272,9 +2178,9 @@
             if(!container) return;
             
             try {
-                const { data: noticias, error } = await db.from('renmcycf_noticias')
+                const { data: noticias, error } = await window.db.from('renmcycf_noticias')
                     .select('*')
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false })
                     .limit(20);
                 
@@ -2320,10 +2226,10 @@
             container.innerHTML = '<div class="skeleton h-48 w-full rounded-xl"></div><div class="skeleton h-48 w-full rounded-xl"></div>';
             
             try {
-                const { data, error } = await db.from('renmcycf_biblioteca')
+                const { data, error } = await window.db.from('renmcycf_biblioteca')
                     .select('*')
                     .eq('activo', true)
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
                 
                 if (error) throw error;
@@ -2366,10 +2272,10 @@
             if(!container) return;
             
             try {
-                const { data, error } = await db.from('renmcycf_publicaciones')
+                const { data, error } = await window.db.from('renmcycf_publicaciones')
                     .select('*')
                     .eq('autor_id', alumnoActual.id)
-                    .eq('tenant_id', currentTenantId)
+                    .eq('tenant_id', window.currentTenantId)
                     .order('created_at', { ascending: false });
                 
                 if (error) throw error;
@@ -2423,12 +2329,12 @@
             
             try {
                 const fileName = `${alumnoActual.dni}_tesis_${Date.now()}.${file.name.split('.').pop()}`;
-                await db.storage.from('renmcycf-pdfs').upload(fileName, file);
+                await window.db.storage.from('renmcycf-pdfs').upload(fileName, file);
                 
                 const pdfUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-pdfs/${fileName}`;
                 
-                await db.from('renmcycf_publicaciones').insert({
-                    tenant_id: currentTenantId,
+                await window.db.from('renmcycf_publicaciones').insert({
+                    tenant_id: window.currentTenantId,
                     autor_id: alumnoActual.id,
                     autor_nombre: `${alumnoActual.nombres} ${alumnoActual.apellidos}`,
                     titulo: el('tesis-titulo').value.trim(),
