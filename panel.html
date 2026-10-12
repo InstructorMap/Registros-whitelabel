@@ -301,6 +301,7 @@
                 <button onclick="showTab('diseno')" id="nav-diseno" class="sidebar-link w-full"><i data-lucide="layout-template" class="w-4 h-4"></i> Diseño Credencial</button>
                 <button onclick="showTab('configuracion')" id="nav-configuracion" class="sidebar-link w-full"><i data-lucide="settings" class="w-4 h-4"></i> Configuración Core</button>
                 <button onclick="showTab('contenido')" id="nav-contenido" class="sidebar-link w-full"><i data-lucide="palette" class="w-4 h-4"></i> Textos del Sitio</button>
+                <button onclick="showTab('ecosistema')" id="nav-ecosistema" class="sidebar-link w-full"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Ecosistema y Perfil</button>
                 <button onclick="showTab('usuarios')" id="nav-usuarios" class="sidebar-link w-full"><i data-lucide="users" class="w-4 h-4"></i> Usuarios y Roles</button>
 
                 <div class="px-2 py-2 text-[9px] font-bold text-purple-400 uppercase tracking-widest mt-6">Divulgación</div>
@@ -715,6 +716,7 @@
                                 <div class="permission-checkbox"><input type="checkbox" id="perm-aliados" value="mod-aliados" class="w-4 h-4"><label for="perm-aliados" class="text-sm mb-0">Institutos Aliados</label></div>
                                 <div class="permission-checkbox"><input type="checkbox" id="perm-cursos-b2b" value="mod-cursos-b2b" class="w-4 h-4"><label for="perm-cursos-b2b" class="text-sm mb-0">Auditoría Cursos</label></div>
                                 <div class="permission-checkbox"><input type="checkbox" id="perm-empresas" value="mod-empresas" class="w-4 h-4"><label for="perm-empresas" class="text-sm mb-0">Red de Empresas</label></div>
+                                <div class="permission-checkbox"><input type="checkbox" id="perm-ecosistema" value="mod-ecosistema" class="w-4 h-4"><label for="perm-ecosistema" class="text-sm mb-0">Ecosistema y Perfil</label></div>
                                 <div class="permission-checkbox"><input type="checkbox" id="perm-sistema" value="mod-sistema" class="w-4 h-4"><label for="perm-sistema" class="text-sm mb-0">Sistema Completo</label></div>
                             </div>
                         </div>
@@ -884,10 +886,108 @@
                 </div>
             </div>
 
+            <!-- ═══════════ ECOSISTEMA Y PERFIL (NUEVA VISTA) ═══════════ -->
+            <div id="view-ecosistema" class="tab-content space-y-6">
+
+                <!-- TARJETA A: TEST DE PERFIL -->
+                <div class="glass-card p-8 border-wlSecondary/30">
+                    <div class="flex justify-between items-center mb-6 pb-2 border-b border-white/10">
+                        <div>
+                            <h3 class="text-white font-bold flex items-center gap-2">
+                                <i data-lucide="award" class="w-5 h-5 text-wlSecondary"></i>
+                                Test de Perfil Profesional
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Define los textos y placas que se muestran en la sección "Evaluación Técnica" del index.</p>
+                        </div>
+                        <span class="bg-wlSecondary/10 text-wlSecondary border border-wlSecondary/30 px-3 py-1 rounded text-[10px] font-bold uppercase">Público</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label>Título de la Sección</label>
+                            <input type="text" id="eco-tp-titulo" placeholder="¿Qué tipo de profesional sos?">
+                        </div>
+                        <div>
+                            <label>Subtítulo / Bajada</label>
+                            <input type="text" id="eco-tp-subtitulo" placeholder="Tu formación y experiencia definen tu perfil.">
+                        </div>
+                        <div>
+                            <label>Palabra para "Placa" (singular)</label>
+                            <input type="text" id="eco-tp-palabra" placeholder="Insignia">
+                            <p class="text-[9px] text-slate-500 mt-1">Ej: Insignia, Placa, Perfil, Badge</p>
+                        </div>
+                    </div>
+
+                    <!-- GESTIÓN DE PLACAS -->
+                    <div class="bg-black/20 p-4 rounded-xl border border-white/5">
+                        <div class="flex justify-between items-center mb-4">
+                            <label class="text-wlSecondary font-bold text-xs uppercase tracking-widest mb-0 flex items-center gap-2">
+                                <i data-lucide="layers" class="w-4 h-4"></i>
+                                Placas del Perfil (<span id="eco-tp-count">0</span>)
+                            </label>
+                            <button type="button" onclick="agregarPlacaEco()" class="bg-wlPrimary hover:opacity-90 border border-wlSecondary/30 text-wlSecondary px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors">
+                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Agregar Placa
+                            </button>
+                        </div>
+                        <div id="eco-tp-placas-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Se inyecta dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TARJETA B: MÓDULOS DEL ECOSISTEMA -->
+                <div class="glass-card p-8 border-wlPrimary/30">
+                    <div class="flex justify-between items-center mb-6 pb-2 border-b border-white/10">
+                        <div>
+                            <h3 class="text-white font-bold flex items-center gap-2">
+                                <i data-lucide="layout-grid" class="w-5 h-5 text-wlPrimary"></i>
+                                Módulos del Ecosistema
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Los 6 módulos que aparecen en la sección "Explorá el ecosistema" del index.</p>
+                        </div>
+                        <span class="bg-wlPrimary/10 text-wlPrimary border border-wlPrimary/30 px-3 py-1 rounded text-[10px] font-bold uppercase">Público</span>
+                    </div>
+
+                    <div id="eco-modulos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Se inyecta dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- TARJETA C: BIBLIOTECA -->
+                <div class="glass-card p-8 border-emerald-500/30">
+                    <div class="flex justify-between items-center mb-6 pb-2 border-b border-white/10">
+                        <div>
+                            <h3 class="text-white font-bold flex items-center gap-2">
+                                <i data-lucide="library" class="w-5 h-5 text-emerald-500"></i>
+                                Sección Biblioteca
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-1">Título que aparece arriba de las investigaciones y publicaciones.</p>
+                        </div>
+                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded text-[10px] font-bold uppercase">Público</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label>Título de la Sección de Tesis / Publicaciones</label>
+                            <input type="text" id="eco-biblio-tesis-titulo" placeholder="Investigaciones de Matriculados (Tesis)">
+                            <p class="text-[9px] text-slate-500 mt-1">Ej: Investigaciones, Publicaciones y Notas Técnicas, Tesis de Grado, etc.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTÓN DE GUARDADO GENERAL -->
+                <div class="flex justify-end sticky bottom-4 z-20">
+                    <button type="button" onclick="guardarEcosistema(event)" id="btn-guardar-eco" class="bg-wlSecondary hover:bg-yellow-500 text-wlPrimary font-black px-8 py-4 rounded-xl shadow-2xl border-2 border-wlSecondary flex items-center gap-3 transition-transform active:scale-95">
+                        <i data-lucide="save" class="w-5 h-5"></i>
+                        <span>GUARDAR ECOSISTEMA Y PERFIL</span>
+                    </button>
+                </div>
+
+            </div>
+
         </div>
     </main>
-
-    <script>
+        <script>
         // ============================================================
         // 1. BOOTSTRAPPER SaaS (inyectado por saas-core.js)
         // ============================================================
@@ -1025,7 +1125,7 @@
                     const btn = document.getElementById(id);
                     if (btn) btn.style.display = 'flex';
                 });
-                ['nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-usuarios', 'nav-beneficios', 'nav-suscriptores'].forEach(id => {
+                ['nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-ecosistema', 'nav-usuarios', 'nav-beneficios', 'nav-suscriptores'].forEach(id => {
                     const btn = document.getElementById(id);
                     if (btn) btn.style.display = 'flex';
                 });
@@ -1037,14 +1137,14 @@
                     if (navElement) navElement.style.display = permisos.includes(modulo) ? 'flex' : 'none';
                 });
                 
-                const sistemaButtons = ['nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-usuarios', 'nav-beneficios', 'nav-suscriptores'];
+                const sistemaButtons = ['nav-comite', 'nav-masiva', 'nav-diseno', 'nav-configuracion', 'nav-contenido', 'nav-ecosistema', 'nav-usuarios', 'nav-beneficios', 'nav-suscriptores'];
                 const tienePermisoSistema = permisos.includes('mod-sistema');
                 sistemaButtons.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.style.display = tienePermisoSistema ? 'flex' : 'none';
                 });
                 
-                const tienePermisosAdmin = permisos.some(p => ['mod-campus', 'mod-biblioteca', 'mod-tesis', 'mod-sistema'].includes(p));
+                const tienePermisosAdmin = permisos.some(p => ['mod-campus', 'mod-biblioteca', 'mod-tesis', 'mod-sistema', 'mod-ecosistema'].includes(p));
                 document.getElementById('menu-admin-section').style.display = tienePermisosAdmin ? 'block' : 'none';
             }
 
@@ -1112,6 +1212,7 @@
                 'diseno':'Calibrador de Credenciales', 
                 'configuracion':'Configuración', 
                 'contenido':'Textos del Sitio', 
+                'ecosistema':'Ecosistema y Perfil',
                 'beneficios':'Beneficios del Registro', 
                 'suscriptores':'Suscriptores del Newsletter', 
                 'usuarios':'Usuarios y Roles' 
@@ -1133,6 +1234,7 @@
             if(id === 'diseno') cargarDisenoCredencial();
             if(id === 'configuracion') cargarConfiguracionForm();
             if(id === 'contenido') cargarContenidoForm();
+            if(id === 'ecosistema') cargarEcosistemaForm();
             if(id === 'beneficios') cargarBeneficiosPanel();
             if(id === 'suscriptores') cargarSuscriptoresPanel();
             if(id === 'usuarios') cargarUsuarios();
@@ -1409,9 +1511,6 @@
             } catch (err) { tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-red-400">${err.message}</td></tr>`; }
         }
 
-        // ==========================================
-        // HELPER: OBTENER ARRAY DE DIPLOMAS DESDE UN ITEM
-        // ==========================================
         function extraerDiplomasDeItem(item) {
             let arr = [];
             if (item.diplomas_urls && item.diplomas_urls !== 'null') {
@@ -1428,9 +1527,6 @@
             return arr;
         }
 
-        // ==========================================
-        // RENDER DE UNA TARJETA DE DIPLOMA
-        // ==========================================
         function renderDiplomaCard(url, idx) {
             const esPDF = /\.pdf(\?|$)/i.test(url);
             const contenidoVisual = esPDF
@@ -1682,7 +1778,6 @@
             const containerFotos = document.getElementById('dos-imagenes');
             containerFotos.innerHTML = '';
             
-            // Documentos fijos (single)
             const urls = [
                 { url: item.foto_perfil_url, campo: 'foto_perfil_url', titulo: 'Foto de Perfil' },
                 { url: item.dni_frente_url, campo: 'dni_frente_url', titulo: 'DNI Frente' },
@@ -1731,9 +1826,6 @@
                 }
             });
 
-            // ═══════════════════════════════════════════════════════════════
-            // BLOQUE DE DIPLOMAS MÚLTIPLES
-            // ═══════════════════════════════════════════════════════════════
             const diplomasArr = extraerDiplomasDeItem(item);
             
             containerFotos.innerHTML += `
@@ -1919,7 +2011,6 @@
 
                 const vencimiento = new Date(); vencimiento.setFullYear(vencimiento.getFullYear() + 1);
                 
-                // Consolidar diplomas: array JSON + fallback legacy
                 const diplomasFinales = extraerDiplomasDeItem(itemDossierActual);
                 
                 const { error: insErr } = await window.db.from('renmcycf_padron').insert([{
@@ -2624,7 +2715,7 @@
 
         // ==========================================
         // 14. CONFIGURACIÓN CORE Y TEXTOS
-        // ============================================
+        // ==========================================
         async function cargarConfiguracionForm() {
             try {
                 const { data } = await window.db.from('renmcycf_config')
@@ -2923,7 +3014,7 @@
                 checkboxes.forEach(cb => permisosSeleccionados.push(cb.value));
                 
                 const modulosFinales = rol === 'superadmin' ? 
-                    ['mod-dashboard', 'mod-solicitudes', 'mod-auditoria', 'mod-padron', 'mod-campus', 'mod-biblioteca', 'mod-tesis', 'mod-convenios', 'mod-aliados', 'mod-cursos-b2b', 'mod-empresas', 'mod-sistema'] : 
+                    ['mod-dashboard', 'mod-solicitudes', 'mod-auditoria', 'mod-padron', 'mod-campus', 'mod-biblioteca', 'mod-tesis', 'mod-convenios', 'mod-aliados', 'mod-cursos-b2b', 'mod-empresas', 'mod-ecosistema', 'mod-sistema'] : 
                     permisosSeleccionados;
                 
                 const dbId = document.getElementById('usr-db-id').value;
@@ -3551,6 +3642,214 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Suscriptores');
             XLSX.writeFile(wb, `suscriptores_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        // ==========================================
+        // 22. ECOSISTEMA Y PERFIL (WHITELABEL INTELIGENTE)
+        // ==========================================
+
+        const ECO_MODULOS_DEFAULT = [
+            { num: 1, titulo: 'Identidad',            sub: 'Conocé el Registro',              icono: 'shield' },
+            { num: 2, titulo: 'Red Nacional',         sub: 'Profesionales e instituciones',   icono: 'network' },
+            { num: 3, titulo: 'Especialidades',       sub: 'Áreas que integran el padrón',    icono: 'award' },
+            { num: 4, titulo: 'Comité',               sub: 'Estructura de evaluación',        icono: 'stamp' },
+            { num: 5, titulo: 'Portal Científico',    sub: 'Investigación y divulgación',     icono: 'flask-conical' },
+            { num: 6, titulo: 'Biblioteca',           sub: 'Conocimiento y publicaciones',    icono: 'library' }
+        ];
+
+        const ECO_PLACA_DEFAULT = {
+            icono: 'award',
+            monograma: '01',
+            numero: 'I',
+            nombre: 'Especialidad I',
+            descripcion: 'Perfil profesional'
+        };
+
+        let placasEcoCache = [];
+
+        function crearPlacaCardHTML(idx, placa) {
+            const p = placa || ECO_PLACA_DEFAULT;
+            return `
+                <div class="bg-black/30 p-4 rounded-xl border border-white/10 relative" data-placa-idx="${idx}">
+                    <div class="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
+                        <span class="text-[10px] font-black text-wlSecondary uppercase tracking-widest">Placa #${idx + 1}</span>
+                        <button type="button" onclick="eliminarPlacaEco(${idx})" class="text-red-400 hover:text-red-300 transition-colors" title="Eliminar placa">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[9px]">Ícono (Lucide)</label>
+                            <input type="text" class="eco-placa-icono" value="${p.icono || ''}" placeholder="award, shield, heart">
+                        </div>
+                        <div>
+                            <label class="text-[9px]">Monograma (2-4 letras)</label>
+                            <input type="text" class="eco-placa-monograma" value="${p.monograma || ''}" placeholder="TEM" maxlength="4">
+                        </div>
+                        <div>
+                            <label class="text-[9px]">Número / ID</label>
+                            <input type="text" class="eco-placa-numero" value="${p.numero || ''}" placeholder="I">
+                        </div>
+                        <div>
+                            <label class="text-[9px]">Nombre del Perfil</label>
+                            <input type="text" class="eco-placa-nombre" value="${p.nombre || ''}" placeholder="Especialidad I">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[9px]">Descripción Corta</label>
+                            <input type="text" class="eco-placa-descripcion" value="${p.descripcion || ''}" placeholder="Perfil profesional">
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderPlacasEco() {
+            const grid = document.getElementById('eco-tp-placas-grid');
+            const counter = document.getElementById('eco-tp-count');
+            if (!grid) return;
+            if (counter) counter.innerText = placasEcoCache.length;
+            grid.innerHTML = placasEcoCache.map((p, idx) => crearPlacaCardHTML(idx, p)).join('')
+                || '<p class="col-span-full text-center text-slate-500 text-xs py-4">No hay placas definidas. Se usarán los valores por defecto.</p>';
+            lucide.createIcons();
+        }
+
+        function agregarPlacaEco() {
+            if (placasEcoCache.length >= 6) {
+                alert('Máximo 6 placas permitidas.');
+                return;
+            }
+            placasEcoCache.push({ ...ECO_PLACA_DEFAULT, numero: String(placasEcoCache.length + 1), monograma: '0' + (placasEcoCache.length + 1) });
+            renderPlacasEco();
+        }
+
+        function eliminarPlacaEco(idx) {
+            if (!confirm('¿Eliminar esta placa?')) return;
+            placasEcoCache.splice(idx, 1);
+            renderPlacasEco();
+        }
+
+        function renderModulosEco(modulosData) {
+            const grid = document.getElementById('eco-modulos-grid');
+            if (!grid) return;
+            const datos = modulosData && modulosData.length ? modulosData : ECO_MODULOS_DEFAULT;
+            grid.innerHTML = datos.map(m => `
+                <div class="bg-black/30 p-4 rounded-xl border border-white/10" data-modulo-num="${m.num}">
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
+                        <span class="bg-wlPrimary/30 text-wlPrimary text-[10px] font-black px-2 py-0.5 rounded border border-wlPrimary/30">MÓDULO ${m.num}</span>
+                        <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-slate-500 ml-auto"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="text-[9px]">Título</label>
+                            <input type="text" class="eco-mod-titulo" value="${m.titulo || ''}">
+                        </div>
+                        <div>
+                            <label class="text-[9px]">Subtítulo</label>
+                            <input type="text" class="eco-mod-sub" value="${m.sub || ''}">
+                        </div>
+                        <div>
+                            <label class="text-[9px]">Ícono (Lucide)</label>
+                            <input type="text" class="eco-mod-icono" value="${m.icono || ''}" placeholder="shield, network, award">
+                        </div>
+                    </div>
+                </div>`).join('');
+            lucide.createIcons();
+        }
+
+        async function cargarEcosistemaForm() {
+            try {
+                const { data, error } = await window.db
+                    .from('renmcycf_contenido')
+                    .select('clave, valor')
+                    .eq('tenant_id', window.currentTenantId);
+                
+                if (error) throw error;
+
+                const getVal = (clave, fallback = '') => {
+                    const item = data?.find(d => d.clave === clave);
+                    return (item && item.valor) ? item.valor : fallback;
+                };
+
+                document.getElementById('eco-tp-titulo').value = getVal('test_perfil_titulo', '¿Qué tipo de profesional sos?');
+                document.getElementById('eco-tp-subtitulo').value = getVal('test_perfil_subtitulo', 'Tu formación y experiencia definen tu perfil.');
+                document.getElementById('eco-tp-palabra').value = getVal('test_perfil_placa_palabra', 'Insignia');
+
+                let placas = [];
+                try {
+                    const placasRaw = getVal('test_perfil_placas', '');
+                    if (placasRaw) placas = typeof placasRaw === 'string' ? JSON.parse(placasRaw) : placasRaw;
+                    if (!Array.isArray(placas)) placas = [];
+                } catch(e) { placas = []; }
+
+                placasEcoCache = placas;
+                renderPlacasEco();
+
+                const modulos = [];
+                for (let i = 1; i <= 6; i++) {
+                    const titulo = getVal(`eco_modulo_${i}_titulo`, ECO_MODULOS_DEFAULT[i-1].titulo);
+                    const sub = getVal(`eco_modulo_${i}_sub`, ECO_MODULOS_DEFAULT[i-1].sub);
+                    const icono = getVal(`eco_modulo_${i}_icono`, ECO_MODULOS_DEFAULT[i-1].icono);
+                    modulos.push({ num: i, titulo, sub, icono });
+                }
+                renderModulosEco(modulos);
+
+                document.getElementById('eco-biblio-tesis-titulo').value = getVal('biblio_tesis_titulo', 'Investigaciones de Matriculados (Tesis)');
+
+            } catch(err) {
+                console.error('Error cargando ecosistema:', err);
+                alert('Error al cargar la configuración: ' + err.message);
+            }
+        }
+
+        async function guardarEcosistema(e) {
+            if (e) e.preventDefault();
+            const btn = document.getElementById('btn-guardar-eco');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> GUARDANDO...';
+            btn.disabled = true;
+            lucide.createIcons();
+
+            try {
+                const payload = [];
+
+                payload.push({ tenant_id: window.currentTenantId, clave: 'test_perfil_titulo', valor: document.getElementById('eco-tp-titulo').value.trim(), tipo: 'texto' });
+                payload.push({ tenant_id: window.currentTenantId, clave: 'test_perfil_subtitulo', valor: document.getElementById('eco-tp-subtitulo').value.trim(), tipo: 'texto' });
+                payload.push({ tenant_id: window.currentTenantId, clave: 'test_perfil_placa_palabra', valor: document.getElementById('eco-tp-palabra').value.trim() || 'Insignia', tipo: 'texto' });
+
+                const placasNuevas = [];
+                document.querySelectorAll('#eco-tp-placas-grid [data-placa-idx]').forEach(card => {
+                    placasNuevas.push({
+                        icono: card.querySelector('.eco-placa-icono')?.value.trim() || 'award',
+                        monograma: card.querySelector('.eco-placa-monograma')?.value.trim() || '',
+                        numero: card.querySelector('.eco-placa-numero')?.value.trim() || '',
+                        nombre: card.querySelector('.eco-placa-nombre')?.value.trim() || '',
+                        descripcion: card.querySelector('.eco-placa-descripcion')?.value.trim() || ''
+                    });
+                });
+                payload.push({ tenant_id: window.currentTenantId, clave: 'test_perfil_placas', valor: JSON.stringify(placasNuevas), tipo: 'json' });
+
+                document.querySelectorAll('#eco-modulos-grid [data-modulo-num]').forEach(card => {
+                    const num = card.getAttribute('data-modulo-num');
+                    payload.push({ tenant_id: window.currentTenantId, clave: `eco_modulo_${num}_titulo`, valor: card.querySelector('.eco-mod-titulo')?.value.trim() || '', tipo: 'texto' });
+                    payload.push({ tenant_id: window.currentTenantId, clave: `eco_modulo_${num}_sub`, valor: card.querySelector('.eco-mod-sub')?.value.trim() || '', tipo: 'texto' });
+                    payload.push({ tenant_id: window.currentTenantId, clave: `eco_modulo_${num}_icono`, valor: card.querySelector('.eco-mod-icono')?.value.trim() || 'award', tipo: 'texto' });
+                });
+
+                payload.push({ tenant_id: window.currentTenantId, clave: 'biblio_tesis_titulo', valor: document.getElementById('eco-biblio-tesis-titulo').value.trim() || '', tipo: 'texto' });
+
+                const { error } = await window.db
+                    .from('renmcycf_contenido')
+                    .upsert(payload, { onConflict: 'clave,tenant_id' });
+
+                if (error) throw error;
+                alert('✅ Ecosistema y Perfil guardados correctamente.');
+            } catch(err) {
+                console.error('Error guardando ecosistema:', err);
+                alert('Error al guardar: ' + err.message);
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+                lucide.createIcons();
+            }
         }
 
     </script>
