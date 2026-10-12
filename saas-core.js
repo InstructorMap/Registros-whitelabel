@@ -1,12 +1,67 @@
+// ==============================================================================
+// ASARI SAAS CORE - BOOTSTRAPPER MULTI-TENANT UNIVERSAL
+// ==============================================================================
+
+// 1. CREDENCIALES GLOBALES (Centralizadas)
+const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
+const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
+
+// ==============================================================================
+// 1.1 INICIALIZACIÓN GLOBAL DE SUPABASE (Blindada)
+// ==============================================================================
+// Verifica que el SDK de Supabase esté cargado vía CDN antes de instanciar.
+// Si window.db ya existe (por ejemplo, otro script lo inicializó), lo respeta.
+if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
+    console.error(
+        "❌ [ASARI CORE] Supabase SDK no detectado. " +
+        "Asegurate de incluir en el HTML, ANTES de este script:\n" +
+        '  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>'
+    );
+    // No lanzamos throw para no romper la carga del resto de la página.
+    // Cualquier intento posterior de window.db.from(...) fallará explícitamente.
+} else if (!window.db) {
+    try {
+        window.db = window.supabase.createClient(PROJECT_URL, PUBLIC_KEY);
+        console.log("✅ [ASARI CORE] Cliente Supabase inicializado globalmente.");
+    } catch (initErr) {
+        console.error("❌ [ASARI CORE] Error al inicializar Supabase:", initErr);
+    }
+} else {
+    console.log("ℹ️ [ASARI CORE] window.db ya estaba definido. Se reutiliza la instancia existente.");
+}
+
+// Estado global del tenant (se completa en initTenant)
+window.currentTenantId   = null;
+window.tenantConfigGlobal = null;
+window.tenantSlugActivo  = 'renmcycf';
+
+// Helper para Tailwind (Convierte HEX a RGB para que funcionen las opacidades bg-wlPrimary/50)
+const hexToRgbString = (hex) => {
+    if (!hex) return '15 23 42';
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    return `${parseInt(hex.substring(0,2), 16)} ${parseInt(hex.substring(2,4), 16)} ${parseInt(hex.substring(4,6), 16)}`;
+};
+
 // Helper para limpiar hostname (quita www.)
 const limpiarHostname = (host) => (host || '').replace(/^www\./i, '').toLowerCase().trim();
 
-// 2. FUNCIÓN UNIVERSAL DE INICIALIZACIÓN
+// ==============================================================================
+// 2. FUNCIÓN UNIVERSAL DE INICIALIZACIÓN DEL TENANT
+// ==============================================================================
 window.initTenant = async function() {
     try {
-        const urlParams = new URLSearchParams(window.location.search);
+        // Guard clause: si window.db no está disponible, no seguimos
+        if (!window.db) {
+            throw new Error(
+                'El cliente de Supabase no está inicializado. ' +
+                'Verificá que el script CDN de @supabase/supabase-js esté cargado antes de saas-core.js.'
+            );
+        }
+
+        const urlParams  = new URLSearchParams(window.location.search);
         const hostnameRaw = window.location.hostname;
-        const hostname = limpiarHostname(hostnameRaw);
+        const hostname    = limpiarHostname(hostnameRaw);
 
         // Lista de hostings que usan paths en vez de subdominios reales
         const esHostingConPath =
@@ -18,7 +73,7 @@ window.initTenant = async function() {
             hostname.includes('pages.dev');
 
         let tenantConfig = null;
-        let tenantSlug = null;
+        let tenantSlug   = null;
 
         // ─────────────────────────────────────────────────────────────
         // PRIORIDAD 1: Force Mode (?tenant=slug en la URL)
@@ -62,7 +117,7 @@ window.initTenant = async function() {
 
             if (data) {
                 tenantConfig = data;
-                tenantSlug = data.slug;
+                tenantSlug   = data.slug;
                 console.log("✅ Tenant encontrado por dominio:", tenantSlug);
             }
         }
@@ -71,7 +126,7 @@ window.initTenant = async function() {
         // PRIORIDAD 3: Caché (sessionStorage / localStorage)
         // ─────────────────────────────────────────────────────────────
         if (!tenantConfig) {
-            const slugCache = sessionStorage.getItem('saas_tenant_slug') 
+            const slugCache = sessionStorage.getItem('saas_tenant_slug')
                            || localStorage.getItem('saas_tenant_slug');
             if (slugCache) {
                 tenantSlug = slugCache;
@@ -119,13 +174,13 @@ window.initTenant = async function() {
         }
 
         // Guardar estado global
-        window.currentTenantId = tenantConfig.id;
+        window.currentTenantId    = tenantConfig.id;
         window.tenantConfigGlobal = tenantConfig;
-        window.tenantSlugActivo = tenantConfig.slug;
+        window.tenantSlugActivo   = tenantConfig.slug;
         sessionStorage.setItem('saas_tenant_slug', tenantConfig.slug);
         localStorage.setItem('saas_tenant_slug', tenantConfig.slug);
 
-        // Fallback para HTMLs
+        // Fallback para HTMLs (por si renmcycf_config aún no existe)
         window._saasTenantFallback = {
             logo_url: tenantConfig.logo_url || null,
             hero_image_url: tenantConfig.hero_image_url || null
@@ -133,15 +188,17 @@ window.initTenant = async function() {
 
         console.log("✅ Tenant cargado:", tenantConfig.nombre_institucion, "| ID:", tenantConfig.id);
 
-        // 3. INYECCIÓN DE BRANDING
-        document.documentElement.style.setProperty('--wl-primary', hexToRgbString(tenantConfig.color_primario || '#0f172a'));
-        document.documentElement.style.setProperty('--wl-secondary', hexToRgbString(tenantConfig.color_secundario || '#d4af37'));
-        document.documentElement.style.setProperty('--wl-tertiary', hexToRgbString(tenantConfig.color_terciario || '#1e3a8a'));
+        // 3. INYECCIÓN DE BRANDING (Paleta de colores universal)
+        document.documentElement.style.setProperty('--wl-primary',    hexToRgbString(tenantConfig.color_primario   || '#0f172a'));
+        document.documentElement.style.setProperty('--wl-secondary',  hexToRgbString(tenantConfig.color_secundario || '#d4af37'));
+        document.documentElement.style.setProperty('--wl-tertiary',   hexToRgbString(tenantConfig.color_terciario  || '#1e3a8a'));
         document.documentElement.style.setProperty('--wl-background', hexToRgbString(tenantConfig.color_background || '#f1f5f9'));
 
         // 4. INYECCIÓN DE TEXTOS GLOBALES
         const institucionNombres = document.querySelectorAll(
-            '.wl-institucion-nombre, .wl-institucion-nombre-corto, #wl-institucion-nombre-top, #wl-institucion-nombre-footer, #wl-title-institucion, #sidebar-institucion-nombre, #login-institucion-nombre, #doc-instituto, #modal-institucion-nombre'
+            '.wl-institucion-nombre, .wl-institucion-nombre-corto, #wl-institucion-nombre-top, ' +
+            '#wl-institucion-nombre-footer, #wl-title-institucion, #sidebar-institucion-nombre, ' +
+            '#login-institucion-nombre, #doc-instituto, #modal-institucion-nombre'
         );
         institucionNombres.forEach(el => {
             if (el) {
@@ -162,7 +219,9 @@ window.initTenant = async function() {
             document.title = tenantConfig.nombre_institucion;
         }
 
-        // 5. AUTO-PROPAGACIÓN EN ENLACES
+        // 5. AUTO-PROPAGACIÓN EN ENLACES (Magia SEO/UX)
+        // Agarra todos los links internos (<a>) y les inyecta el ?tenant= dinámicamente.
+        // ⚠️ EXCEPCIÓN: No toca enlaces que ya tengan ?tenant= definido ni anchors.
         document.querySelectorAll('a').forEach(link => {
             const href = link.getAttribute('href');
             if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('mailto') && !href.startsWith('tel')) {
@@ -178,6 +237,7 @@ window.initTenant = async function() {
             }
         });
 
+        // Liberar el loader (para HTMLs que usan body.ready)
         document.body.classList.add('ready');
         return tenantConfig;
 
@@ -192,4 +252,12 @@ window.initTenant = async function() {
             </div>`;
         return null;
     }
+};
+
+// ==============================================================================
+// 3. UTILIDADES GLOBALES DE NAVEGACIÓN
+// ==============================================================================
+// Función global para redirecciones por JS (window.location)
+window.navegarSaaS = function(paginaDestino) {
+    window.location.href = `${paginaDestino}?tenant=${window.tenantSlugActivo}`;
 };
