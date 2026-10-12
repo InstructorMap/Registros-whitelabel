@@ -963,10 +963,10 @@
                         </td>
                         <td>
                             <div class="flex gap-1">
-                                <span class="w-5 h-5 rounded border" style="background: ${t.color_primario || '#0f172a'}; border-color: var(--border-glass);" title="Primario"></span>
-                                <span class="w-5 h-5 rounded border" style="background: ${t.color_secundario || '#d4af37'}; border-color: var(--border-glass);" title="Secundario"></span>
-                                <span class="w-5 h-5 rounded border" style="background: ${t.color_terciario || '#1e3a8a'}; border-color: var(--border-glass);" title="Terciario"></span>
-                                <span class="w-5 h-5 rounded border" style="background: ${t.color_background || '#f8fafc'}; border-color: var(--border-glass);" title="Fondo"></span>
+                                <span class="w-5 h-5 rounded border" style="background: ${t.color_primario || '#0f172a'}; border-color: var(--border-glass);" title="Primario: ${t.color_primario || '#0f172a'}"></span>
+                                <span class="w-5 h-5 rounded border" style="background: ${t.color_secundario || '#d4af37'}; border-color: var(--border-glass);" title="Secundario: ${t.color_secundario || '#d4af37'}"></span>
+                                <span class="w-5 h-5 rounded border" style="background: ${t.color_terciario || '#1e3a8a'}; border-color: var(--border-glass);" title="Terciario: ${t.color_terciario || '#1e3a8a'}"></span>
+                                <span class="w-5 h-5 rounded border" style="background: ${t.color_background || '#f8fafc'}; border-color: var(--border-glass);" title="Fondo: ${t.color_background || '#f8fafc'}"></span>
                             </div>
                         </td>
                         <td>
@@ -1030,7 +1030,7 @@
         }
 
         // ============================================================
-        // 3. CREAR / ACTUALIZAR TENANT (CON SEED + LIMPIEZA DE LOGO HUÉRFANO)
+        // 3. CREAR / ACTUALIZAR TENANT (CON DIAGNÓSTICO AVANZADO)
         // ============================================================
         async function guardarTenant(e) {
             e.preventDefault();
@@ -1046,6 +1046,15 @@
             const colorSecondary = document.getElementById('tenant-color-secondary').value;
             const colorTertiary = document.getElementById('tenant-color-tertiary').value;
             const colorBackground = document.getElementById('tenant-color-background').value;
+            
+            // ✅ LOG DIAGNÓSTICO 1: Ver qué colores estamos leyendo del formulario
+            console.log('🎨 [DIAG] Colores leídos del formulario:', {
+                primario: colorPrimary,
+                secundario: colorSecondary,
+                terciario: colorTertiary,
+                background: colorBackground,
+                modo: esEdicion ? 'EDICIÓN' : 'CREACIÓN'
+            });
             
             // Validaciones
             if (!nombre) { alert('El nombre de la institución es obligatorio.'); return; }
@@ -1120,15 +1129,73 @@
                     color_background: colorBackground
                 };
                 
+                // ✅ LOG DIAGNÓSTICO 2: Ver el payload exacto que se envía
+                console.log('📦 [DIAG] Payload a enviar:', payload);
+                
                 if (esEdicion) {
-                    // UPDATE
+                    // ============================================================
+                    // UPDATE CON VERIFICACIÓN DE PERSISTENCIA
+                    // ============================================================
                     agregarLog(`actualizando tenant ${tenantId.substring(0, 8)}...`);
                     
-                    const { error: upErr } = await db.from('saas_tenants').update(payload).eq('id', tenantId);
-                    if (upErr) throw upErr;
+                    // ✅ CAMBIO CLAVE: Usar .select() para obtener las filas actualizadas
+                    const { data: updatedRows, error: upErr, count } = await db
+                        .from('saas_tenants')
+                        .update(payload)
+                        .eq('id', tenantId)
+                        .select();  // ⚠️ ESTO ES LO QUE FALTABA
+                    
+                    // ✅ LOG DIAGNÓSTICO 3: Ver el resultado exacto del UPDATE
+                    console.log('🔄 [DIAG] Resultado del UPDATE:', {
+                        error: upErr,
+                        rowsAffected: updatedRows ? updatedRows.length : 0,
+                        count: count,
+                        data: updatedRows
+                    });
+                    
+                    if (upErr) {
+                        throw new Error(`Error en UPDATE: ${upErr.message} (code: ${upErr.code})`);
+                    }
+                    
+                    // ✅ VERIFICACIÓN CRÍTICA: Si afectó 0 filas, algo está bloqueando
+                    if (!updatedRows || updatedRows.length === 0) {
+                        throw new Error(
+                            'El UPDATE afectó 0 filas. Causa probable: RLS bloquea la operación o el ID no existe. ' +
+                            'Verificá las policies de RLS en la tabla saas_tenants.'
+                        );
+                    }
+                    
+                    // ✅ VERIFICACIÓN ADICIONAL: Comparar colores guardados vs enviados
+                    const savedRow = updatedRows[0];
+                    const coloresGuardados = {
+                        primario: savedRow.color_primario,
+                        secundario: savedRow.color_secundario,
+                        terciario: savedRow.color_terciario,
+                        background: savedRow.color_background
+                    };
+                    
+                    console.log('✅ [DIAG] Colores guardados en DB:', coloresGuardados);
+                    
+                    const hayMismatch = 
+                        savedRow.color_primario !== colorPrimary ||
+                        savedRow.color_secundario !== colorSecondary ||
+                        savedRow.color_terciario !== colorTertiary ||
+                        savedRow.color_background !== colorBackground;
+                    
+                    if (hayMismatch) {
+                        console.warn('⚠️ [DIAG] MISMATCH detectado: los colores guardados NO coinciden con los enviados');
+                        throw new Error('Los colores no se guardaron correctamente. Verificá los logs de la consola.');
+                    }
                     
                     agregarLog(`✅ ${nombre} actualizado exitosamente`, 'success');
                     mostrarToast(`✅ ${nombre} actualizado correctamente`, 'success');
+                    
+                    // Recargar cache de tenants
+                    await cargarTenants();
+                    
+                    // ✅ Log final de verificación post-recarga
+                    const tenantRecargado = tenantsCache.find(t => t.id === tenantId);
+                    console.log('🔍 [DIAG] Tenant recargado desde DB:', tenantRecargado);
                     
                     cancelarEdicion();
                 } else {
@@ -1146,10 +1213,9 @@
                     
                     if (insErr) throw insErr;
                     
+                    console.log('✅ [DIAG] Tenant creado:', newTenant);
+                    
                     // SEED OBLIGATORIO: Crear configuración base para que panel.html no colapse
-                    // IMPORTANTE: NO copiamos logo_url ni hero_image_url acá.
-                    // El director es quien setea su logo y hero desde su propio panel.
-                    // saas_tenants.logo_url queda como fallback hasta que el director lo cambie.
                     agregarLog(`inyectando configuración base → renmcycf_config`);
                     
                     const { error: seedErr } = await db.from('renmcycf_config').insert([{
@@ -1170,13 +1236,12 @@
                     agregarLog(`✅ ${nombre} desplegado exitosamente`, 'success');
                     mostrarToast(`✅ ${nombre} desplegado correctamente`, 'success');
                     
+                    await cargarTenants();
                     cancelarEdicion();
                 }
                 
-                await cargarTenants();
-                
             } catch (err) {
-                console.error('Error guardando tenant:', err);
+                console.error('❌ Error guardando tenant:', err);
                 agregarLog(`❌ ERROR: ${err.message}`, 'error');
                 mostrarToast(`Error: ${err.message}`, 'error');
                 
@@ -1241,9 +1306,24 @@
             editandoTenantId = tenantId;
             logoUrlOriginal = tenant.logo_url;
             
+            // ✅ LOG: Ver qué datos se cargan al abrir el modal
+            console.log('✏️ [DIAG] Cargando tenant para editar:', {
+                id: tenant.id,
+                nombre: tenant.nombre_institucion,
+                slug: tenant.slug,
+                colores: {
+                    primario: tenant.color_primario,
+                    secundario: tenant.color_secundario,
+                    terciario: tenant.color_terciario,
+                    background: tenant.color_background
+                }
+            });
+            
             document.getElementById('tenant-id').value = tenant.id;
             document.getElementById('tenant-nombre').value = tenant.nombre_institucion || '';
             document.getElementById('tenant-slug').value = tenant.slug || '';
+            
+            // ✅ Cargar colores con valores por defecto robustos
             document.getElementById('tenant-color-primary').value = tenant.color_primario || '#0f172a';
             document.getElementById('tenant-color-secondary').value = tenant.color_secundario || '#d4af37';
             document.getElementById('tenant-color-tertiary').value = tenant.color_terciario || '#1e3a8a';
