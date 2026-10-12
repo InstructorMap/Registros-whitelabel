@@ -1,99 +1,139 @@
-// ==============================================================================
-// ASARI SAAS CORE - BOOTSTRAPPER MULTI-TENANT UNIVERSAL
-// ==============================================================================
-
-// 1. CREDENCIALES GLOBALES (Centralizadas)
-const PROJECT_URL = 'https://udvpgthitdxtkicenits.supabase.co';
-const PUBLIC_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdnBndGhpdGR4dGtpY2VuaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5OTYxMzAsImV4cCI6MjEwNDU3MjEzMH0.M6sokWDtgis7wPydD-y9OoMYWQSy1DQaQ08LmNQnbtc';
-
-// Exportamos a window para que los HTML puedan usar la DB sin re-declararla
-window.db = supabase.createClient(PROJECT_URL, PUBLIC_KEY);
-window.currentTenantId = null;
-window.tenantConfigGlobal = null;
-window.tenantSlugActivo = 'renmcycf';
-
-// Helper para Tailwind (Convierte HEX a RGB para que funcionen las opacidades bg-wlPrimary/50)
-const hexToRgbString = (hex) => {
-    if (!hex) return '15 23 42';
-    hex = hex.replace('#', '');
-    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-    return `${parseInt(hex.substring(0,2), 16)} ${parseInt(hex.substring(2,4), 16)} ${parseInt(hex.substring(4,6), 16)}`;
-};
+// Helper para limpiar hostname (quita www.)
+const limpiarHostname = (host) => (host || '').replace(/^www\./i, '').toLowerCase().trim();
 
 // 2. FUNCIÓN UNIVERSAL DE INICIALIZACIÓN
 window.initTenant = async function() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        const hostname = window.location.hostname;
-        
-        // A. Buscar en la URL explícitamente (?tenant=remaep)
-        let tenantSlug = urlParams.get('tenant');
+        const hostnameRaw = window.location.hostname;
+        const hostname = limpiarHostname(hostnameRaw);
 
-        // B. Buscar en el subdominio (si tenés dominio propio a futuro)
-        // ⚠️ CRÍTICO: Excluimos GitHub Pages, Vercel, Netlify y otros hostings
-        // que usan paths en vez de subdominios reales
-        if (!tenantSlug) {
-            const esHostingConPath = hostname.includes('github.io') || 
-                                     hostname.includes('vercel.app') || 
-                                     hostname.includes('netlify.app') ||
-                                     hostname.includes('pages.dev') ||
-                                     hostname === 'localhost' || 
-                                     hostname === '127.0.0.1';
-            
-            if (!esHostingConPath) {
-                const parts = hostname.split('.');
-                if (parts.length > 2) {
-                    tenantSlug = parts[0];
-                }
+        // Lista de hostings que usan paths en vez de subdominios reales
+        const esHostingConPath =
+            hostname === 'localhost' ||
+            hostname === '127.0.0.1' ||
+            hostname.includes('github.io') ||
+            hostname.includes('vercel.app') ||
+            hostname.includes('netlify.app') ||
+            hostname.includes('pages.dev');
+
+        let tenantConfig = null;
+        let tenantSlug = null;
+
+        // ─────────────────────────────────────────────────────────────
+        // PRIORIDAD 1: Force Mode (?tenant=slug en la URL)
+        // ─────────────────────────────────────────────────────────────
+        const slugParam = urlParams.get('tenant');
+        if (slugParam && slugParam.trim() !== '') {
+            tenantSlug = slugParam.trim().toLowerCase();
+            console.log("🎯 [P1] Force Mode por query string:", tenantSlug);
+
+            const { data, error } = await window.db
+                .from('saas_tenants')
+                .select('*')
+                .eq('slug', tenantSlug)
+                .eq('activo', true)
+                .maybeSingle();
+
+            if (error) {
+                console.error("❌ Error en consulta por slug:", error);
+                throw new Error(`Error de conexión: ${error.message}`);
+            }
+            tenantConfig = data;
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // PRIORIDAD 2: Custom Domain (dominio_personalizado)
+        // ─────────────────────────────────────────────────────────────
+        if (!tenantConfig && !esHostingConPath && hostname) {
+            console.log("🌐 [P2] Buscando tenant por dominio personalizado:", hostname);
+
+            const { data, error } = await window.db
+                .from('saas_tenants')
+                .select('*')
+                .eq('dominio_personalizado', hostname)
+                .eq('activo', true)
+                .maybeSingle();
+
+            if (error) {
+                console.error("❌ Error en consulta por dominio:", error);
+                throw new Error(`Error de conexión: ${error.message}`);
+            }
+
+            if (data) {
+                tenantConfig = data;
+                tenantSlug = data.slug;
+                console.log("✅ Tenant encontrado por dominio:", tenantSlug);
             }
         }
 
-        // C. Buscar en la sesión (Magia B2B: Mantiene el tenant vivo aunque cambies de página sin ?tenant=)
-        if (!tenantSlug) {
-            tenantSlug = sessionStorage.getItem('saas_tenant_slug');
-        }
-
-        // D. Fallback absoluto
-        if (!tenantSlug) {
-            tenantSlug = 'renmcycf';
-        }
-
-        console.log("🚀 SaaS Core -> Cargando entorno para:", tenantSlug);
-
-        // Consultar a Supabase
-        const { data: tenantConfig, error } = await window.db
-            .from('saas_tenants')
-            .select('*')
-            .eq('slug', tenantSlug)
-            .eq('activo', true)
-            .maybeSingle();
-
-        if (error) {
-            console.error("❌ Error en consulta:", error);
-            throw new Error(`Error de conexión: ${error.message}`);
-        }
-
+        // ─────────────────────────────────────────────────────────────
+        // PRIORIDAD 3: Caché (sessionStorage / localStorage)
+        // ─────────────────────────────────────────────────────────────
         if (!tenantConfig) {
-            console.warn("⚠️ Tenant no encontrado:", tenantSlug);
-            throw new Error(`La institución "${tenantSlug}" no está registrada o se encuentra inactiva.`);
+            const slugCache = sessionStorage.getItem('saas_tenant_slug') 
+                           || localStorage.getItem('saas_tenant_slug');
+            if (slugCache) {
+                tenantSlug = slugCache;
+                console.log("💾 [P3] Usando slug desde caché:", tenantSlug);
+
+                const { data, error } = await window.db
+                    .from('saas_tenants')
+                    .select('*')
+                    .eq('slug', tenantSlug)
+                    .eq('activo', true)
+                    .maybeSingle();
+
+                if (error) {
+                    console.error("❌ Error en consulta por caché:", error);
+                    throw new Error(`Error de conexión: ${error.message}`);
+                }
+                tenantConfig = data;
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // PRIORIDAD 4: Fallback absoluto
+        // ─────────────────────────────────────────────────────────────
+        if (!tenantConfig) {
+            tenantSlug = 'renmcycf';
+            console.log("🆘 [P4] Fallback absoluto a:", tenantSlug);
+
+            const { data, error } = await window.db
+                .from('saas_tenants')
+                .select('*')
+                .eq('slug', tenantSlug)
+                .eq('activo', true)
+                .maybeSingle();
+
+            if (error) throw new Error(`Error de conexión: ${error.message}`);
+            tenantConfig = data;
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // VALIDACIÓN FINAL
+        // ─────────────────────────────────────────────────────────────
+        if (!tenantConfig) {
+            console.warn("⚠️ Tenant no encontrado. Hostname:", hostname, "| Slug:", tenantSlug);
+            throw new Error(`La institución "${tenantSlug || hostname}" no está registrada o se encuentra inactiva.`);
         }
 
         // Guardar estado global
         window.currentTenantId = tenantConfig.id;
         window.tenantConfigGlobal = tenantConfig;
-        window.tenantSlugActivo = tenantSlug;
-        sessionStorage.setItem('saas_tenant_slug', tenantSlug);
+        window.tenantSlugActivo = tenantConfig.slug;
+        sessionStorage.setItem('saas_tenant_slug', tenantConfig.slug);
+        localStorage.setItem('saas_tenant_slug', tenantConfig.slug);
 
-        // ✅ EXPONER FALLBACK para que los HTML puedan usar logo/hero aunque
-        // renmcycf_config no exista todavía (tenant recién creado)
+        // Fallback para HTMLs
         window._saasTenantFallback = {
             logo_url: tenantConfig.logo_url || null,
             hero_image_url: tenantConfig.hero_image_url || null
         };
 
-        console.log("✅ Tenant cargado:", tenantConfig.nombre_institucion);
+        console.log("✅ Tenant cargado:", tenantConfig.nombre_institucion, "| ID:", tenantConfig.id);
 
-        // 3. INYECCIÓN DE BRANDING (Paleta de colores universal)
+        // 3. INYECCIÓN DE BRANDING
         document.documentElement.style.setProperty('--wl-primary', hexToRgbString(tenantConfig.color_primario || '#0f172a'));
         document.documentElement.style.setProperty('--wl-secondary', hexToRgbString(tenantConfig.color_secundario || '#d4af37'));
         document.documentElement.style.setProperty('--wl-tertiary', hexToRgbString(tenantConfig.color_terciario || '#1e3a8a'));
@@ -106,7 +146,6 @@ window.initTenant = async function() {
         institucionNombres.forEach(el => {
             if (el) {
                 const texto = tenantConfig.nombre_institucion || 'Registro';
-                // Si es un elemento "corto", truncamos el nombre si es muy largo
                 if (el.classList.contains('wl-institucion-nombre-corto') && texto.length > 20) {
                     el.innerText = texto.substring(0, 18) + '…';
                 } else {
@@ -123,16 +162,12 @@ window.initTenant = async function() {
             document.title = tenantConfig.nombre_institucion;
         }
 
-        // 5. AUTO-PROPAGACIÓN EN ENLACES (Magia SEO/UX)
-        // Agarra todos los links internos (<a>) y les inyecta el ?tenant= dinámicamente.
-        // ⚠️ EXCEPCIÓN: No toca enlaces que ya tengan ?tenant= definido ni anchors.
+        // 5. AUTO-PROPAGACIÓN EN ENLACES
         document.querySelectorAll('a').forEach(link => {
             const href = link.getAttribute('href');
-            // Solo modificamos enlaces internos (que no vayan a http, mailto, tel, #)
             if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('mailto') && !href.startsWith('tel')) {
                 try {
                     const url = new URL(link.href);
-                    // Solo agregar tenant si no lo tiene ya
                     if (!url.searchParams.has('tenant')) {
                         url.searchParams.set('tenant', window.tenantSlugActivo);
                         link.href = url.toString();
@@ -143,7 +178,6 @@ window.initTenant = async function() {
             }
         });
 
-        // Liberar el loader (para HTMLs que usan body.ready)
         document.body.classList.add('ready');
         return tenantConfig;
 
@@ -158,9 +192,4 @@ window.initTenant = async function() {
             </div>`;
         return null;
     }
-};
-
-// Función global para redirecciones por JS (window.location)
-window.navegarSaaS = function(paginaDestino) {
-    window.location.href = `${paginaDestino}?tenant=${window.tenantSlugActivo}`;
 };
