@@ -30,10 +30,21 @@ window.initTenant = async function() {
         let tenantSlug = urlParams.get('tenant');
 
         // B. Buscar en el subdominio (si tenés dominio propio a futuro)
+        // ⚠️ CRÍTICO: Excluimos GitHub Pages, Vercel, Netlify y otros hostings
+        // que usan paths en vez de subdominios reales
         if (!tenantSlug) {
-            const parts = hostname.split('.');
-            if (parts.length > 2 && !hostname.includes('github.io') && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-                tenantSlug = parts[0];
+            const esHostingConPath = hostname.includes('github.io') || 
+                                     hostname.includes('vercel.app') || 
+                                     hostname.includes('netlify.app') ||
+                                     hostname.includes('pages.dev') ||
+                                     hostname === 'localhost' || 
+                                     hostname === '127.0.0.1';
+            
+            if (!esHostingConPath) {
+                const parts = hostname.split('.');
+                if (parts.length > 2) {
+                    tenantSlug = parts[0];
+                }
             }
         }
 
@@ -57,13 +68,30 @@ window.initTenant = async function() {
             .eq('activo', true)
             .maybeSingle();
 
-        if (error || !tenantConfig) throw new Error("Institución no encontrada.");
+        if (error) {
+            console.error("❌ Error en consulta:", error);
+            throw new Error(`Error de conexión: ${error.message}`);
+        }
+
+        if (!tenantConfig) {
+            console.warn("⚠️ Tenant no encontrado:", tenantSlug);
+            throw new Error(`La institución "${tenantSlug}" no está registrada o se encuentra inactiva.`);
+        }
 
         // Guardar estado global
         window.currentTenantId = tenantConfig.id;
         window.tenantConfigGlobal = tenantConfig;
         window.tenantSlugActivo = tenantSlug;
         sessionStorage.setItem('saas_tenant_slug', tenantSlug);
+
+        // ✅ EXPONER FALLBACK para que los HTML puedan usar logo/hero aunque
+        // renmcycf_config no exista todavía (tenant recién creado)
+        window._saasTenantFallback = {
+            logo_url: tenantConfig.logo_url || null,
+            hero_image_url: tenantConfig.hero_image_url || null
+        };
+
+        console.log("✅ Tenant cargado:", tenantConfig.nombre_institucion);
 
         // 3. INYECCIÓN DE BRANDING (Paleta de colores universal)
         document.documentElement.style.setProperty('--wl-primary', hexToRgbString(tenantConfig.color_primario || '#0f172a'));
@@ -73,10 +101,18 @@ window.initTenant = async function() {
 
         // 4. INYECCIÓN DE TEXTOS GLOBALES
         const institucionNombres = document.querySelectorAll(
-            '.wl-institucion-nombre, .wl-institucion-nombre-corto, #wl-institucion-nombre-top, #wl-institucion-nombre-footer, #wl-title-institucion, #sidebar-institucion-nombre, #login-institucion-nombre, #doc-instituto'
+            '.wl-institucion-nombre, .wl-institucion-nombre-corto, #wl-institucion-nombre-top, #wl-institucion-nombre-footer, #wl-title-institucion, #sidebar-institucion-nombre, #login-institucion-nombre, #doc-instituto, #modal-institucion-nombre'
         );
         institucionNombres.forEach(el => {
-            if (el) el.innerText = tenantConfig.nombre_institucion;
+            if (el) {
+                const texto = tenantConfig.nombre_institucion || 'Registro';
+                // Si es un elemento "corto", truncamos el nombre si es muy largo
+                if (el.classList.contains('wl-institucion-nombre-corto') && texto.length > 20) {
+                    el.innerText = texto.substring(0, 18) + '…';
+                } else {
+                    el.innerText = texto;
+                }
+            }
         });
 
         // Título de la pestaña
@@ -89,29 +125,38 @@ window.initTenant = async function() {
 
         // 5. AUTO-PROPAGACIÓN EN ENLACES (Magia SEO/UX)
         // Agarra todos los links internos (<a>) y les inyecta el ?tenant= dinámicamente.
+        // ⚠️ EXCEPCIÓN: No toca enlaces que ya tengan ?tenant= definido ni anchors.
         document.querySelectorAll('a').forEach(link => {
             const href = link.getAttribute('href');
-            // Solo modificamos enlaces internos (que no vayan a http, mailto, tel o #)
+            // Solo modificamos enlaces internos (que no vayan a http, mailto, tel, #)
             if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('mailto') && !href.startsWith('tel')) {
-                const url = new URL(link.href);
-                url.searchParams.set('tenant', window.tenantSlugActivo);
-                link.href = url.toString();
+                try {
+                    const url = new URL(link.href);
+                    // Solo agregar tenant si no lo tiene ya
+                    if (!url.searchParams.has('tenant')) {
+                        url.searchParams.set('tenant', window.tenantSlugActivo);
+                        link.href = url.toString();
+                    }
+                } catch(e) {
+                    console.warn('No se pudo procesar link:', href, e.message);
+                }
             }
         });
 
-        // Liberar el loader
+        // Liberar el loader (para HTMLs que usan body.ready)
         document.body.classList.add('ready');
         return tenantConfig;
 
     } catch (err) {
-        console.error("Error Bootstrapper SaaS:", err);
+        console.error("❌ Error Bootstrapper SaaS:", err);
         document.body.innerHTML = `
             <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px;">
                 <div>
                     <h1 style="font-size: 2rem; margin-bottom: 10px; color: #ef4444;">Error 404</h1>
-                    <p>La institución a la que intentas acceder no está registrada o se encuentra inactiva.</p>
+                    <p>${err.message || 'La institución a la que intentas acceder no está registrada o se encuentra inactiva.'}</p>
                 </div>
             </div>`;
+        return null;
     }
 };
 
