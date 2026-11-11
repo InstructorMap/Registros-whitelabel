@@ -120,6 +120,26 @@
             margin-bottom: 0; 
             padding-bottom: 0; 
         }
+
+        /* Selector de carnets */
+        .carnet-tabs {
+            display: flex; gap: 8px; overflow-x: auto;
+            padding: 6px 4px; margin: 0 auto 12px auto;
+            scrollbar-width: none;
+        }
+        .carnet-tabs::-webkit-scrollbar { display: none; }
+        .carnet-tab {
+            flex-shrink: 0;
+            background: white; border: 1px solid #e2e8f0;
+            color: #64748b; font-size: 10px; font-weight: 800;
+            padding: 8px 14px; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.4px;
+            cursor: pointer; transition: 0.2s; white-space: nowrap;
+        }
+        .carnet-tab.active {
+            background: var(--wl-primary); color: var(--wl-secondary);
+            border-color: var(--wl-primary);
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center p-4">
@@ -150,6 +170,10 @@
         </div>
 
         <div class="p-6 md:p-8 relative">
+
+            <!-- NUEVO: Selector de carnets si el DNI tiene más de uno -->
+            <div id="selector-carnets-val" class="carnet-tabs" style="display:none;"></div>
+
             <div class="flex items-center gap-5 mb-6">
                 <div class="foto-container">
                     <img id="val-foto" src="https://ui-avatars.com/api/?name=R+M&background=0f172a&color=fff" alt="Foto Profesional" style="background: transparent;">
@@ -231,6 +255,12 @@
         // ============================================================
 
         // ============================================================
+        // VARIABLES GLOBALES
+        // ============================================================
+        let carnetsEncontrados = [];   // filas del padrón que matchean
+        let indiceCarnetActivo = 0;    // índice mostrado
+
+        // ============================================================
         // APLICAR IDENTIDAD VISUAL DEL TENANT
         // ============================================================
         async function aplicarIdentidadValidador() {
@@ -302,7 +332,43 @@
         }
 
         // ============================================================
-        // VALIDACIÓN PRINCIPAL DEL PROFESIONAL
+        // BUSCAR CARNETS POR MAT / DNI
+        // ============================================================
+        async function buscarCarnets(matQuery, dniQuery) {
+            // 1) Buscar por matrícula (puede haber 0, 1 o varias filas; en teoría 1 por carnet)
+            if (matQuery) {
+                const { data, error } = await window.db
+                    .from('renmcycf_padron')
+                    .select('*')
+                    .eq('tenant_id', window.currentTenantId)
+                    .eq('matricula_oficial', matQuery)
+                    .order('fecha_alta', { ascending: false })
+                    .limit(10);
+                
+                if (error) throw new Error("Error crítico al conectar con la base de datos oficial. Reintente en unos minutos.");
+                if (data && data.length > 0) return data;
+            }
+
+            // 2) Fallback: buscar por DNI (puede devolver N filas = N carnets)
+            if (dniQuery) {
+                const dniLimpio = String(dniQuery).replace(/\D/g, '');
+                const { data, error } = await window.db
+                    .from('renmcycf_padron')
+                    .select('*')
+                    .eq('tenant_id', window.currentTenantId)
+                    .eq('dni', dniLimpio)
+                    .order('fecha_alta', { ascending: false })
+                    .limit(20);
+                
+                if (error) throw new Error("Error crítico al conectar con la base de datos oficial. Reintente en unos minutos.");
+                if (data && data.length > 0) return data;
+            }
+
+            return [];
+        }
+
+        // ============================================================
+        // VALIDACIÓN PRINCIPAL DEL PROFESIONAL (MULTI-CARNET)
         // ============================================================
         async function validarProfesional() {
             const params = new URLSearchParams(window.location.search);
@@ -315,71 +381,153 @@
             }
 
             try {
-                let query = window.db.from('renmcycf_padron')
-                    .select('*')
-                    .eq('tenant_id', window.currentTenantId);
-                
-                if (matQuery) {
-                    query = query.eq('matricula_oficial', matQuery);
-                } else if (dniQuery) {
-                    query = query.eq('dni', dniQuery.replace(/\D/g, ''));
+                const carnets = await buscarCarnets(matQuery, dniQuery);
+
+                if (!carnets || carnets.length === 0) {
+                    mostrarError("La matrícula o DNI solicitado NO EXISTE en el Padrón Oficial. Documento apócrifo.");
+                    return;
                 }
-                
-                const { data: padron, error } = await query.maybeSingle();
 
-                if (error) throw new Error("Error crítico al conectar con la base de datos oficial. Reintente en unos minutos.");
-                if (!padron) throw new Error("La matrícula o DNI solicitado NO EXISTE en el Padrón Oficial. Documento apócrifo.");
+                // Priorizar el carnet que coincide exactamente con matQuery
+                let indiceInicial = 0;
+                if (matQuery) {
+                    const idxMatch = carnets.findIndex(c => String(c.matricula_oficial) === String(matQuery));
+                    if (idxMatch >= 0) indiceInicial = idxMatch;
+                }
 
-                const hoy = new Date();
-                const vence = padron.fecha_vencimiento ? new Date(padron.fecha_vencimiento) : null;
+                // Filtrar SOLO los que están aptos para mostrar. Si ninguno, mostrar el primero para dar error específico.
+                // Estrategia: mostrar el que matchea, y en el selector dejar todos los del DNI.
+                carnetsEncontrados = carnets;
+                indiceCarnetActivo = indiceInicial;
 
                 document.getElementById('loader').classList.add('hidden');
 
-                if (padron.estado_legal === 'SUSPENDIDO') {
-                    mostrarError("MATRÍCULA SUSPENDIDA. El profesional se encuentra inhabilitado para el ejercicio legítimo en este momento.", true);
-                    return;
-                }
-                
-                if (padron.estado_legal === 'REVOCADO') {
-                    mostrarError("MATRÍCULA REVOCADA. Esta credencial carece de validez legal permanente.", true);
-                    return;
-                }
-
-                if (vence && hoy > vence) {
-                    mostrarError(`CERTIFICACIÓN VENCIDA.\nExpiró el ${vence.toLocaleDateString('es-AR')}. Requiere renovación anual obligatoria.`, true);
+                // Validar el carnet seleccionado (el que matchea con matQuery o el más reciente)
+                const padron = carnetsEncontrados[indiceCarnetActivo];
+                const errorEstado = validarEstadoCarnet(padron);
+                if (errorEstado) {
+                    mostrarError(errorEstado.msg, errorEstado.warn);
                     return;
                 }
 
-                if (padron.id) {
-                    sumarVisitaProfesional(padron.id);
-                }
+                // Sumar visita al carnet mostrado
+                if (padron.id) sumarVisitaProfesional(padron.id);
 
+                // Render
                 document.getElementById('success-screen').classList.remove('hidden');
-                document.getElementById('val-nombre').innerText = `${padron.nombres} ${padron.apellidos}`;
-                document.getElementById('val-dni').innerText = `DNI: ${new Intl.NumberFormat('es-AR').format(padron.dni)}`;
-                document.getElementById('val-profesion').innerText = padron.profesion;
-                document.getElementById('val-cat-badge').innerText = padron.categoria;
-                
-                const catDescMap = { 
-                    'A1': 'Profesionales Universitarios de Grado', 
-                    'A2': 'Técnicos Superiores y Terciarios', 
-                    'A3': 'Auxiliares y Diplomados' 
-                };
-                
-                document.getElementById('val-cat-desc').innerText = catDescMap[padron.categoria] || 'Profesional Habilitado';
-                document.getElementById('val-matricula').innerText = padron.matricula_oficial || 'EN TRÁMITE';
-                document.getElementById('val-vencimiento').innerText = vence ? vence.toLocaleDateString('es-AR') : 'N/D';
-                
-                const mockHash = 'TXID-' + padron.id.substring(0, 8).toUpperCase() + '-' + Date.now().toString(16).toUpperCase();
-                document.getElementById('val-hash').innerText = padron.blockchain_txid || mockHash;
-                
-                if(padron.foto_perfil_url) {
-                    document.getElementById('val-foto').src = padron.foto_perfil_url + '?t=' + new Date().getTime();
-                }
+                renderDatosCarnet(padron);
+
+                // Selector de carnets (si el DNI tiene más de uno)
+                renderSelectorCarnets();
 
             } catch (err) {
                 mostrarError(err.message);
             }
+        }
+
+        // ============================================================
+        // VALIDAR ESTADO DEL CARNET
+        // ============================================================
+        function validarEstadoCarnet(padron) {
+            const hoy = new Date();
+            const vence = padron.fecha_vencimiento ? new Date(padron.fecha_vencimiento) : null;
+
+            if (padron.estado_legal === 'SUSPENDIDO') {
+                return { msg: "MATRÍCULA SUSPENDIDA. El profesional se encuentra inhabilitado para el ejercicio legítimo en este momento.", warn: true };
+            }
+            if (padron.estado_legal === 'REVOCADO') {
+                return { msg: "MATRÍCULA REVOCADA. Esta credencial carece de validez legal permanente.", warn: true };
+            }
+            if (vence && hoy > vence) {
+                return { msg: `CERTIFICACIÓN VENCIDA.\nExpiró el ${vence.toLocaleDateString('es-AR')}. Requiere renovación anual obligatoria.`, warn: true };
+            }
+            return null;
+        }
+
+        // ============================================================
+        // RENDER DE DATOS DEL CARNET
+        // ============================================================
+        function renderDatosCarnet(padron) {
+            const vence = padron.fecha_vencimiento ? new Date(padron.fecha_vencimiento) : null;
+
+            document.getElementById('val-nombre').innerText = `${padron.nombres} ${padron.apellidos}`;
+            document.getElementById('val-dni').innerText = `DNI: ${new Intl.NumberFormat('es-AR').format(padron.dni)}`;
+            document.getElementById('val-profesion').innerText = padron.profesion || '—';
+            document.getElementById('val-cat-badge').innerText = padron.categoria || '—';
+            
+            const catDescMap = { 
+                'A1': 'Profesionales Universitarios de Grado', 
+                'A2': 'Técnicos Superiores y Terciarios', 
+                'A3': 'Auxiliares y Diplomados' 
+            };
+            
+            document.getElementById('val-cat-desc').innerText = catDescMap[padron.categoria] || 'Profesional Habilitado';
+            document.getElementById('val-matricula').innerText = padron.matricula_oficial || 'EN TRÁMITE';
+            document.getElementById('val-vencimiento').innerText = vence ? vence.toLocaleDateString('es-AR') : 'N/D';
+            
+            const mockHash = 'TXID-' + String(padron.id).substring(0, 8).toUpperCase() + '-' + Date.now().toString(16).toUpperCase();
+            document.getElementById('val-hash').innerText = padron.blockchain_txid || mockHash;
+            
+            if(padron.foto_perfil_url) {
+                document.getElementById('val-foto').src = padron.foto_perfil_url + '?t=' + new Date().getTime();
+            }
+
+            // Actualizar badge de estado
+            const estadoBox = document.querySelector('#success-screen .bg-emerald-50');
+            if (estadoBox) {
+                const esActivo = padron.estado_legal === 'ACTIVO';
+                estadoBox.className = esActivo 
+                    ? 'flex justify-between items-center bg-emerald-50 border border-emerald-100 p-4 rounded-xl mb-6'
+                    : 'flex justify-between items-center bg-red-50 border border-red-100 p-4 rounded-xl mb-6';
+                const labelEstado = estadoBox.querySelector('.text-sm');
+                if (labelEstado) {
+                    labelEstado.innerHTML = esActivo 
+                        ? '<i data-lucide="check-circle-2" class="inline w-4 h-4 mb-0.5"></i> ACTIVO'
+                        : `<i data-lucide="alert-triangle" class="inline w-4 h-4 mb-0.5"></i> ${padron.estado_legal}`;
+                    labelEstado.className = esActivo ? 'text-sm font-black text-emerald-700' : 'text-sm font-black text-red-700';
+                }
+            }
+
+            lucide.createIcons();
+        }
+
+        // ============================================================
+        // SELECTOR DE CARNETS (si el DNI tiene varios)
+        // ============================================================
+        function renderSelectorCarnets() {
+            const cont = document.getElementById('selector-carnets-val');
+            if (!cont) return;
+
+            if (!carnetsEncontrados || carnetsEncontrados.length <= 1) {
+                cont.style.display = 'none';
+                cont.innerHTML = '';
+                return;
+            }
+
+            cont.style.display = 'flex';
+            cont.innerHTML = carnetsEncontrados.map((c, i) => {
+                const label = c.profesion 
+                    ? c.profesion.replace('PARAMÉDICO','PARAM.').replace('PARAMEDICO','PARAM.').substring(0, 22)
+                    : 'CARNET ' + (i+1);
+                return `<button class="carnet-tab ${i === indiceCarnetActivo ? 'active' : ''}" onclick="seleccionarCarnetValidacion(${i})">${label}</button>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function seleccionarCarnetValidacion(idx) {
+            if (!carnetsEncontrados[idx]) return;
+
+            const padron = carnetsEncontrados[idx];
+            const errorEstado = validarEstadoCarnet(padron);
+            if (errorEstado) {
+                mostrarError(errorEstado.msg, errorEstado.warn);
+                return;
+            }
+
+            indiceCarnetActivo = idx;
+            if (padron.id) sumarVisitaProfesional(padron.id);
+            renderDatosCarnet(padron);
+            renderSelectorCarnets();
         }
 
         // ============================================================
