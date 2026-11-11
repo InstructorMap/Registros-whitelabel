@@ -9,13 +9,11 @@
     
     <link rel="manifest" href="manifest.json">
     
-    <!-- Librerías Core -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="saas-core.js"></script>
     
-    <!-- Librerías para Credencial y Foto -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -264,6 +262,20 @@
             box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
         }
 
+        /* Selector multi-carnet */
+        #screen-selector {
+            background: var(--wl-background);
+            z-index: 40;
+            position: fixed;
+            inset: 0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        #screen-selector .screen-inner {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
         @media (max-width: 767px) {
             .screen-wallet-content {
                 display: flex; flex-direction: column;
@@ -326,12 +338,10 @@
 </head>
 <body>
 
-    <!-- MARCAS DE AGUA -->
     <div class="watermark-bg"></div>
     <div class="watermark-ring"></div>
     <img id="watermark-logo-img" class="watermark-logo" src="https://ui-avatars.com/api/?name=S+R&background=fff&color=0f172a" alt="">
 
-    <!-- FRANJA PRINCIPAL SIEMPRE VISIBLE -->
     <div id="app-header" class="app-header">
         <div class="flex items-center gap-3">
             <div class="header-logo-ring">
@@ -360,7 +370,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA 1: LOGIN -->
     <img id="dynamic-bg" src="" class="login-bg" alt="">
     <div id="screen-login" class="screen active" style="justify-content: center;">
         <div class="glass-panel p-8 rounded-3xl mx-auto w-full max-w-[420px] relative z-10 text-center">
@@ -384,7 +393,25 @@
         </div>
     </div>
 
-    <!-- PANTALLA 2: TÉRMINOS Y CONDICIONES -->
+    <!-- NUEVA PANTALLA: SELECTOR MULTI-CARNET -->
+    <div id="screen-selector" class="screen">
+        <div class="screen-inner">
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="layers" class="w-6 h-6"></i>
+                </div>
+                <h2 class="text-xl font-black uppercase" style="color: var(--wl-primary)">Seleccioná tu credencial</h2>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Tenés más de un carnet registrado</p>
+            </div>
+
+            <div id="lista-carnets-selector" class="space-y-3"></div>
+
+            <button onclick="cerrarSesion()" class="mt-8 text-[10px] font-black uppercase text-slate-400 hover:text-slate-600 underline block mx-auto">
+                ← Cerrar sesión
+            </button>
+        </div>
+    </div>
+
     <div id="screen-tc" class="screen bg-white" style="position: fixed; inset: 0; z-index: 50;">
         <div class="max-w-md mx-auto w-full flex flex-col h-full pt-4">
             <div class="text-center mb-6">
@@ -418,7 +445,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA FOTO CROPPER -->
     <div id="screen-foto" class="screen bg-white">
         <div class="max-w-md mx-auto w-full flex flex-col h-full pt-2 text-center pb-10">
             <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -461,7 +487,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA PRINCIPAL: DASHBOARD & CREDENCIAL -->
     <div id="screen-wallet" class="screen">
         <div class="screen-wallet-content">
             
@@ -469,15 +494,21 @@
                 
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex justify-between items-center relative overflow-hidden welcome-block">
                     <div id="status-line-mobile" class="absolute right-0 top-0 bottom-0 w-2 bg-slate-400"></div>
-                    <div>
+                    <div class="flex-1 min-w-0 pr-2">
                         <div class="text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 mb-1" id="status-label-mobile">
                             <span class="w-2 h-2 rounded-full bg-slate-500"></span> Conectando...
                         </div>
                         <div class="text-sm font-black font-title uppercase tracking-tight line-clamp-1" style="color: var(--wl-primary)" id="user-name">---</div>
-                        <div class="text-[10px] font-mono font-bold text-slate-500" id="user-profesion">---</div>
+                        <div class="text-[10px] font-mono font-bold text-slate-500 line-clamp-1" id="user-profesion">---</div>
                     </div>
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-md shrink-0 border" style="background: var(--wl-primary); color: var(--wl-secondary); border-color: var(--wl-secondary)">
-                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <!-- Botón fijo para cambiar carnet (se muestra/oculta) -->
+                        <button id="btn-cambiar-carnet" onclick="mostrarSelectorCarnets()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest items-center gap-1 transition-colors">
+                            <i data-lucide="list" class="w-3 h-3"></i> Cambiar
+                        </button>
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-md border" style="background: var(--wl-primary); color: var(--wl-secondary); border-color: var(--wl-secondary)">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -540,7 +571,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA: EDICIÓN DE PERFIL -->
     <div id="screen-perfil" class="screen">
         <div class="max-w-md mx-auto w-full">
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center mb-6 flex flex-col items-center">
@@ -597,7 +627,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA: PORTAL CIENTÍFICO -->
     <div id="screen-portal" class="screen">
         <div class="max-w-2xl mx-auto w-full">
             <div class="mb-4 bg-white p-4 rounded-xl border border-slate-200 text-center">
@@ -612,7 +641,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA: BIBLIOTECA -->
     <div id="screen-biblioteca" class="screen">
         <div class="max-w-3xl mx-auto w-full">
             <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 text-center">
@@ -627,7 +655,6 @@
         </div>
     </div>
 
-    <!-- PANTALLA: TESIS Y PUBLICACIONES -->
     <div id="screen-publicaciones" class="screen">
         <div class="max-w-md mx-auto w-full">
             <div class="mb-6 bg-white p-4 rounded-xl border border-slate-200 text-center">
@@ -658,9 +685,6 @@
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- NUEVA PANTALLA: BOLSA DE TRABAJO (LICITACIONES PERICIALES)   -->
-    <!-- ============================================================ -->
     <div id="screen-bolsa" class="screen">
         <div class="max-w-2xl mx-auto w-full">
             <div class="mb-6 p-6 rounded-2xl text-center relative overflow-hidden shadow-xl"
@@ -698,7 +722,6 @@
         </div>
     </div>
 
-    <!-- MODAL NOTIFICACIONES -->
     <div id="modal-notificaciones" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex justify-end">
         <div class="bg-white w-full max-w-sm h-full shadow-2xl flex flex-col ml-auto">
             <div class="p-5 border-b border-slate-100 flex justify-between items-center text-white" style="background: var(--wl-primary)">
@@ -713,7 +736,6 @@
         </div>
     </div>
 
-    <!-- MODAL DIPLOMAS -->
     <div id="modal-diplomas" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] hidden flex flex-col p-4 pt-10">
         <div class="flex justify-between items-center mb-6 max-w-[480px] mx-auto w-full">
             <h3 class="text-white font-black uppercase text-xl">
@@ -726,7 +748,6 @@
         <div class="flex-1 overflow-y-auto space-y-4 pb-10 max-w-[480px] mx-auto w-full" id="lista-diplomas-modal"></div>
     </div>
 
-    <!-- MODAL RENOVACIÓN DE MATRÍCULA (con datos bancarios) -->
     <div id="modal-renovacion" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[150] hidden flex flex-col items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="cerrarModalSeguro('modal-renovacion')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -737,7 +758,6 @@
                 Realice la transferencia con los siguientes datos y luego adjunte el comprobante. El sistema actualizará su vigencia sin pasar por el Comité Evaluador.
             </p>
 
-            <!-- DATOS DE TRANSFERENCIA BANCARIA -->
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4 space-y-3" id="bloque-datos-bancarios">
                 <div class="flex items-start justify-between gap-2">
                     <div class="flex-1 min-w-0">
@@ -772,7 +792,6 @@
                 </div>
             </div>
 
-            <!-- FALLBACK: Link de Mercado Pago (si está configurado) -->
             <a href="#" id="link-mp-renovacion" target="_blank"
                class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 mb-4 text-xs uppercase hidden">
                 <i data-lucide="credit-card" class="w-4 h-4"></i> Pagar con MercadoPago
@@ -794,7 +813,6 @@
         </div>
     </div>
 
-    <!-- NUEVO MODAL ACREDITAR FORMACIÓN -->
     <div id="modal-nuevo-diploma" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[150] hidden flex flex-col items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative">
             <button onclick="cerrarModalSeguro('modal-nuevo-diploma')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -825,7 +843,6 @@
         </div>
     </div>
 
-    <!-- BARRA NAVEGACIÓN INFERIOR (CON BOLSA) -->
     <div class="bottom-nav hidden" id="bottom-nav">
         <button class="nav-item active" id="nav-wallet" onclick="switchNavTab('wallet')">
             <i data-lucide="id-card" class="w-6 h-6 mb-1"></i><span>Credencial</span>
@@ -845,11 +862,8 @@
         </button>
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- SCRIPTS CONSOLIDADOS Y CORREGIDOS -->
     <script>
-        // ============================================================
-        // BOOTSTRAPPER SaaS (inyectado por saas-core.js)
-        // ============================================================
         lucide.createIcons();
         const { jsPDF } = window.jspdf;
 
@@ -858,6 +872,7 @@
         // ==========================================
         let currentView = 'front';
         let alumnoActual = null;
+        let carnetsDisponibles = [];
         let configGlobal = {};
         let configDiseno = {};
         let bgCredencialFrente = '';
@@ -865,9 +880,6 @@
         let rosetaUrl = '';
         let cropperInstance = null;
 
-        // ==========================================
-        // UTILIDADES BÁSICAS
-        // ==========================================
         const el = id => document.getElementById(id);
 
         function safeClass(id, action, cls) {
@@ -942,7 +954,7 @@
         }
 
         // ==========================================
-        // AUTENTICACIÓN (con tenant_id)
+        // AUTENTICACIÓN MULTI-CARNET
         // ==========================================
         async function ingresar() {
             const btn = el('btn-ingresar');
@@ -963,25 +975,22 @@
             lucide.createIcons();
 
             try {
-                const { data: padron, error } = await window.db.from('renmcycf_padron')
+                const { data: padronList, error } = await window.db.from('renmcycf_padron')
                     .select('*')
                     .eq('dni', dni)
                     .eq('tenant_id', window.currentTenantId)
-                    .maybeSingle();
+                    .order('fecha_alta', { ascending: false });
                 
                 if (error) throw new Error('Error de red. Revise su conexión.');
-                if (!padron) throw new Error('DNI no encontrado en el Padrón Oficial.');
-                if (padron.estado_legal !== 'ACTIVO') throw new Error('Credencial suspendida/revocada. Contacte administración.');
+                if (!padronList || padronList.length === 0) throw new Error('DNI no encontrado en el Padrón Oficial.');
 
-                alumnoActual = padron;
+                carnetsDisponibles = padronList;
                 localStorage.setItem('session_dni', dni);
 
-                if (!padron.terminos_aceptados) {
-                    cambiarPantallaLogin('screen-tc');
-                } else if (!padron.foto_perfil_url) {
-                    cambiarPantallaLogin('screen-foto');
+                if (carnetsDisponibles.length === 1) {
+                    seleccionarCarnet(String(carnetsDisponibles[0].id));
                 } else {
-                    iniciarWallet();
+                    mostrarSelectorCarnets();
                 }
             } catch (err) {
                 errorDiv.textContent = err.message;
@@ -992,8 +1001,66 @@
             lucide.createIcons();
         }
 
+        function mostrarSelectorCarnets() {
+            // Si no hay múltiples, no mostramos selector
+            if (!carnetsDisponibles || carnetsDisponibles.length === 0) {
+                cerrarSesion();
+                return;
+            }
+            if (carnetsDisponibles.length === 1) {
+                seleccionarCarnet(String(carnetsDisponibles[0].id));
+                return;
+            }
+
+            cambiarPantallaLogin('screen-selector');
+            const container = el('lista-carnets-selector');
+            if (!container) return;
+
+            container.innerHTML = carnetsDisponibles.map(c => {
+                const isActivo = c.estado_legal === 'ACTIVO';
+                const bg = isActivo ? 'bg-white hover:border-wlSecondary border-slate-200' : 'bg-slate-50 border-slate-200 opacity-80';
+                const badge = isActivo 
+                    ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-emerald-200">ACTIVO</span>'
+                    : `<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-red-200">${c.estado_legal || 'INACTIVO'}</span>`;
+                
+                return `
+                <div class="${bg} border rounded-xl p-5 shadow-sm cursor-pointer transition-all hover:shadow-md" onclick="seleccionarCarnet('${String(c.id)}')">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1 pr-3 text-left">
+                            <h4 class="font-black text-sm uppercase leading-tight mb-1" style="color: var(--wl-primary)">${c.profesion || 'TÉCNICO / PROFESIONAL'}</h4>
+                            <p class="text-[10px] text-slate-500 font-mono">Mat: ${c.matricula_oficial || 'EN TRÁMITE'}</p>
+                        </div>
+                        ${badge}
+                    </div>
+                    <div class="flex items-center gap-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2 border-t border-slate-100 pt-3">
+                        <i data-lucide="award" class="w-3.5 h-3.5" style="color: var(--wl-secondary)"></i> 
+                        CAT. ${c.categoria || 'A3'}
+                        <span class="ml-auto flex items-center gap-1 hover:text-wlSecondary transition-colors">
+                            Ver Credencial <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                        </span>
+                    </div>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function seleccionarCarnet(id) {
+            const idStr = String(id);
+            alumnoActual = carnetsDisponibles.find(c => String(c.id) === idStr) || null;
+            if (!alumnoActual) return;
+
+            if (!alumnoActual.terminos_aceptados) {
+                cambiarPantallaLogin('screen-tc');
+            } else if (!alumnoActual.foto_perfil_url) {
+                cambiarPantallaLogin('screen-foto');
+            } else {
+                iniciarWallet();
+            }
+        }
+
         function cerrarSesion() {
             alumnoActual = null;
+            carnetsDisponibles = [];
             localStorage.removeItem('session_dni');
             if(el('input-dni')) el('input-dni').value = '';
             
@@ -1014,7 +1081,7 @@
         }
 
         // ==========================================
-        // TÉRMINOS Y CONDICIONES (con tenant_id)
+        // TÉRMINOS Y CONDICIONES
         // ==========================================
         function toggleBotonAceptar() {
             const checkbox = el('check-tc');
@@ -1043,15 +1110,19 @@
             lucide.createIcons();
             
             try {
+                // Propagar a TODAS las filas del DNI (mismo profesional, varios carnets)
                 await window.db.from('renmcycf_padron')
                     .update({
                         terminos_aceptados: true,
                         fecha_aceptacion_terminos: new Date().toISOString()
                     })
-                    .eq('id', alumnoActual.id)
+                    .eq('dni', alumnoActual.dni)
                     .eq('tenant_id', window.currentTenantId);
                 
                 alumnoActual.terminos_aceptados = true;
+                carnetsDisponibles.forEach(c => {
+                    if(String(c.dni) === String(alumnoActual.dni)) c.terminos_aceptados = true;
+                });
                 
                 if (!alumnoActual.foto_perfil_url) {
                     cambiarPantallaLogin('screen-foto');
@@ -1065,9 +1136,6 @@
             }
         }
 
-        // ==========================================
-        // NAVEGACIÓN
-        // ==========================================
         function cambiarPantallaLogin(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             safeClass(screenId, 'add', 'active');
@@ -1100,10 +1168,8 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             safeClass(`screen-${tabId}`, 'add', 'active');
 
-            if(tabId === 'wallet') {
-                cambiarVista('front');
-            }
-            if(tabId === 'perfil') {
+            if(tabId === 'wallet') cambiarVista('front');
+            if(tabId === 'perfil' && alumnoActual) {
                 if(el('perfil-telefono')) el('perfil-telefono').value = alumnoActual.telefono || '';
                 if(el('perfil-email')) el('perfil-email').value = alumnoActual.email || '';
                 if(el('perfil-provincia')) el('perfil-provincia').value = alumnoActual.provincia_laboral || '';
@@ -1123,7 +1189,7 @@
         // ==========================================
         // WALLET / CREDENCIAL
         // ==========================================
-        function iniciarWallet() {
+        async function iniciarWallet() {
             cambiarPantallaLogin('screen-wallet');
             safeClass('btn-campana', 'remove', 'hidden');
             safeClass('bottom-nav', 'remove', 'hidden');
@@ -1141,12 +1207,23 @@
             const estadoActual = alumnoActual.estado_legal || 'DESCONOCIDO';
             const statusLabel = el('status-label-mobile');
             const statusLine = el('status-line-mobile');
-            
+            const btnCambiar = el('btn-cambiar-carnet');
+
             if (estadoActual === 'ACTIVO') {
                 statusLabel.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Habilitado';
                 statusLabel.className = 'text-[9px] text-emerald-600 font-bold uppercase tracking-widest flex items-center gap-1 mb-1';
                 statusLine.className = 'absolute right-0 top-0 bottom-0 w-2 bg-emerald-500';
                 
+                if (btnCambiar) {
+                    if (carnetsDisponibles.length > 1) {
+                        btnCambiar.classList.remove('hidden');
+                        btnCambiar.classList.add('flex');
+                    } else {
+                        btnCambiar.classList.add('hidden');
+                        btnCambiar.classList.remove('flex');
+                    }
+                }
+
                 if(el('bloqueo-credencial')) el('bloqueo-credencial').classList.add('hidden');
                 if(el('area-credencial')) el('area-credencial').classList.remove('hidden');
                 
@@ -1157,6 +1234,8 @@
                 statusLabel.className = 'text-[9px] text-red-600 font-bold uppercase tracking-widest flex items-center gap-1 mb-1';
                 statusLine.className = 'absolute right-0 top-0 bottom-0 w-2 bg-red-500';
                 
+                if (btnCambiar) { btnCambiar.classList.add('hidden'); btnCambiar.classList.remove('flex'); }
+
                 if(el('bloqueo-credencial')) el('bloqueo-credencial').classList.remove('hidden');
                 if(el('area-credencial')) el('area-credencial').classList.add('hidden');
             }
@@ -1203,7 +1282,6 @@
             }
         }
 
-        // ✅ RENOVAR MATRÍCULA — con datos bancarios desde configGlobal
         function renovarMatricula() {
             const alias = configGlobal.alias_cbu || '---';
             const cbu = configGlobal.cbu || '---';
@@ -1266,7 +1344,9 @@
                     categoria: alumnoActual.categoria,
                     tipo_tramite: 'RENOVACION',
                     estado: 'RENOVACION_PENDIENTE',
-                    comprobante_url: urlComp
+                    comprobante_url: urlComp,
+                    carnet_id: alumnoActual.id,
+                    curso: alumnoActual.profesion
                 };
 
                 const { error: dbErr } = await window.db.from('renmcycf_solicitudes').insert([payload]);
@@ -1274,8 +1354,11 @@
 
                 alert("✅ Comprobante enviado. Administración actualizará su vencimiento a la brevedad.");
                 cerrarModalSeguro('modal-renovacion');
-                document.getElementById('alerta-renovacion').innerHTML = '<div class="bg-blue-50 border border-blue-200 p-4 rounded-xl text-blue-800 text-xs font-bold text-center">Renovación en proceso de acreditación.</div>';
-                document.getElementById('alerta-renovacion').classList.remove('hidden');
+                const alertaDiv = document.getElementById('alerta-renovacion');
+                if (alertaDiv) {
+                    alertaDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 p-4 rounded-xl text-blue-800 text-xs font-bold text-center">Renovación en proceso de acreditación.</div>';
+                    alertaDiv.classList.remove('hidden');
+                }
             } catch(err) {
                 alert("Error: " + err.message);
             } finally {
@@ -1285,7 +1368,6 @@
             }
         }
 
-        // ✅ COPIAR AL PORTAPAPELES CON FEEDBACK
         async function copiarAlPortapapeles(idElemento) {
             const elem = el(idElemento);
             if (!elem) return;
@@ -1411,9 +1493,10 @@
         function renderizarCarnet(vista) {
             const container = el('carnet-render');
             if (!container || !alumnoActual) return;
-            
+
             const fotoUrl = alumnoActual.foto_perfil_url || 'https://ui-avatars.com/api/?name=U+S&background=0f172a&color=fff';
             const vence = alumnoActual.fecha_vencimiento ? new Date(alumnoActual.fecha_vencimiento).toLocaleDateString('es-AR') : 'N/D';
+            const matricula = alumnoActual.matricula_oficial || '';
             
             if (vista === 'front') {
                 container.innerHTML = `
@@ -1428,12 +1511,13 @@
                         <div style="${getSafeStyle('nombre')} z-index: 10;">${alumnoActual.nombres} ${alumnoActual.apellidos}</div>
                         <div style="${getSafeStyle('dni')} z-index: 10;">${new Intl.NumberFormat('es-AR').format(alumnoActual.dni)}</div>
                         <div style="${getSafeStyle('ano_nac')} z-index: 10;">${alumnoActual.ano_nacimiento || ''}</div>
-                        <div style="${getSafeStyle('matricula')} z-index: 10;">${alumnoActual.matricula_oficial || ''}</div>
+                        <div style="${getSafeStyle('matricula')} z-index: 10;">${matricula}</div>
                         <div style="${getSafeStyle('vence')} z-index: 10;">${vence}</div>
                     </div>`;
             } else if (vista === 'back') {
                 const baseUrl = window.location.origin;
-                const urlValidador = `${baseUrl}/validador.html?mat=${encodeURIComponent(alumnoActual.matricula_oficial)}`;
+                const matParaQR = matricula || alumnoActual.dni;
+                const urlValidador = `${baseUrl}/validador.html?mat=${encodeURIComponent(matParaQR)}`;
                 
                 let textoCat = '';
                 if(alumnoActual.categoria === 'A1') textoCat = 'A.1 Título de Grado otorgado por Univ. pública o privada.';
@@ -1482,7 +1566,7 @@
         }
 
         // ==========================================
-        // FOTO CROPPER (con tenant_id)
+        // FOTO CROPPER
         // ==========================================
         function iniciarRecorte(inputElement) {
             const file = inputElement.files[0];
@@ -1545,30 +1629,41 @@
                 });
                 
                 canvas.toBlob(async (blob) => {
-                    const fileName = `${alumnoActual.dni}_foto_${Date.now()}.jpg`;
-                    const fileToUpload = new File([blob], fileName, { type: "image/jpeg" });
-                    
-                    const { error: upErr } = await window.db.storage.from('renmcycf-media').upload(fileName, fileToUpload, {
-                        cacheControl: '3600',
-                        upsert: true
-                    });
-                    
-                    if(upErr) throw upErr;
-                    
-                    const fotoUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
-                    
-                    await window.db.from('renmcycf_padron')
-                        .update({ foto_perfil_url: fotoUrl })
-                        .eq('id', alumnoActual.id)
-                        .eq('tenant_id', window.currentTenantId);
-                    
-                    alumnoActual.foto_perfil_url = fotoUrl;
-                    alert("Foto de perfil actualizada con éxito.");
-                    
-                    if(document.getElementById('btn-cerrar-foto') && !document.getElementById('btn-cerrar-foto').classList.contains('hidden')) {
-                        switchNavTab('perfil');
-                    } else {
-                        iniciarWallet();
+                    try {
+                        const fileName = `${alumnoActual.dni}_foto_${Date.now()}.jpg`;
+                        const fileToUpload = new File([blob], fileName, { type: "image/jpeg" });
+                        
+                        const { error: upErr } = await window.db.storage.from('renmcycf-media').upload(fileName, fileToUpload, {
+                            cacheControl: '3600',
+                            upsert: true
+                        });
+                        
+                        if(upErr) throw upErr;
+                        
+                        const fotoUrl = `${PROJECT_URL}/storage/v1/object/public/renmcycf-media/${fileName}`;
+                        
+                        // Propagar foto a TODOS los carnets del alumno
+                        await window.db.from('renmcycf_padron')
+                            .update({ foto_perfil_url: fotoUrl })
+                            .eq('dni', alumnoActual.dni)
+                            .eq('tenant_id', window.currentTenantId);
+                        
+                        alumnoActual.foto_perfil_url = fotoUrl;
+                        carnetsDisponibles.forEach(c => {
+                            if(String(c.dni) === String(alumnoActual.dni)) c.foto_perfil_url = fotoUrl;
+                        });
+
+                        alert("Foto de perfil actualizada con éxito.");
+                        
+                        if(document.getElementById('btn-cerrar-foto') && !document.getElementById('btn-cerrar-foto').classList.contains('hidden')) {
+                            switchNavTab('perfil');
+                        } else {
+                            iniciarWallet();
+                        }
+                    } catch (err) {
+                        alert("Error al subir la foto: " + err.message);
+                        btn.innerHTML = txt;
+                        btn.disabled = false;
                     }
                 }, 'image/jpeg', 0.85);
             } catch (err) {
@@ -1579,11 +1674,11 @@
         }
 
         // ==========================================
-        // PERFIL (con tenant_id)
+        // PERFIL
         // ==========================================
         async function guardarPerfil() {
             const btn = el('btn-guardar-perfil');
-            if(!btn) return;
+            if(!btn || !alumnoActual) return;
             
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> GUARDANDO...';
@@ -1609,18 +1704,23 @@
                         linkedin_url: linkedin,
                         figurar_directorio: directorio
                     })
-                    .eq('id', alumnoActual.id)
+                    .eq('dni', alumnoActual.dni)
                     .eq('tenant_id', window.currentTenantId);
                 
                 if (error) throw error;
                 
-                alumnoActual.telefono = tel;
-                alumnoActual.email = email;
-                alumnoActual.provincia_laboral = provincia;
-                alumnoActual.facebook_url = facebook;
-                alumnoActual.instagram_url = instagram;
-                alumnoActual.linkedin_url = linkedin;
-                alumnoActual.figurar_directorio = directorio;
+                // Actualizar en memoria todas las filas del alumno
+                carnetsDisponibles.forEach(c => {
+                    if(String(c.dni) === String(alumnoActual.dni)) {
+                        c.telefono = tel;
+                        c.email = email;
+                        c.provincia_laboral = provincia;
+                        c.facebook_url = facebook;
+                        c.instagram_url = instagram;
+                        c.linkedin_url = linkedin;
+                        c.figurar_directorio = directorio;
+                    }
+                });
                 
                 alert("Perfil actualizado correctamente.");
                 switchNavTab('wallet');
@@ -1633,9 +1733,6 @@
             }
         }
 
-        // ==========================================
-        // DESCARGA PDF
-        // ==========================================
         function urlToBase64(url, isPng = true, circular = false) {
             return new Promise((resolve) => {
                 if (!url) { resolve(null); return; }
@@ -1693,7 +1790,9 @@
                 const fotoUrl = alumnoActual.foto_perfil_url || 'https://ui-avatars.com/api/?name=U+S&background=0f172a&color=fff';
                 const vence = alumnoActual.fecha_vencimiento ? new Date(alumnoActual.fecha_vencimiento).toLocaleDateString('es-AR') : 'N/D';
                 const baseUrl = window.location.origin;
-                const urlValidador = `${baseUrl}/validador.html?mat=${encodeURIComponent(alumnoActual.matricula_oficial)}`;
+                const matricula = alumnoActual.matricula_oficial || '';
+                const matParaQR = matricula || alumnoActual.dni;
+                const urlValidador = `${baseUrl}/validador.html?mat=${encodeURIComponent(matParaQR)}`;
                 
                 const frontHtml = `
                     <div id="export-front" style="position:relative;width:1000px;height:630px;overflow:hidden;background:#fff;border-radius:30px;">
@@ -1707,7 +1806,7 @@
                         <div style="${getSafeStyle('nombre')} z-index:10;">${alumnoActual.nombres} ${alumnoActual.apellidos}</div>
                         <div style="${getSafeStyle('dni')} z-index:10;">${new Intl.NumberFormat('es-AR').format(alumnoActual.dni)}</div>
                         <div style="${getSafeStyle('ano_nac')} z-index:10;">${alumnoActual.ano_nacimiento || ''}</div>
-                        <div style="${getSafeStyle('matricula')} z-index:10;">${alumnoActual.matricula_oficial || ''}</div>
+                        <div style="${getSafeStyle('matricula')} z-index:10;">${matricula}</div>
                         <div style="${getSafeStyle('vence')} z-index:10;">${vence}</div>
                     </div>`;
                 
@@ -1745,20 +1844,14 @@
                 await new Promise(r => setTimeout(r, 800));
                 
                 const canvasFront = await html2canvas(exportBox.querySelector('#export-front'), {
-                    useCORS: true,
-                    allowTaint: true,
-                    scale: 2,
-                    backgroundColor: '#ffffff'
+                    useCORS: true, allowTaint: true, scale: 2, backgroundColor: '#ffffff'
                 });
                 const imgFront = canvasFront.toDataURL('image/jpeg', 1.0);
                 
                 let imgBack = null;
                 if (bgCredencialDorso) {
                     const canvasBack = await html2canvas(exportBox.querySelector('#export-back'), {
-                        useCORS: true,
-                        allowTaint: true,
-                        scale: 2,
-                        backgroundColor: '#ffffff'
+                        useCORS: true, allowTaint: true, scale: 2, backgroundColor: '#ffffff'
                     });
                     imgBack = canvasBack.toDataURL('image/jpeg', 1.0);
                 }
@@ -1825,7 +1918,8 @@
                 pdf.setFontSize(7);
                 pdf.text(`Generado el ${new Date().toLocaleDateString('es-AR')} a las ${new Date().toLocaleTimeString('es-AR')}`, 105, currentY, { align: "center" });
                 
-                pdf.save(`Credencial_${alumnoActual.matricula_oficial || alumnoActual.dni}.pdf`);
+                const sufijoMat = matricula ? '_' + matricula.replace(/[\/\s]/g,'-') : '';
+                pdf.save(`Credencial_${alumnoActual.dni}${sufijoMat}.pdf`);
                 
             } catch (error) {
                 console.error(error);
@@ -1838,7 +1932,7 @@
         }
 
         // ==========================================
-        // MODALES Y NOTIFICACIONES (con tenant_id)
+        // MODALES Y NOTIFICACIONES
         // ==========================================
         function cerrarModalSeguro(id) {
             safeClass(id, 'add', 'hidden');
@@ -1853,7 +1947,7 @@
 
         async function cargarNotificacionesReales() {
             const container = el('lista-notificaciones');
-            if(!container) return;
+            if(!container || !alumnoActual) return;
             
             container.innerHTML = '<div class="text-center py-8"><i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto text-slate-400"></i></div>';
             lucide.createIcons();
@@ -1866,7 +1960,7 @@
                     <h4 class="text-xs font-black uppercase flex items-center gap-2" style="color: var(--wl-primary)">
                         <i data-lucide="calendar-check" class="w-4 h-4" style="color: var(--wl-secondary)"></i> Vigencia de Matrícula
                     </h4>
-                    <p class="text-[10px] text-slate-500 mt-1">Su credencial legal mantiene vigencia hasta el <b>${vencimiento}</b>.</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Su credencial de <b>${alumnoActual.profesion}</b> mantiene vigencia hasta el <b>${vencimiento}</b>.</p>
                 </div>`;
             
             if (alumnoActual.contador_vistas && alumnoActual.contador_vistas > 0) {
@@ -1941,7 +2035,7 @@
 
         function abrirModalDiplomas() {
             const container = el('lista-diplomas-modal');
-            if(!container) return;
+            if(!container || !alumnoActual) return;
             
             container.innerHTML = '';
             let hayDiplomas = false;
@@ -1949,7 +2043,7 @@
             if (alumnoActual.diplomas_urls && alumnoActual.diplomas_urls !== "null") {
                 try {
                     const arr = typeof alumnoActual.diplomas_urls === 'string' ? JSON.parse(alumnoActual.diplomas_urls) : alumnoActual.diplomas_urls;
-                    if(arr.length > 0) {
+                    if(Array.isArray(arr) && arr.length > 0) {
                         hayDiplomas = true;
                         arr.forEach((url, i) => {
                             container.innerHTML += `
@@ -1989,9 +2083,6 @@
             lucide.createIcons();
         }
 
-        // ==========================================
-        // ACREDITAR NUEVA FORMACIÓN
-        // ==========================================
         function abrirModalNuevoDiploma() {
             safeClass('modal-nuevo-diploma', 'remove', 'hidden');
             lucide.createIcons();
@@ -2000,7 +2091,7 @@
         async function subirNuevoDiploma(e) {
             e.preventDefault();
             const btn = el('btn-enviar-nuevo-diploma');
-            if (!btn) return;
+            if (!btn || !alumnoActual) return;
 
             const orig = btn.innerHTML;
             btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> ENVIANDO...';
@@ -2057,7 +2148,7 @@
         }
 
         // ==========================================
-        // BOLSA DE TRABAJO (LICITACIONES PERICIALES)
+        // BOLSA DE TRABAJO
         // ==========================================
         async function cargarBolsaTrabajo() {
             const container = el('contenedor-bolsa-trabajo');
@@ -2171,7 +2262,7 @@
         }
 
         // ==========================================
-        // PORTAL CIENTÍFICO (con tenant_id)
+        // PORTAL CIENTÍFICO
         // ==========================================
         async function cargarPortalCientifico() {
             const container = el('feed-portal-container');
@@ -2217,7 +2308,7 @@
         }
 
         // ==========================================
-        // BIBLIOTECA (con tenant_id)
+        // BIBLIOTECA
         // ==========================================
         async function cargarBibliotecaWallet() {
             const container = el('wallet-biblioteca-container');
@@ -2265,11 +2356,11 @@
         }
 
         // ==========================================
-        // PUBLICACIONES / TESIS (con tenant_id)
+        // PUBLICACIONES / TESIS
         // ==========================================
         async function cargarMisPublicaciones() {
             const container = el('lista-mis-tesis');
-            if(!container) return;
+            if(!container || !alumnoActual) return;
             
             try {
                 const { data, error } = await window.db.from('renmcycf_publicaciones')
@@ -2316,7 +2407,7 @@
             e.preventDefault();
             
             const btn = el('btn-subir-tesis');
-            if(!btn) return;
+            if(!btn || !alumnoActual) return;
             
             const file = el('tesis-pdf').files[0];
             if (!file) return alert("Seleccione un archivo PDF.");
