@@ -233,7 +233,8 @@
         
         .nav-item.active i { color: var(--wl-secondary); }
 
-        .cropper-view-box, .cropper-face { border-radius: 50%; }
+        /* Foto rectangular: sin border-radius en el cropper */
+        .cropper-view-box, .cropper-face { border-radius: 0; }
         .cropper-line, .cropper-point { background-color: var(--wl-secondary); }
         
         .skeleton {
@@ -340,7 +341,7 @@
 
     <div class="watermark-bg"></div>
     <div class="watermark-ring"></div>
-    <img id="watermark-logo-img" class="watermark-logo" src="https://ui-avatars.com/api/?name=S+R&background=fff&color=0f172a" alt="">
+    <img id="watermark-logo-img" class="watermark-logo" src="" alt="" style="display:none;">
 
     <div id="app-header" class="app-header">
         <div class="flex items-center gap-3">
@@ -397,8 +398,8 @@
     <div id="screen-selector" class="screen">
         <div class="screen-inner">
             <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i data-lucide="layers" class="w-6 h-6"></i>
+                <div class="w-16 h-16 rounded-full bg-white border-2 flex items-center justify-center mx-auto mb-3 overflow-hidden" style="border-color: var(--wl-secondary);">
+                    <img id="selector-logo" src="" alt="Logo" class="w-full h-full object-contain p-1" style="display:none;">
                 </div>
                 <h2 class="text-xl font-black uppercase" style="color: var(--wl-primary)">Seleccioná tu credencial</h2>
                 <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Tenés más de un carnet registrado</p>
@@ -920,33 +921,61 @@
                     .select('*')
                     .eq('tenant_id', window.currentTenantId)
                     .maybeSingle();
-                    
-                if (config) {
-                    configGlobal = config;
-                    if (config.logo_url) {
-                        if(el('dynamic-logo')) { el('dynamic-logo').src = config.logo_url; safeClass('dynamic-logo', 'remove', 'hidden'); safeClass('default-logo', 'add', 'hidden'); }
-                        if(el('nav-mini-logo')) { el('nav-mini-logo').src = config.logo_url; safeClass('nav-mini-logo', 'remove', 'hidden'); safeClass('header-default-logo', 'add', 'hidden'); }
-                        if(el('watermark-logo-img')) el('watermark-logo-img').src = config.logo_url;
+
+                const fallback = window._saasTenantFallback || {};
+                const logoFinal = (config && config.logo_url)       || fallback.logo_url       || null;
+                const heroFinal = (config && config.hero_image_url) || fallback.hero_image_url || null;
+
+                if (config) configGlobal = config;
+
+                if (logoFinal) {
+                    // Logo en header
+                    if (el('nav-mini-logo')) {
+                        el('nav-mini-logo').src = logoFinal;
+                        safeClass('nav-mini-logo', 'remove', 'hidden');
+                        safeClass('header-default-logo', 'add', 'hidden');
                     }
-                    if (config.hero_image_url && el('dynamic-bg')) {
-                        el('dynamic-bg').src = config.hero_image_url;
-                        el('dynamic-bg').style.display = 'block';
+                    // Logo en pantalla login
+                    if (el('dynamic-logo')) {
+                        el('dynamic-logo').src = logoFinal;
+                        safeClass('dynamic-logo', 'remove', 'hidden');
+                        safeClass('default-logo', 'add', 'hidden');
                     }
+                    // Logo en selector multi-carnet
+                    if (el('selector-logo')) {
+                        el('selector-logo').src = logoFinal;
+                        el('selector-logo').style.display = 'block';
+                    }
+                    // Marca de agua en el fondo
+                    if (el('watermark-logo-img')) {
+                        el('watermark-logo-img').src = logoFinal;
+                        el('watermark-logo-img').style.display = 'block';
+                        el('watermark-logo-img').style.opacity = '0.06';
+                        el('watermark-logo-img').style.objectFit = 'contain';
+                    }
+                } else {
+                    // Sin logo: ocultar watermark (no dejar avatar genérico)
+                    if (el('watermark-logo-img')) el('watermark-logo-img').style.display = 'none';
                 }
-                
+
+                if (heroFinal && el('dynamic-bg')) {
+                    el('dynamic-bg').src = heroFinal;
+                    el('dynamic-bg').style.display = 'block';
+                }
+
                 const { data: cont } = await window.db.from('renmcycf_contenido')
                     .select('clave, valor')
                     .eq('tenant_id', window.currentTenantId)
                     .in('clave', ['credencial_style', 'credencial_bg', 'credencial_bg_dorso', 'credencial_roseta']);
-                    
+
                 if (cont) {
                     const styleObj = cont.find(c => c.clave === 'credencial_style');
                     if (styleObj && styleObj.valor) {
                         try { configDiseno = JSON.parse(styleObj.valor); } catch(e) {}
                     }
                     bgCredencialFrente = cont.find(c => c.clave === 'credencial_bg')?.valor || '';
-                    bgCredencialDorso = cont.find(c => c.clave === 'credencial_bg_dorso')?.valor || '';
-                    rosetaUrl = cont.find(c => c.clave === 'credencial_roseta')?.valor || '';
+                    bgCredencialDorso  = cont.find(c => c.clave === 'credencial_bg_dorso')?.valor || '';
+                    rosetaUrl          = cont.find(c => c.clave === 'credencial_roseta')?.valor || '';
                 }
             } catch (err) {
                 console.error("Error cargando configuración:", err);
@@ -1502,7 +1531,7 @@
                 container.innerHTML = `
                     <div style="position: relative; width: 1000px; height: 630px; border-radius: 30px; overflow: hidden; background-color: #fff; box-shadow: 0 5px 20px rgba(0,0,0,0.15);">
                         <img src="${bgCredencialFrente}" style="position: absolute; top: 0; left: 0; width: 1000px; height: 630px; z-index: 1;" crossorigin="anonymous">
-                        <div style="${getSafeStyle('foto')} z-index: 2; border-radius: 50%; overflow: hidden;">
+                        <div style="${getSafeStyle('foto')} z-index: 2; overflow: hidden;">
                             <img src="${fotoUrl}" style="width: 100%; height: 100%; object-fit: cover;" crossorigin="anonymous">
                         </div>
                         ${rosetaUrl ? `<img src="${rosetaUrl}" style="${getSafeStyle('roseta')} z-index: 5; object-fit: fill;" crossorigin="anonymous">` : ''}
@@ -1585,10 +1614,10 @@
             const imgToCrop = el('image-to-crop');
             if(imgToCrop) {
                 cropperInstance = new Cropper(imgToCrop, {
-                    aspectRatio: 1,
+                    aspectRatio: 3 / 4,          // ← Foto rectangular (retrato)
                     viewMode: 1,
                     dragMode: 'move',
-                    autoCropArea: 0.8,
+                    autoCropArea: 0.85,
                     center: true,
                     highlight: false,
                     cropBoxMovable: false,
@@ -1622,7 +1651,7 @@
             try {
                 const canvas = cropperInstance.getCroppedCanvas({
                     width: 600,
-                    height: 600,
+                    height: 800,                 // ← antes 600x600
                     fillColor: '#fff',
                     imageSmoothingEnabled: true,
                     imageSmoothingQuality: 'high'
@@ -1797,7 +1826,7 @@
                 const frontHtml = `
                     <div id="export-front" style="position:relative;width:1000px;height:630px;overflow:hidden;background:#fff;border-radius:30px;">
                         <img src="${bgCredencialFrente}" style="position:absolute;top:0;left:0;width:1000px;height:630px;z-index:1;" crossorigin="anonymous">
-                        <div style="${getSafeStyle('foto')} z-index:2;border-radius:50%;overflow:hidden;">
+                        <div style="${getSafeStyle('foto')} z-index:2;overflow:hidden;">
                             <img src="${fotoUrl}" style="width:100%;height:100%;object-fit:cover;" crossorigin="anonymous">
                         </div>
                         ${rosetaUrl ? `<img src="${rosetaUrl}" style="${getSafeStyle('roseta')} z-index:5;object-fit:fill;" crossorigin="anonymous">` : ''}
