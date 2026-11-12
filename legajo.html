@@ -881,6 +881,45 @@
         let rosetaUrl = '';
         let cropperInstance = null;
 
+        /* =========================================================
+           INYECCIÓN #1 — PRECIOS DE INSCRIPCIÓN POR CATEGORÍA
+           Renovación = 50% del valor de inscripción de la categoría.
+           Fuente preferida: configGlobal.precios_inscripcion (JSON/obj).
+           Fallback: mapa local (ajustá los montos reales si querés).
+           ========================================================= */
+        const PRECIOS_INSCRIPCION_FALLBACK = {
+            A1: 85000,
+            A2: 65000,
+            A3: 45000,
+            ESTUDIANTE: 25000
+        };
+
+        function calcularPrecioRenovacion(alumno) {
+            if (!alumno) return 0;
+
+            const categoria = String(alumno.categoria || '').toUpperCase().trim();
+
+            // 1) Fuente preferida: config de la tabla
+            let precios = null;
+            const raw = configGlobal?.precios_inscripcion;
+            if (raw) {
+                if (typeof raw === 'string') {
+                    try { precios = JSON.parse(raw); } catch(e) { precios = null; }
+                } else if (typeof raw === 'object') {
+                    precios = raw;
+                }
+            }
+
+            // 2) Fallback local
+            if (!precios) precios = PRECIOS_INSCRIPCION_FALLBACK;
+
+            const base = Number(precios[categoria] ?? 0);
+            if (!base || base <= 0) return 0;
+
+            // Renovación = 50% redondeado hacia arriba
+            return Math.ceil(base / 2);
+        }
+
         const el = id => document.getElementById(id);
 
         function safeClass(id, action, cls) {
@@ -1311,6 +1350,13 @@
             }
         }
 
+        /* ======================================================================
+           INYECCIÓN #2 — renovarMatricula()
+           Reemplaza la asignación estática de configGlobal.mp_link al href.
+           Ahora el <a> usa onclick="generarPagoDinamico(event)" y sigue
+           mostrándose siempre. Si la Edge Function falla, se cae al link
+           estático como fallback (sin romper el flujo del usuario).
+           ====================================================================== */
         function renovarMatricula() {
             const alias = configGlobal.alias_cbu || '---';
             const cbu = configGlobal.cbu || '---';
@@ -1331,18 +1377,94 @@
                     </div>`;
             }
 
+            // Mostrar el botón MP siempre y engancharle el handler dinámico
             const linkMP = el('link-mp-renovacion');
             if (linkMP) {
-                if (configGlobal.mp_link) {
-                    linkMP.href = configGlobal.mp_link;
-                    linkMP.classList.remove('hidden');
-                } else {
-                    linkMP.classList.add('hidden');
-                }
+                linkMP.classList.remove('hidden');
+                linkMP.removeAttribute('href');        // ya no hay href estático
+                linkMP.removeAttribute('target');      // ya no abre pestaña nueva
+                linkMP.style.cursor = 'pointer';
+                linkMP.onclick = generarPagoDinamico;  // handler dinámico
             }
 
             safeClass('modal-renovacion', 'remove', 'hidden');
             lucide.createIcons();
+        }
+
+        /* ======================================================================
+           INYECCIÓN #3 — generarPagoDinamico()
+           - Precio = 50% del valor de inscripción por categoría.
+           - Invoca Edge Function 'crear-pago-mp'.
+           - Si falla y hay link estático configurado, redirige a él (fallback).
+           ====================================================================== */
+        async function generarPagoDinamico(event) {
+            if (event) event.preventDefault();
+
+            const btn = el('link-mp-renovacion');
+            if (!btn) return;
+
+            const textoOriginal = btn.innerHTML;
+            const hrefOriginal = btn.getAttribute('href');
+
+            try {
+                // 1) Estado de carga
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Procesando...';
+                btn.style.pointerEvents = 'none';
+                lucide.createIcons();
+
+                // 2) Validaciones mínimas
+                if (!alumnoActual) throw new Error("Sesión no válida. Volvé a ingresar.");
+                if (!alumnoActual.dni) throw new Error("No se pudo obtener el DNI del legajo.");
+
+                // 3) Precio de renovación según categoría (50% de la inscripción)
+                const precioFinal = calcularPrecioRenovacion(alumnoActual);
+                if (!precioFinal || precioFinal <= 0) {
+                    throw new Error(
+                        `No hay precio configurado para la categoría "${alumnoActual.categoria || '—'}". Contactá a administración.`
+                    );
+                }
+
+                // 4) Título descriptivo
+                const tituloPago = `Renovación de Matrícula - ${alumnoActual.profesion || 'Profesional'} (Cat. ${alumnoActual.categoria || 'S/D'})`;
+
+                // 5) Invocar Edge Function (window.db = cliente Supabase de saas-core.js)
+                const { data, error } = await window.db.functions.invoke('crear-pago-mp', {
+                    body: {
+                        titulo: tituloPago,
+                        precio: precioFinal,
+                        dni: String(alumnoActual.dni)
+                    }
+                });
+
+                // 6) Si falló la función → fallback al link estático si existe
+                if (error || !data?.init_point) {
+                    console.warn("crear-pago-mp falló, evaluando fallback:", error, data);
+                    const linkFallback =
+                        configGlobal?.mp_link_renovacion ||
+                        configGlobal?.mp_link ||
+                        null;
+
+                    if (linkFallback) {
+                        window.location.href = linkFallback;
+                        return;
+                    }
+
+                    throw new Error(error?.message || "Mercado Pago no devolvió init_point y no hay link de respaldo configurado.");
+                }
+
+                // 7) Redirigir al checkout dinámico
+                window.location.href = data.init_point;
+
+            } catch (err) {
+                console.error("Error en generarPagoDinamico:", err);
+                alert("No se pudo iniciar el pago: " + (err?.message || err));
+
+                // 8) Restaurar botón
+                btn.innerHTML = textoOriginal;
+                btn.style.pointerEvents = '';
+                if (hrefOriginal !== null) btn.setAttribute('href', hrefOriginal);
+                lucide.createIcons();
+            }
         }
 
         async function enviarRenovacion(e) {
