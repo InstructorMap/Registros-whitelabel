@@ -952,6 +952,8 @@
                 el('input-dni').value = savedDni;
                 ingresar();
             }
+            // INYECCIÓN: recuperar diploma post-pago si volvimos con ?pago=success
+            try { await procesarDiplomaPendientePostPago(); } catch(e) { console.warn(e); }
         });
 
         async function cargarConfiguracionInicial() {
@@ -1661,7 +1663,7 @@
                         <div style="${getSafeStyle('categoria')} z-index: 10;">${alumnoActual.categoria || ''}</div>
                         <div style="${getSafeStyle('nombre')} z-index: 10;">${alumnoActual.nombres} ${alumnoActual.apellidos}</div>
                         <div style="${getSafeStyle('dni')} z-index: 10;">${new Intl.NumberFormat('es-AR').format(alumnoActual.dni)}</div>
-                        <div style="${getSafeStyle('ano_nac')} z-index: 10;">${alumnoActual.ano_nacimiento || ''}</div>
+                        <div style="${getSafeStyle('ano_nac')} z-index: 10;">${alumnoActual.grupo_sanguineo || ''}</div>
                         <div style="${getSafeStyle('matricula')} z-index: 10;">${matricula}</div>
                         <div style="${getSafeStyle('vence')} z-index: 10;">${vence}</div>
                     </div>`;
@@ -1956,7 +1958,7 @@
                         <div style="${getSafeStyle('categoria')} z-index:10;">${alumnoActual.categoria || ''}</div>
                         <div style="${getSafeStyle('nombre')} z-index:10;">${alumnoActual.nombres} ${alumnoActual.apellidos}</div>
                         <div style="${getSafeStyle('dni')} z-index:10;">${new Intl.NumberFormat('es-AR').format(alumnoActual.dni)}</div>
-                        <div style="${getSafeStyle('ano_nac')} z-index:10;">${alumnoActual.ano_nacimiento || ''}</div>
+                        <div style="${getSafeStyle('ano_nac')} z-index:10;">${alumnoActual.grupo_sanguineo || ''}</div>
                         <div style="${getSafeStyle('matricula')} z-index:10;">${matricula}</div>
                         <div style="${getSafeStyle('vence')} z-index:10;">${vence}</div>
                     </div>`;
@@ -2239,62 +2241,185 @@
             lucide.createIcons();
         }
 
+        /* ======================================================================
+           INYECCIÓN #4 — subirNuevoDiploma() en Modelo B
+           - Valida matrícula ACTIVA
+           - Calcula 80% del arancel de la categoría
+           - Guarda el archivo en sessionStorage
+           - Invoca 'crear-pago-mp' y redirige a MercadoPago
+           ====================================================================== */
         async function subirNuevoDiploma(e) {
             e.preventDefault();
             const btn = el('btn-enviar-nuevo-diploma');
             if (!btn || !alumnoActual) return;
 
-            const orig = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> ENVIANDO...';
-            btn.disabled = true;
-            lucide.createIcons();
+            // 1) Validar matrícula activa
+            if (alumnoActual.estado_legal !== 'ACTIVO') {
+                alert("Tu matrícula debe estar ACTIVA para acreditar nueva formación.");
+                return;
+            }
+
+            // 2) Capturar datos del form
+            const fileInput = el('file-nuevo-diploma');
+            const tituloInput = el('nuevo-diploma-titulo');
+            const file = fileInput?.files[0];
+            const titulo = (tituloInput?.value || '').trim();
+
+            if (!file) { alert('Seleccione un archivo.'); return; }
+            if (!titulo) { alert('Ingrese el nombre de la formación.'); return; }
+
+            // 3) Calcular precio (20% off = paga 80%)
+            const categoria = String(alumnoActual.categoria || '').toUpperCase();
+            const arancelBase = Number(
+                categoria === 'A1' ? configGlobal.arancel_a1 :
+                categoria === 'A2' ? configGlobal.arancel_a2 :
+                categoria === 'A3' ? configGlobal.arancel_a3 :
+                categoria === 'A4' ? configGlobal.arancel_a4 :
+                categoria === 'B1' ? (configGlobal.arancel_b1 || configGlobal.arancel_a1) :
+                categoria === 'B2' ? (configGlobal.arancel_b2 || configGlobal.arancel_a2) :
+                categoria === 'B3' ? (configGlobal.arancel_b3 || configGlobal.arancel_a3) :
+                0
+            );
+
+            if (!arancelBase || arancelBase <= 0) {
+                alert(`No hay arancel configurado para tu categoría (${categoria}). Contactá a administración.`);
+                return;
+            }
+
+            const precioAdicional = Math.round(arancelBase * 0.80);
+
+            // 4) Guardar diploma en sessionStorage
+            const reader = new FileReader();
+            reader.onload = async () => {
+                try {
+                    sessionStorage.setItem('pending_diploma', JSON.stringify({
+                        titulo: titulo,
+                        fileName: file.name,
+                        fileType: file.type,
+                        fileDataUrl: reader.result,
+                        dni: alumnoActual.dni,
+                        carnet_padre_id: alumnoActual.id,
+                        precio: precioAdicional,
+                        tenant_id: window.currentTenantId,
+                        ts: Date.now()
+                    }));
+
+                    // 5) Invocar Edge Function con el precio del carnet adicional
+                    const orig = btn.innerHTML;
+                    btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Redirigiendo a pago...';
+                    btn.disabled = true;
+                    lucide.createIcons();
+
+                    const { data, error } = await window.db.functions.invoke('crear-pago-mp', {
+                        body: {
+                            titulo: `Carnet Adicional - ${titulo} (${categoria})`,
+                            precio: precioAdicional,
+                            dni: String(alumnoActual.dni)
+                        }
+                    });
+
+                    if (error || !data?.init_point) {
+                        // Fallback al link estático de la categoría si existe
+                        let catRef = categoria.toLowerCase();
+                        if (categoria === 'B1') catRef = 'a1';
+                        if (categoria === 'B2') catRef = 'a2';
+                        if (categoria === 'B3') catRef = 'a3';
+                        const linkFallback = configGlobal?.[`mp_link_${catRef}`] || configGlobal?.mp_link || null;
+                        if (linkFallback) { window.location.href = linkFallback; return; }
+                        throw new Error(error?.message || 'Mercado Pago no devolvió init_point.');
+                    }
+
+                    window.location.href = data.init_point;
+
+                } catch (err) {
+                    console.error('Error en subirNuevoDiploma:', err);
+                    alert('No se pudo iniciar el pago: ' + (err?.message || err));
+                    sessionStorage.removeItem('pending_diploma');
+                    btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> Enviar a Auditoría';
+                    btn.disabled = false;
+                    lucide.createIcons();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* ======================================================================
+           INYECCIÓN #5 — procesarDiplomaPendientePostPago()
+           Recupera el diploma pendiente después de volver del pago de MP.
+           Se activa solo si la URL tiene ?pago=success y hay un pending_diploma.
+           ====================================================================== */
+        async function procesarDiplomaPendientePostPago() {
+            const url = new URL(window.location.href);
+            const pagoStatus = url.searchParams.get('pago');
+            if (pagoStatus !== 'success') return;
+
+            const raw = sessionStorage.getItem('pending_diploma');
+            if (!raw) return;
+
+            let pending;
+            try { pending = JSON.parse(raw); } catch { sessionStorage.removeItem('pending_diploma'); return; }
+            if (!pending?.fileDataUrl) { sessionStorage.removeItem('pending_diploma'); return; }
+
+            // Solo procesar si el DNI coincide con el alumno actual (o si ya hay sesión)
+            if (alumnoActual && String(alumnoActual.dni) !== String(pending.dni)) return;
 
             try {
-                const file = el('file-nuevo-diploma').files[0];
-                const titulo = el('nuevo-diploma-titulo').value.trim();
-                if (!file) throw new Error('Seleccione un archivo');
-                if (!titulo) throw new Error('Ingrese el nombre de la formación');
-
-                const fileName = `actualizacion_${alumnoActual.dni}_${Date.now()}.${file.name.split('.').pop()}`;
-                const { error: upErr } = await window.db.storage.from('renmcycf-documentos').upload(fileName, file);
+                // 1) Convertir dataURL a Blob y subir a Storage
+                const blob = await (await fetch(pending.fileDataUrl)).blob();
+                const ext = pending.fileName.split('.').pop() || 'bin';
+                const fileName = `actualizacion_${pending.dni}_${Date.now()}.${ext}`;
+                const { error: upErr } = await window.db.storage
+                    .from('renmcycf-documentos')
+                    .upload(fileName, blob, { contentType: pending.fileType, upsert: false });
                 if (upErr) throw upErr;
 
-                const { data: urlData } = window.db.storage.from('renmcycf-documentos').getPublicUrl(fileName);
+                const { data: urlData } = window.db.storage
+                    .from('renmcycf-documentos')
+                    .getPublicUrl(fileName);
                 const diplomaUrl = urlData.publicUrl;
 
+                // 2) Insertar solicitud de tipo ACTUALIZACION_LEGAJO con carnets_solicitados=1
                 const payload = {
-                    tenant_id: window.currentTenantId,
-                    dni: alumnoActual.dni,
-                    nombres: alumnoActual.nombres,
-                    apellidos: alumnoActual.apellidos,
-                    ano_nacimiento: alumnoActual.ano_nacimiento,
-                    email: alumnoActual.email,
-                    telefono: alumnoActual.telefono,
-                    provincia_laboral: alumnoActual.provincia_laboral,
-                    categoria: alumnoActual.categoria,
-                    foto_perfil_url: alumnoActual.foto_perfil_url,
-                    dni_frente_url: alumnoActual.dni_frente_url,
-                    dni_dorso_url: alumnoActual.dni_dorso_url,
+                    tenant_id: pending.tenant_id || window.currentTenantId,
+                    dni: pending.dni,
+                    nombres: alumnoActual?.nombres || '',
+                    apellidos: alumnoActual?.apellidos || '',
+                    grupo_sanguineo: alumnoActual?.grupo_sanguineo || null,
+                    email: alumnoActual?.email || null,
+                    telefono: alumnoActual?.telefono || null,
+                    provincia_laboral: alumnoActual?.provincia_laboral || null,
+                    categoria: alumnoActual?.categoria || null,
+                    foto_perfil_url: alumnoActual?.foto_perfil_url || null,
+                    dni_frente_url: alumnoActual?.dni_frente_url || null,
+                    dni_dorso_url: alumnoActual?.dni_dorso_url || null,
                     tipo_tramite: 'ACTUALIZACION_LEGAJO',
-                    profesion: titulo,
+                    profesion: pending.titulo,
                     diploma_url: diplomaUrl,
-                    estado: 'PENDIENTE'
+                    estado: 'PENDIENTE',
+                    carnets_solicitados: 1,
+                    grupo_pago_id: crypto.randomUUID ? crypto.randomUUID() : null
                 };
 
                 const { error: dbErr } = await window.db.from('renmcycf_solicitudes').insert([payload]);
                 if (dbErr) throw dbErr;
 
-                alert("✅ Diploma enviado a auditoría. El Comité Evaluador lo revisará a la brevedad.");
-                const form = document.querySelector('#modal-nuevo-diploma form');
-                if (form) form.reset();
-                cerrarModalSeguro('modal-nuevo-diploma');
-                abrirModalDiplomas();
+                sessionStorage.removeItem('pending_diploma');
+
+                // 3) Aviso al usuario
+                setTimeout(() => {
+                    alert("✅ Pago confirmado y diploma recibido.\nEl Comité Evaluador lo auditará y generará tu nuevo carnet.");
+                    if (typeof abrirModalDiplomas === 'function') abrirModalDiplomas();
+                    if (typeof cargarNotificacionesReales === 'function') cargarNotificacionesReales();
+                }, 500);
+
+                // Limpiar el query param para que no se reprocese al recargar
+                url.searchParams.delete('pago');
+                window.history.replaceState({}, '', url.pathname + url.search);
+
             } catch (err) {
-                alert("Error: " + err.message);
-            } finally {
-                btn.innerHTML = orig;
-                btn.disabled = false;
-                lucide.createIcons();
+                console.error('Error procesando diploma post-pago:', err);
+                alert('El pago se recibió pero hubo un error al registrar el diploma. Contactá a administración con tu DNI.');
+                sessionStorage.removeItem('pending_diploma');
             }
         }
 
