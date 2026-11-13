@@ -1742,7 +1742,21 @@
                                     <div><label class="form-label">Nombres Completos</label><input type="text" id="ins-nombres" required class="form-input"></div>
                                     <div><label class="form-label">Apellidos Completos</label><input type="text" id="ins-apellidos" required class="form-input"></div>
                                     <div><label class="form-label">DNI / Documento</label><input type="number" id="ins-dni" required class="form-input font-mono"></div>
-                                    <div><label class="form-label">Año de Nac. (Ej: 1985)</label><input type="number" id="ins-ano-nac" min="1930" max="2010" required class="form-input font-mono" placeholder="1985"></div>
+                                    <div>
+                                        <label class="form-label">Grupo Sanguíneo y Factor</label>
+                                        <select id="ins-grupo-sanguineo" required class="form-input font-bold text-wlPrimary bg-slate-50">
+                                            <option value="" disabled selected>Seleccione...</option>
+                                            <option value="O+">O positivo (O+)</option>
+                                            <option value="O-">O negativo (O-)</option>
+                                            <option value="A+">A positivo (A+)</option>
+                                            <option value="A-">A negativo (A-)</option>
+                                            <option value="B+">B positivo (B+)</option>
+                                            <option value="B-">B negativo (B-)</option>
+                                            <option value="AB+">AB positivo (AB+)</option>
+                                            <option value="AB-">AB negativo (AB-)</option>
+                                            <option value="NO INFORMAR">Prefiero no informar</option>
+                                        </select>
+                                    </div>
                                     <div><label class="form-label">Correo Electrónico</label><input type="email" id="ins-email" required class="form-input"></div>
                                     <div><label class="form-label">Teléfono / WhatsApp</label><input type="tel" id="ins-tel" required class="form-input font-mono" placeholder="Ej: 549351..."></div>
                                     <div class="md:col-span-2"><label class="form-label">Provincia / Ciudad Laboral</label><input type="text" id="ins-prov" required class="form-input" placeholder="Ej: Córdoba Capital"></div>
@@ -1806,14 +1820,40 @@
                             </div>
                             <div id="step-3" class="form-step space-y-6">
                                 <h3 class="font-black text-lg text-wlPrimary uppercase border-b border-slate-100 pb-2"><i data-lucide="file-up" class="inline w-5 h-5 text-wlSecondary mr-1"></i> Documentación y Pago</h3>
-                                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 text-center flex flex-col md:flex-row items-center justify-between gap-4">
-                                    <div class="text-left">
-                                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">1. Arancel Administrativo</p>
-                                        <h4 id="display-precio-final" class="font-black text-2xl text-wlPrimary font-mono">Seleccione Categoría</h4>
+                                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
+                                    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                                        <div class="text-left">
+                                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">1. Arancel Administrativo</p>
+                                            <h4 id="display-precio-final" class="font-black text-2xl text-wlPrimary font-mono">Seleccione Categoría</h4>
+                                            <p id="display-precio-desglose" class="text-[11px] text-slate-500 mt-1 hidden"></p>
+                                        </div>
+                                        <a id="btn-mercadopago" href="#" target="_blank" class="bg-sky-600 hover:bg-sky-700 text-white font-black text-sm uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg transition opacity-50 pointer-events-none flex items-center gap-2">
+                                            <i data-lucide="credit-card" class="w-5 h-5"></i> Abonar en Mercado Pago
+                                        </a>
                                     </div>
-                                    <a id="btn-mercadopago" href="#" target="_blank" class="bg-sky-600 hover:bg-sky-700 text-white font-black text-sm uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg transition opacity-50 pointer-events-none flex items-center gap-2">
-                                        <i data-lucide="credit-card" class="w-5 h-5"></i> Abonar en Mercado Pago
-                                    </a>
+
+                                    <!-- Selector de cantidad de carnets (Modelo A multi-carnet) -->
+                                    <div class="bg-white p-4 rounded-lg border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                        <div class="text-left">
+                                            <label class="block text-[10px] font-black text-wlPrimary uppercase tracking-widest mb-1">
+                                                <i data-lucide="layers" class="inline w-3.5 h-3.5 text-wlSecondary mr-1"></i>
+                                                ¿Cuántos carnets querés registrar ahora?
+                                            </label>
+                                            <p class="text-[10px] text-slate-500">Cada curso/diploma genera un carnet independiente. A partir del 2º tenés <strong class="text-emerald-600">20% de descuento</strong>.</p>
+                                        </div>
+                                        <select id="ins-cantidad-carnets" class="form-input font-bold text-wlPrimary bg-slate-50 !mb-0 w-full sm:w-auto min-w-[120px]" onchange="actualizarLinkYPrecio()">
+                                            <option value="1" selected>1 carnet</option>
+                                            <option value="2">2 carnets</option>
+                                            <option value="3">3 carnets</option>
+                                            <option value="4">4 carnets</option>
+                                            <option value="5">5 carnets</option>
+                                            <option value="6">6 carnets</option>
+                                            <option value="7">7 carnets</option>
+                                            <option value="8">8 carnets</option>
+                                            <option value="9">9 carnets</option>
+                                            <option value="10">10 carnets</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="space-y-3">
                                     <label class="form-label border-b border-slate-100 pb-1">2. Subida de Archivos Respaldatorios</label>
@@ -1910,6 +1950,17 @@
         let heroCarouselData = [];
         let heroCarouselIndex = 0;
         let heroCarouselInterval = null;
+
+        /* =========================================================
+           PAGO DINÁMICO MP — variables globales multi-carnet
+           ========================================================= */
+        window.__precioInscripcionFinal = 0;
+        window.__categoriaInscripcion = '';
+        window.__cantidadCarnets = 1;
+
+        // Constantes de negocio
+        const DESCUENTO_MULTI_CARNET = 0.20;   // 2º carnet en adelante = 20% off
+        const DESCUENTO_B2C_DEFAULT = 0.20;     // promo aliado
 
         const hexToRgb = (hex) => {
             if (!hex) return '15 23 42';
@@ -2929,12 +2980,23 @@
             }
         };
 
+        /* ======================================================================
+           actualizarLinkYPrecio() — Cálculo multi-carnet + B2C
+           ====================================================================== */
         window.actualizarLinkYPrecio = function() {
             const select = document.getElementById('ins-categoria');
+            const selectCant = document.getElementById('ins-cantidad-carnets');
             const display = document.getElementById('display-precio-final');
+            const desglose = document.getElementById('display-precio-desglose');
             const btnPago = document.getElementById('btn-mercadopago');
             if (!select || !display || !btnPago) return;
+
             const cat = select.value;
+            window.__categoriaInscripcion = cat || '';
+
+            const cantidad = Math.max(1, parseInt(selectCant?.value || '1', 10) || 1);
+            window.__cantidadCarnets = cantidad;
+
             const precios = {
                 A1: configGlobal.arancel_a1, A2: configGlobal.arancel_a2,
                 A3: configGlobal.arancel_a3, A4: configGlobal.arancel_a4,
@@ -2942,39 +3004,140 @@
                 B2: configGlobal.arancel_b2 || configGlobal.arancel_a2,
                 B3: configGlobal.arancel_b3 || configGlobal.arancel_a3
             };
-            let precio = Number(precios[cat]) || 0;
-            if (descuentoB2CActivo && precio > 0) {
-                const precioDesc = Math.round(precio * 0.8);
-                display.innerHTML = `<span class="line-through text-slate-400 text-base mr-2">$${new Intl.NumberFormat('es-AR').format(precio)}</span>$${new Intl.NumberFormat('es-AR').format(precioDesc)} <span class="text-xs text-emerald-600 font-bold">(-20%)</span>`;
-            } else {
-                display.innerText = cat ? `$${new Intl.NumberFormat('es-AR').format(precio)}` : 'Seleccione Categoría';
-            }
 
-            let catRef = cat.toLowerCase();
-            if (cat === 'B1') catRef = 'a1';
-            if (cat === 'B2') catRef = 'a2';
-            if (cat === 'B3') catRef = 'a3';
+            const arancelBase = Number(precios[cat]) || 0;
 
-            const linkPago = configGlobal[`mp_link_${catRef}`];
-            if (linkPago && linkPago !== '') {
-                btnPago.href = linkPago;
-                btnPago.classList.remove('opacity-50', 'pointer-events-none');
-            } else {
+            if (!cat || arancelBase <= 0) {
+                display.innerText = 'Seleccione Categoría';
+                if (desglose) desglose.classList.add('hidden');
+                window.__precioInscripcionFinal = 0;
                 btnPago.removeAttribute('href');
                 btnPago.classList.add('opacity-50', 'pointer-events-none');
+                btnPago.onclick = null;
+                return;
             }
+
+            const factorB2C = descuentoB2CActivo ? (1 - DESCUENTO_B2C_DEFAULT) : 1;
+            const precioUnitarioFull = Math.round(arancelBase * factorB2C);
+            const precioAdicional = Math.round(precioUnitarioFull * (1 - DESCUENTO_MULTI_CARNET));
+
+            const totalFull = precioUnitarioFull;
+            const total = totalFull + (cantidad - 1) * precioAdicional;
+
+            window.__precioInscripcionFinal = total;
+
+            const fmt = (n) => '$' + new Intl.NumberFormat('es-AR').format(n);
+
+            if (cantidad === 1) {
+                if (descuentoB2CActivo) {
+                    display.innerHTML = `<span class="line-through text-slate-400 text-base mr-2">${fmt(arancelBase)}</span>${fmt(totalFull)} <span class="text-xs text-emerald-600 font-bold">(-20% B2C)</span>`;
+                } else {
+                    display.innerText = fmt(totalFull);
+                }
+                if (desglose) desglose.classList.add('hidden');
+            } else {
+                display.innerText = fmt(total);
+                if (desglose) {
+                    desglose.innerHTML = `
+                        <span class="font-bold">${cantidad} carnets:</span>
+                        ${fmt(precioUnitarioFull)} (1º)
+                        + ${fmt(precioAdicional)} × ${cantidad - 1} adicionales
+                        <span class="text-emerald-600 font-bold">(-20% c/u)</span>
+                        ${descuentoB2CActivo ? '<span class="text-blue-600 font-bold"> · B2C aplicado</span>' : ''}
+                    `;
+                    desglose.classList.remove('hidden');
+                }
+            }
+
+            btnPago.removeAttribute('href');
+            btnPago.classList.remove('opacity-50', 'pointer-events-none');
+            btnPago.onclick = generarPagoDinamico;
         };
+
+        /* ======================================================================
+           generarPagoDinamico() — Modelo A (multi-carnet en 1 pago)
+           ====================================================================== */
+        async function generarPagoDinamico(event) {
+            if (event) event.preventDefault();
+
+            const btn = document.getElementById('btn-mercadopago');
+            if (!btn) return;
+
+            const textoOriginal = btn.innerHTML;
+            const pointerOriginal = btn.style.pointerEvents;
+
+            try {
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Procesando...';
+                btn.style.pointerEvents = 'none';
+                if (window.lucide) lucide.createIcons();
+
+                const dni = (document.getElementById('ins-dni')?.value || '').trim();
+                const profesion = (document.getElementById('ins-profesion')?.value || '').trim();
+                const categoria = window.__categoriaInscripcion || '';
+                const cantidad = window.__cantidadCarnets || 1;
+                const precioFinal = Number(window.__precioInscripcionFinal) || 0;
+
+                if (!dni) throw new Error('Falta el DNI. Completá el Paso 1.');
+                if (!profesion) throw new Error('Falta el título/profesión. Completá el Paso 2.');
+                if (!categoria) throw new Error('Seleccioná una categoría antes de pagar.');
+                if (!precioFinal || precioFinal <= 0) {
+                    throw new Error(`No hay arancel configurado para la categoría "${categoria}".`);
+                }
+
+                const tituloPago = cantidad === 1
+                    ? `Matriculación ${categoria} - ${profesion}`
+                    : `Matriculación ${categoria} - ${profesion} (${cantidad} carnets)`;
+
+                const { data, error } = await window.db.functions.invoke('crear-pago-mp', {
+                    body: {
+                        titulo: tituloPago,
+                        precio: precioFinal,
+                        dni: String(dni)
+                    }
+                });
+
+                if (error || !data?.init_point) {
+                    console.warn('crear-pago-mp falló, evaluando fallback:', error, data);
+
+                    let catRef = categoria.toLowerCase();
+                    if (categoria === 'B1') catRef = 'a1';
+                    if (categoria === 'B2') catRef = 'a2';
+                    if (categoria === 'B3') catRef = 'a3';
+
+                    const linkFallback =
+                        configGlobal?.[`mp_link_${catRef}`] ||
+                        configGlobal?.mp_link ||
+                        null;
+
+                    if (linkFallback) {
+                        window.location.href = linkFallback;
+                        return;
+                    }
+
+                    throw new Error(error?.message || 'Mercado Pago no devolvió init_point y no hay link de respaldo.');
+                }
+
+                window.location.href = data.init_point;
+
+            } catch (err) {
+                console.error('Error en generarPagoDinamico:', err);
+                alert('No se pudo iniciar el pago: ' + (err?.message || err));
+                btn.innerHTML = textoOriginal;
+                btn.style.pointerEvents = pointerOriginal || '';
+                if (window.lucide) lucide.createIcons();
+            }
+        }
 
         window.siguientePaso = function(paso) {
             if (paso === 2) {
                 const nombres = document.getElementById('ins-nombres').value;
                 const apellidos = document.getElementById('ins-apellidos').value;
                 const dni = document.getElementById('ins-dni').value;
-                const ano = document.getElementById('ins-ano-nac').value;
+                const grupoSang = document.getElementById('ins-grupo-sanguineo').value;
                 const email = document.getElementById('ins-email').value;
                 const tel = document.getElementById('ins-tel').value;
                 const prov = document.getElementById('ins-prov').value;
-                if (!nombres || !apellidos || !dni || !ano || !email || !tel || !prov) {
+                if (!nombres || !apellidos || !dni || !grupoSang || !email || !tel || !prov) {
                     alert("Por favor, complete todos los campos del Paso 1.");
                     return;
                 }
@@ -3070,7 +3233,8 @@
                     nombres: document.getElementById('ins-nombres').value.trim().toUpperCase(),
                     apellidos: document.getElementById('ins-apellidos').value.trim().toUpperCase(),
                     dni: dni,
-                    ano_nacimiento: parseInt(document.getElementById('ins-ano-nac').value) || null,
+                    grupo_sanguineo: document.getElementById('ins-grupo-sanguineo').value || null,
+                    carnets_solicitados: window.__cantidadCarnets || 1,
                     email: document.getElementById('ins-email').value.trim().toLowerCase(),
                     telefono: document.getElementById('ins-tel').value.trim(),
                     provincia_laboral: document.getElementById('ins-prov').value.trim().toUpperCase(),
@@ -3124,7 +3288,7 @@
         };
 
         // ════════════════════════════════════════════════════════════════
-        // NUEVO: buscarProfesional compatible con multi-carnet
+        // buscarProfesional compatible con multi-carnet
         // ════════════════════════════════════════════════════════════════
         window.buscarProfesional = async function() {
             const input = document.getElementById('search-input');
@@ -3146,7 +3310,6 @@
                 let totalCarnets = 1;
 
                 if (esDni) {
-                    // Multi-carnet: traer TODAS las filas del DNI
                     const { data: rows } = await window.db
                         .from('renmcycf_padron')
                         .select('*')
@@ -3160,7 +3323,6 @@
                         totalCarnets = rows.length;
                     }
                 } else {
-                    // Búsqueda por matrícula / credencial (una fila)
                     const { data: rows } = await window.db
                         .from('renmcycf_padron')
                         .select('*')
@@ -3183,7 +3345,6 @@
                 document.getElementById('res-dni').innerText = data.dni || '—';
                 document.getElementById('res-mat').innerText = data.matricula_oficial || data.numero_credencial || '—';
 
-                // Nombre + chip multi-carnet
                 const nombreEl = document.getElementById('res-nombre');
                 if (nombreEl) {
                     const nombreBase = `${data.nombres || ''} ${data.apellidos || ''}`.trim();
@@ -3366,9 +3527,6 @@
             } catch (err) { console.warn('Mapa no disponible:', err); }
         };
 
-        // ════════════════════════════════════════════════════════════════
-        // NUEVO: cargarPeritosMapa deduplicado por DNI (1 pin por profesional)
-        // ════════════════════════════════════════════════════════════════
         async function cargarPeritosMapa() {
             const loading = document.getElementById('map-loading');
             try {
@@ -3379,7 +3537,6 @@
                     .eq('tenant_id', window.currentTenantId)
                     .order('fecha_alta', { ascending: false });
 
-                // Deduplicar por DNI: nos quedamos con la primera fila (la más reciente)
                 const vistos = new Set();
                 peritosMapaDB = (data || []).filter(p => {
                     const key = String(p.dni || '');
@@ -3496,9 +3653,6 @@
             renderizarMarcadores(filtrados);
         };
 
-        // ════════════════════════════════════════════════════════════════
-        // NUEVO: cargarContadorMatriculados deduplicado por DNI
-        // ════════════════════════════════════════════════════════════════
         async function cargarContadorMatriculados() {
             const el = document.getElementById('hero-counter-matriculados');
             if (!el) return;
