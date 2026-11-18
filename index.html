@@ -2079,6 +2079,28 @@
             try { await verificarPromoHashB2C(); } catch(e) { console.warn(e); }
         });
 
+        // Categorías por tenant: el panel de administración es la fuente de verdad.
+        window.__categoriasPersonalizadas = false;
+        function aplicarCategoriasInstitucionales(items) {
+            const select = document.getElementById('ins-categoria');
+            const map = {};
+            (items || []).forEach(item => {
+                const match = /^cat_(a[1-4])_desc$/i.exec(item.clave || '');
+                if (match && item.valor?.trim()) map[match[1].toUpperCase()] = item.valor.trim();
+            });
+            window.__categoriasPersonalizadas = Object.keys(map).length > 0;
+            if (!select) return;
+            Object.entries(map).forEach(([cat, descripcion]) => {
+                const opt = [...select.options].find(o => o.value === cat);
+                if (!opt) return;
+                // Primer renglón: denominación institucional, sin repetir A1/A2.
+                const encabezado = descripcion.split(/\\n|\n/).map(x => x.trim()).find(Boolean) || '';
+                const nombre = encabezado.replace(/^CATEGOR[IÍ]A\s*A\.?[1-4]\s*[·:—-]?\s*/i, '').trim();
+                opt.textContent = `Categoría ${cat} — ${nombre || encabezado}`;
+                opt.title = descripcion;
+            });
+        }
+
         async function cargarTextosPublicos() {
             try {
                 const { data, error } = await window.db.from('renmcycf_contenido')
@@ -2105,6 +2127,8 @@
                     'empresas_titulo': 'empresas-titulo',
                     'empresas_subtitulo': 'empresas-subtitulo'
                 };
+
+                aplicarCategoriasInstitucionales(data);
 
                 data.forEach(item => {
                     const elementId = map[item.clave];
@@ -2325,6 +2349,15 @@
                     { cat: 'A3', ref: 'arancel_a3', nombre: 'Categoría A3', desc: 'Auxiliar / Diplomado' },
                     { cat: 'A4', ref: 'arancel_a4', nombre: 'Categoría A4', desc: 'Consultor / Estudiante' }
                 ];
+
+                // Las etiquetas del arancel deben coincidir con el formulario
+                // y con la sección Categorías, nunca con descripciones fijas.
+                categorias.forEach(c => {
+                    const opt = [...(document.getElementById('ins-categoria')?.options || [])].find(o => o.value === c.cat);
+                    if (opt && window.__categoriasPersonalizadas) {
+                        c.desc = opt.textContent.replace(/^Categoría\s+A[1-4]\s*[—:-]\s*/i, '');
+                    }
+                });
 
                 grid.innerHTML = categorias.map(c => {
                     const precio = Number(data[c.ref]) || 0;
@@ -3034,6 +3067,9 @@
             const input = document.getElementById('ins-profesion');
             const select = document.getElementById('ins-categoria');
             if (!input || !select) return;
+            // No inferir categorías mediante palabras clave cuando la
+            // institución definió una taxonomía propia desde administración.
+            if (window.__categoriasPersonalizadas) return;
             const txt = input.value.toLowerCase();
             if (txt.length < 4) return;
             let sugerida = '';
