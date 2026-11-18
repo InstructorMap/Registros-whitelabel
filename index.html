@@ -1119,7 +1119,7 @@
             </section>
 
             <!-- SOLUCIÓN PARA INSTITUTOS (B2B) -->
-            <section id="seccion-convenios-b2b" class="relative py-20 md:py-28 bg-[#050914] overflow-hidden border-y border-white/10">
+            <section id="seccion-convenios-b2b" style="scroll-margin-top: 96px" class="relative py-20 md:py-28 bg-[#050914] overflow-hidden border-y border-white/10">
                 <div class="absolute inset-0 opacity-20 bg-[radial-gradient(rgb(var(--wl-secondary))_1px,transparent_1px)] [background-size:20px_20px]"></div>
                 <div class="absolute right-0 top-1/3 -translate-y-1/2 w-[600px] h-[600px] bg-wlSecondary/5 blur-[120px] rounded-full pointer-events-none"></div>
                 <div class="max-w-7xl mx-auto px-4 relative z-10">
@@ -3775,11 +3775,19 @@
         };
 
         window.switchSection = function(sectionId) {
-            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active-section'));
             const target = document.getElementById(sectionId);
-            if (target) {
-                target.classList.add('active-section');
+            if (!target) return;
+            // Los módulos internos de Inicio se navegan mediante scroll, sin
+            // ocultar su sección contenedora ni romper la navegación White Label.
+            const page = target.classList.contains('page-section')
+                ? target : target.closest('.page-section');
+            if (!page) return;
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active-section'));
+            page.classList.add('active-section');
+            if (page === target) {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
             }
             if (sectionId === 'seccion-mapa') {
                 if (!mapInstance) initMap();
