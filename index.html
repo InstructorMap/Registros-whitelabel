@@ -52,6 +52,45 @@
             --hero-bg-url: url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80');
         }
 
+        /* Legibilidad del Hero en fotografías claras u oscuras de cualquier tenant. */
+        #seccion-inicio > .hero-pattern {
+            min-height: min(760px, calc(100svh - 100px));
+            align-items: flex-start;
+            padding-top: clamp(36px, 5vw, 72px);
+            padding-bottom: clamp(52px, 6vw, 88px);
+            isolation: isolate;
+        }
+        #seccion-inicio > .hero-pattern::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg,
+                rgb(var(--wl-primary) / .96) 0%,
+                rgb(var(--wl-primary) / .90) 38%,
+                rgb(var(--wl-primary) / .57) 68%,
+                rgb(var(--wl-primary) / .18) 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+        #seccion-inicio #hero-title {
+            color: #fff;
+            text-shadow: 0 3px 24px rgb(0 0 0 / .35);
+        }
+        #seccion-inicio #hero-subtitle {
+            color: #f8fafc;
+            font-weight: 500;
+            text-shadow: 0 2px 12px rgb(0 0 0 / .6);
+            max-width: 670px;
+        }
+        @media (max-width: 767px) {
+            #seccion-inicio > .hero-pattern { min-height: 0; padding-top: 32px; }
+            #seccion-inicio > .hero-pattern::before {
+                background: linear-gradient(180deg,
+                    rgb(var(--wl-primary) / .96),
+                    rgb(var(--wl-primary) / .88) 75%,
+                    rgb(var(--wl-primary) / .76));
+            }
+        }
         /* White Label premium: la identidad se deriva de los tokens del tenant. */
         :root {
             --wl-surface: #ffffff;
