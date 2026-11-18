@@ -52,6 +52,36 @@
             --hero-bg-url: url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80');
         }
 
+        /* White Label premium: la identidad se deriva de los tokens del tenant. */
+        :root {
+            --wl-surface: #ffffff;
+            --wl-ink: #172334;
+            --wl-muted: #526176;
+            --wl-radius: 18px;
+            --wl-elevation: 0 16px 46px -28px rgb(var(--wl-primary) / .32);
+        }
+        #navbar { box-shadow: 0 12px 34px -24px rgb(var(--wl-primary) / .35); }
+        #navbar button, #navbar a, .mobile-menu button, .mobile-menu a {
+            border-radius: 9px;
+            transition: background-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+        }
+        #navbar button:focus-visible, #navbar a:focus-visible,
+        .mobile-menu button:focus-visible, .mobile-menu a:focus-visible,
+        #hero-cta-primary:focus-visible, #hero-cta-secondary:focus-visible {
+            outline: 3px solid rgb(var(--wl-secondary));
+            outline-offset: 3px;
+        }
+        #navbar button:hover, #navbar a:hover { background-color: rgb(var(--wl-secondary) / .10); }
+        #hero-cta-primary, #hero-cta-secondary { min-height: 54px; letter-spacing: .065em; }
+        #hero-cta-primary { box-shadow: 0 16px 38px -17px rgb(var(--wl-secondary) / .55); }
+        #hero-cta-primary:hover { box-shadow: 0 22px 42px -17px rgb(var(--wl-secondary) / .65); }
+        .price-card, .module-plate, .benefit-premium, .forensic-plate {
+            border-radius: var(--wl-radius);
+            box-shadow: var(--wl-elevation);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
         * { scroll-behavior: smooth; }
         body {
             background-color: rgb(var(--wl-background));
@@ -489,7 +519,7 @@
                         </p>
 
                         <div class="flex flex-col sm:flex-row gap-3 md:gap-4 mb-8">
-                            <button id="hero-cta-primary" data-cta="iniciar-matriculacion" onclick="trackCTA('iniciar-matriculacion'); switchSection('seccion-inscripcion')" class="group relative bg-wlSecondary text-wlPrimary font-black uppercase tracking-[0.12em] text-sm px-7 py-4 rounded-xl shadow-[0_10px_40px_-10px_rgba(var(--wl-secondary)/0.6)] hover:shadow-[0_15px_50px_-10px_rgba(var(--wl-secondary),0.8)] hover:scale-[1.03] transition-all flex items-center justify-center gap-2 overflow-hidden">
+                            <button id="hero-cta-primary" data-cta="iniciar-matriculacion" onclick="trackCTA('iniciar-matriculacion'); switchSection('seccion-inscripcion')" class="group relative bg-wlSecondary text-wlPrimary font-black uppercase tracking-[0.12em] text-sm px-7 py-4 rounded-xl shadow-[0_10px_40px_-10px_rgb(var(--wl-secondary)/0.6)] hover:shadow-[0_15px_50px_-10px_rgb(var(--wl-secondary)/0.8)] hover:scale-[1.03] transition-all flex items-center justify-center gap-2 overflow-hidden">
                                 <span class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                                 <i data-lucide="user-plus" class="w-5 h-5 relative z-10"></i>
                                 <span class="relative z-10">Iniciar Matriculación</span>
