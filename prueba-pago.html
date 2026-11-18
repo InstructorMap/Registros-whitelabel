@@ -11,7 +11,7 @@ const btn=document.getElementById('generar'),estado=document.getElementById('est
 btn.onclick=async()=>{
 btn.disabled=true;resultado.replaceChildren();estado.textContent='Solicitando enlace a Supabase...';
 try{
-const response=await fetch('https://udvpgthitdxtkicenits.supabase.co/functions/v1/crear-pago-mp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({titulo:'PRUEBA TECNICA - Matriculación A1',categoria:'A1',cantidad:1,dni:'99999999'})});
+const response=await fetch('https://udvpgthitdxtkicenits.supabase.co/functions/v1/crear-pago-mp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({titulo:'PRUEBA TECNICA - Matriculación A1',tenant:new URLSearchParams(location.search).get('tenant')||'remaep',categoria:'A1',cantidad:1,dni:'99999999'})});
 const data=await response.json().catch(()=>({error:'Respuesta no válida de la función'}));
 if(!response.ok||!data.init_point)throw new Error(data.provider_message||data.error||'HTTP '+response.status);
 const a=document.createElement('a');a.className='action';a.href=data.init_point;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Abrir checkout generado (NO PAGAR)';
