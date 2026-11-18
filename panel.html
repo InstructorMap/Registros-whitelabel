@@ -2277,7 +2277,15 @@
                 
                 document.getElementById('edit-directorio').checked = p.figurar_directorio || false;
                 document.getElementById('edit-profesion').value = p.profesion || '';
-                document.getElementById('edit-categoria').value = p.categoria || 'A1';
+                const categoriaEdit = document.getElementById('edit-categoria');
+                categoriaEdit.querySelectorAll('option[data-historica]').forEach(o => o.remove());
+                if (p.categoria && ![...categoriaEdit.options].some(o => o.value === p.categoria)) {
+                    // Mantener el valor histórico visible al editar, sin ofrecerlo para nuevas altas.
+                    const historica = new Option(p.categoria + ' (histórica)', p.categoria);
+                    historica.dataset.historica = 'true';
+                    categoriaEdit.add(historica);
+                }
+                categoriaEdit.value = p.categoria || 'A1';
                 document.getElementById('edit-estado').value = p.estado_legal || 'ACTIVO';
                 document.getElementById('edit-vencimiento').value = p.fecha_vencimiento ? p.fecha_vencimiento.split('T')[0] : '';
                 document.getElementById('edit-foto-preview').src = p.foto_perfil_url || `https://ui-avatars.com/api/?name=${p.nombres}+${p.apellidos}&background=0f172a&color=fff`;
