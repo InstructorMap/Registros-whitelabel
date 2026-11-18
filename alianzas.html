@@ -21,10 +21,10 @@
             theme: {
                 extend: {
                     colors: {
-                        wlPrimary: 'var(--wl-primary)',
-                        wlSecondary: 'var(--wl-secondary)',
-                        wlTertiary: 'var(--wl-tertiary)',
-                        wlBackground: 'var(--wl-background)',
+                        wlPrimary: 'rgb(var(--wl-primary) / <alpha-value>)',
+                        wlSecondary: 'rgb(var(--wl-secondary) / <alpha-value>)',
+                        wlTertiary: 'rgb(var(--wl-tertiary) / <alpha-value>)',
+                        wlBackground: 'rgb(var(--wl-background) / <alpha-value>)',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -48,7 +48,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--wl-background);
+            background-color: rgb(var(--wl-background));
             color: #e2e8f0;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
@@ -83,17 +83,17 @@
 
         .divider-gold {
             height: 3px; width: 80px;
-            background: linear-gradient(90deg, transparent, var(--wl-secondary), transparent);
+            background: linear-gradient(90deg, transparent, rgb(var(--wl-secondary)), transparent);
             margin: 0 auto;
         }
 
         .btn-gold {
-            background: var(--wl-secondary);
-            color: var(--wl-primary);
+            background: rgb(var(--wl-secondary));
+            color: rgb(var(--wl-primary));
             font-weight: 900; text-transform: uppercase;
             letter-spacing: 0.1em;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid var(--wl-secondary);
+            border: 1px solid rgb(var(--wl-secondary));
             position: relative; overflow: hidden;
         }
         .btn-gold:hover {
@@ -111,7 +111,7 @@
 
         .btn-outline {
             background: transparent;
-            color: var(--wl-secondary);
+            color: rgb(var(--wl-secondary));
             border: 1.5px solid rgba(var(--wl-secondary), 0.4);
             font-weight: 800; text-transform: uppercase;
             letter-spacing: 0.1em;
@@ -119,7 +119,7 @@
         }
         .btn-outline:hover {
             background: rgba(var(--wl-secondary), 0.08);
-            border-color: var(--wl-secondary);
+            border-color: rgb(var(--wl-secondary));
         }
 
         .card-premium {
@@ -142,12 +142,12 @@
             transition: all 0.4s ease;
         }
         .price-card:hover {
-            border-color: var(--wl-secondary);
+            border-color: rgb(var(--wl-secondary));
             transform: translateY(-6px);
             box-shadow: 0 30px 60px -20px rgba(var(--wl-secondary), 0.25);
         }
         .price-card.featured {
-            border-color: var(--wl-secondary);
+            border-color: rgb(var(--wl-secondary));
             background: linear-gradient(145deg, rgba(var(--wl-secondary), 0.12), rgba(5, 9, 20, 0.9));
             box-shadow: 0 25px 60px -20px rgba(var(--wl-secondary), 0.35);
         }
@@ -155,8 +155,8 @@
             content: 'MÁS ELEGIDA';
             position: absolute; top: -13px; left: 50%;
             transform: translateX(-50%);
-            background: var(--wl-secondary);
-            color: var(--wl-primary);
+            background: rgb(var(--wl-secondary));
+            color: rgb(var(--wl-primary));
             font-size: 9px; font-weight: 900;
             padding: 5px 14px; border-radius: 20px;
             letter-spacing: 0.15em;
@@ -172,7 +172,7 @@
         }
         .form-input::placeholder { color: #64748b; }
         .form-input:focus {
-            border-color: var(--wl-secondary);
+            border-color: rgb(var(--wl-secondary));
             box-shadow: 0 0 0 3px rgba(var(--wl-secondary), 0.15);
             background: rgba(0, 0, 0, 0.5);
         }
@@ -195,19 +195,19 @@
         }
         .circuit-node.active {
             background: linear-gradient(145deg, rgba(var(--wl-secondary), 0.15), rgba(10, 17, 40, 0.9));
-            border-color: var(--wl-secondary);
-            color: var(--wl-secondary);
+            border-color: rgb(var(--wl-secondary));
+            color: rgb(var(--wl-secondary));
             box-shadow: 0 10px 30px -10px rgba(var(--wl-secondary), 0.5);
         }
         .circuit-arrow {
-            color: var(--wl-secondary);
+            color: rgb(var(--wl-secondary));
             font-size: 18px; font-weight: 900;
             opacity: 0.6;
         }
 
         .contrato-doc {
             background: linear-gradient(180deg, #fefefe 0%, #f8f6ef 100%);
-            color: var(--wl-primary);
+            color: rgb(var(--wl-primary));
             border-radius: 16px;
             box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(var(--wl-secondary), 0.3);
             position: relative; overflow: hidden;
@@ -215,7 +215,7 @@
         .contrato-doc::before {
             content: ''; position: absolute;
             top: 0; left: 0; right: 0; height: 6px;
-            background: linear-gradient(90deg, var(--wl-primary) 0%, var(--wl-secondary) 50%, var(--wl-primary) 100%);
+            background: linear-gradient(90deg, rgb(var(--wl-primary)) 0%, rgb(var(--wl-secondary)) 50%, rgb(var(--wl-primary)) 100%);
         }
         .contrato-watermark {
             position: absolute; right: -40px; bottom: -40px;
@@ -249,8 +249,8 @@
         .clausula-num {
             flex-shrink: 0; width: 28px; height: 28px;
             border-radius: 50%;
-            background: var(--wl-primary);
-            color: var(--wl-secondary);
+            background: rgb(var(--wl-primary));
+            color: rgb(var(--wl-secondary));
             display: flex; align-items: center; justify-content: center;
             font-family: 'JetBrains Mono', monospace;
             font-weight: 900; font-size: 12px;
@@ -263,9 +263,9 @@
         .pulse-gold { animation: pulseGold 2.2s infinite; }
 
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--wl-background); }
+        ::-webkit-scrollbar-track { background: rgb(var(--wl-background)); }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--wl-secondary); }
+        ::-webkit-scrollbar-thumb:hover { background: rgb(var(--wl-secondary)); }
 
         .mockup-diploma-wrap {
             position: relative; width: 100%; max-width: 780px;
@@ -274,7 +274,7 @@
         .mockup-diploma {
             position: relative;
             background: linear-gradient(135deg, #fefefe 0%, #f8f5ee 50%, #fefefe 100%);
-            border: 6px double var(--wl-secondary);
+            border: 6px double rgb(var(--wl-secondary));
             border-radius: 8px;
             padding: 36px 44px 44px;
             box-shadow: 0 30px 80px -20px rgba(0,0,0,0.5), inset 0 0 60px rgba(var(--wl-secondary),0.08);
@@ -303,8 +303,8 @@
         }
         .mockup-diploma .diploma-header .diploma-logo {
             width: 54px; height: 54px; border-radius: 50%;
-            background: linear-gradient(145deg, var(--wl-primary), #1e293b);
-            border: 2px solid var(--wl-secondary);
+            background: linear-gradient(145deg, rgb(var(--wl-primary)), #1e293b);
+            border: 2px solid rgb(var(--wl-secondary));
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
             box-shadow: 0 6px 16px rgba(var(--wl-primary),0.25);
@@ -321,12 +321,12 @@
             display: block;
             font-family: 'Playfair Display', serif;
             font-weight: 900; font-size: 15px;
-            color: var(--wl-primary);
+            color: rgb(var(--wl-primary));
             letter-spacing: 0.03em;
         }
         .mockup-diploma .diploma-header .diploma-brand span {
             display: block; font-size: 8px; font-weight: 800;
-            color: var(--wl-secondary);
+            color: rgb(var(--wl-secondary));
             letter-spacing: 0.22em; text-transform: uppercase;
             margin-top: 2px;
         }
@@ -334,19 +334,19 @@
         .mockup-diploma .diploma-title {
             font-family: 'Playfair Display', serif;
             font-weight: 900; font-size: 22px;
-            color: var(--wl-primary);
+            color: rgb(var(--wl-primary));
             letter-spacing: 0.04em; text-transform: uppercase;
             margin: 10px 0 2px;
         }
         .mockup-diploma .diploma-subtitle {
             font-size: 10px; font-weight: 700;
-            color: var(--wl-secondary);
+            color: rgb(var(--wl-secondary));
             letter-spacing: 0.32em; text-transform: uppercase;
             margin-bottom: 6px;
         }
         .mockup-diploma .diploma-line {
             width: 70%; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--wl-secondary), transparent);
+            background: linear-gradient(90deg, transparent, rgb(var(--wl-secondary)), transparent);
             margin: 6px auto;
         }
         .mockup-diploma .diploma-body {
@@ -355,7 +355,7 @@
         .mockup-diploma .diploma-name {
             font-family: 'Playfair Display', serif;
             font-weight: 900; font-size: 22px;
-            color: var(--wl-primary);
+            color: rgb(var(--wl-primary));
             letter-spacing: 0.02em; margin: 4px 0 8px;
         }
         .mockup-diploma .diploma-program {
@@ -374,7 +374,7 @@
         }
         .mockup-diploma .diploma-sign .sign-line {
             width: 90px; height: 1px;
-            background: var(--wl-primary);
+            background: rgb(var(--wl-primary));
             margin: 0 auto 4px; opacity: 0.5;
         }
         .mockup-diploma .diploma-sign small {
@@ -384,7 +384,7 @@
         }
         .mockup-diploma .diploma-seal {
             width: 62px; height: 62px; border-radius: 50%;
-            background: linear-gradient(145deg, var(--wl-secondary), #b8941f);
+            background: linear-gradient(145deg, rgb(var(--wl-secondary)), #b8941f);
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 6px 20px rgba(var(--wl-secondary),0.5), inset 0 0 0 3px rgba(255,255,255,0.4);
             flex-shrink: 0; position: relative;
@@ -398,8 +398,8 @@
         .mockup-credencial {
             position: absolute; bottom: 0; right: 0;
             width: 300px;
-            background: linear-gradient(145deg, var(--wl-primary) 0%, #1a2744 50%, var(--wl-primary) 100%);
-            border: 2px solid var(--wl-secondary);
+            background: linear-gradient(145deg, rgb(var(--wl-primary)) 0%, #1a2744 50%, rgb(var(--wl-primary)) 100%);
+            border: 2px solid rgb(var(--wl-secondary));
             border-radius: 16px; padding: 16px;
             box-shadow: 0 40px 80px -15px rgba(0,0,0,0.85), 0 0 50px rgba(var(--wl-secondary),0.25);
             transform: translate(24px, 46px) rotate(-3deg);
@@ -425,7 +425,7 @@
         .mockup-credencial .cred-header .cred-logo {
             width: 30px; height: 30px; border-radius: 50%;
             background: #ffffff;
-            border: 2px solid var(--wl-secondary);
+            border: 2px solid rgb(var(--wl-secondary));
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0; overflow: hidden;
         }
@@ -445,13 +445,13 @@
         }
         .mockup-credencial .cred-header .cred-brand span {
             display: block; font-size: 6.5px; font-weight: 800;
-            color: var(--wl-secondary);
+            color: rgb(var(--wl-secondary));
             letter-spacing: 0.18em; text-transform: uppercase;
             margin-top: 1px;
         }
         .mockup-credencial .cred-header .cred-chip {
             width: 22px; height: 16px; border-radius: 3px;
-            background: linear-gradient(135deg, #facc15, var(--wl-secondary));
+            background: linear-gradient(135deg, #facc15, rgb(var(--wl-secondary)));
             border: 1px solid rgba(0,0,0,0.15);
             box-shadow: inset 0 1px 2px rgba(255,255,255,0.6);
             flex-shrink: 0;
@@ -462,14 +462,14 @@
         .mockup-credencial .cred-photo {
             width: 62px; height: 74px; border-radius: 6px;
             background: linear-gradient(145deg, #334155, #1e293b);
-            border: 2px solid var(--wl-secondary);
+            border: 2px solid rgb(var(--wl-secondary));
             display: flex; align-items: center; justify-content: center;
             overflow: hidden; flex-shrink: 0; position: relative;
         }
         .mockup-credencial .cred-photo::after {
             content: ''; position: absolute;
             bottom: 0; left: 0; right: 0; height: 3px;
-            background: var(--wl-secondary);
+            background: rgb(var(--wl-secondary));
         }
         .mockup-credencial .cred-info {
             flex: 1; min-width: 0; text-align: left;
@@ -480,7 +480,7 @@
         }
         .mockup-credencial .cred-info .cred-cat {
             font-size: 7px; font-weight: 900;
-            color: var(--wl-secondary);
+            color: rgb(var(--wl-secondary));
             letter-spacing: 0.1em; text-transform: uppercase;
             margin-bottom: 4px;
         }
@@ -523,10 +523,10 @@
         .mockup-badge {
             position: absolute; bottom: 28px; right: 340px;
             background: #ffffff;
-            border: 2px solid var(--wl-secondary);
+            border: 2px solid rgb(var(--wl-secondary));
             border-radius: 50px; padding: 6px 14px;
             font-size: 9px; font-weight: 900;
-            color: var(--wl-primary);
+            color: rgb(var(--wl-primary));
             text-transform: uppercase;
             letter-spacing: 0.12em;
             box-shadow: 0 10px 25px rgba(0,0,0,0.25);
@@ -534,7 +534,7 @@
             display: flex; align-items: center; gap: 6px;
             white-space: nowrap;
         }
-        .mockup-badge i { color: var(--wl-secondary); }
+        .mockup-badge i { color: rgb(var(--wl-secondary)); }
 
         @media (max-width: 768px) {
             .mockup-diploma { padding: 22px 18px 26px; aspect-ratio: 1.1 / 1; }
@@ -552,13 +552,20 @@
         @media (max-width: 520px) {
             .mockup-badge { display: none; }
         }
+
+        /* Contraste accesible sobre superficies oscuras del portal de alianzas. */
+        .text-wlPrimary { color: #f1f5f9 !important; }
+        .btn-gold, .btn-gold .text-wlPrimary, .price-card.featured::before { color: #0f172a !important; }
+        input, textarea, select { color-scheme: dark; }
+        .form-input, .form-input:focus { color: #ffffff; }
+        .form-input::placeholder { color: #94a3b8; }
     </style>
 </head>
 <body class="min-h-screen">
 
     <!-- TOP BAR -->
     <div class="text-white text-[10px] md:text-[11px] py-3 px-4 text-center font-black tracking-[0.2em] md:tracking-[0.3em] uppercase relative overflow-hidden"
-         style="background-color: var(--wl-primary); border-bottom: 1px solid rgba(var(--wl-secondary), 0.2);">
+         style="background-color: rgb(var(--wl-primary)); border-bottom: 1px solid rgba(var(--wl-secondary), 0.2);">
         <span class="relative z-10"><span id="wl-institucion-nombre-top">Cargando...</span> · Portal de Alianzas Institucionales</span>
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-wlSecondary/10 to-transparent animate-pulse"></div>
     </div>
@@ -568,13 +575,13 @@
         <div class="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-3">
                 <div class="w-11 h-11 rounded-xl flex items-center justify-center overflow-hidden"
-                     style="background-color: var(--wl-primary); border: 2px solid var(--wl-secondary);">
-                    <i data-lucide="fingerprint" id="nav-logo-icon" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                     style="background-color: rgb(var(--wl-primary)); border: 2px solid rgb(var(--wl-secondary));">
+                    <i data-lucide="fingerprint" id="nav-logo-icon" class="w-5 h-5" style="color: rgb(var(--wl-secondary));"></i>
                     <img id="nav-logo-img" src="" class="w-full h-full object-contain p-1.5 hidden" alt="Logo Institucional">
                 </div>
                 <div class="leading-tight hidden sm:block">
                     <span id="wl-institucion-nombre" class="font-title font-black text-lg block text-white tracking-tight">Cargando...</span>
-                    <span class="text-[9px] font-bold uppercase tracking-[0.25em]" style="color: var(--wl-secondary);">Alianzas Institucionales</span>
+                    <span class="text-[9px] font-bold uppercase tracking-[0.25em]" style="color: rgb(var(--wl-secondary));">Alianzas Institucionales</span>
                 </div>
             </a>
             <div class="flex items-center gap-3 md:gap-5">
@@ -586,7 +593,7 @@
     </nav>
 
     <!-- HERO SECTION -->
-    <header class="relative overflow-hidden border-b" style="background-color: var(--wl-background); border-color: rgba(var(--wl-secondary), 0.15);">
+    <header class="relative overflow-hidden border-b" style="background-color: rgb(var(--wl-background)); border-color: rgba(var(--wl-secondary), 0.15);">
         <img id="hero-bg-img" src="" class="alianzas-hero-bg" alt="Fondo institucional">
         <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to bottom right, rgba(var(--wl-background),0.95), rgba(var(--wl-primary),0.85), rgba(var(--wl-background),0.95));"></div>
         <div class="absolute inset-0 bg-grid-subtle opacity-30 pointer-events-none"></div>
@@ -598,7 +605,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                 <div class="lg:col-span-7" data-aos="fade-right">
                     <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6"
-                         style="background: rgba(var(--wl-secondary), 0.1); color: var(--wl-secondary); border: 1px solid rgba(var(--wl-secondary), 0.3);">
+                         style="background: rgba(var(--wl-secondary), 0.1); color: rgb(var(--wl-secondary)); border: 1px solid rgba(var(--wl-secondary), 0.3);">
                         <span class="relative flex h-2 w-2">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -608,7 +615,7 @@
 
                     <h1 class="font-title text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 leading-[1.05] tracking-tight">
                         Eleve el prestigio de su institución con una<br>
-                        <span class="text-transparent bg-clip-text" style="background-image: linear-gradient(to right, var(--wl-secondary), #fef08a, var(--wl-secondary)); -webkit-background-clip: text; background-clip: text;">credencial que habla por sí sola.</span>
+                        <span class="text-transparent bg-clip-text" style="background-image: linear-gradient(to right, rgb(var(--wl-secondary)), #fef08a, rgb(var(--wl-secondary))); -webkit-background-clip: text; background-clip: text;">credencial que habla por sí sola.</span>
                     </h1>
 
                     <p class="text-slate-300 text-base md:text-lg leading-relaxed mb-8 max-w-2xl font-light">
@@ -626,15 +633,15 @@
 
                     <div class="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
                         <div>
-                            <div class="font-mono font-black text-2xl md:text-3xl" style="color: var(--wl-secondary);">100%</div>
+                            <div class="font-mono font-black text-2xl md:text-3xl" style="color: rgb(var(--wl-secondary));">100%</div>
                             <div class="text-[10px] text-slate-400 uppercase tracking-[0.15em] font-bold mt-1">Auditoría documental</div>
                         </div>
                         <div>
-                            <div class="font-mono font-black text-2xl md:text-3xl" style="color: var(--wl-secondary);">QR</div>
+                            <div class="font-mono font-black text-2xl md:text-3xl" style="color: rgb(var(--wl-secondary));">QR</div>
                             <div class="text-[10px] text-slate-400 uppercase tracking-[0.15em] font-bold mt-1">Verificación pública</div>
                         </div>
                         <div>
-                            <div class="font-mono font-black text-2xl md:text-3xl" style="color: var(--wl-secondary);">24/48h</div>
+                            <div class="font-mono font-black text-2xl md:text-3xl" style="color: rgb(var(--wl-secondary));">24/48h</div>
                             <div class="text-[10px] text-slate-400 uppercase tracking-[0.15em] font-bold mt-1">Respuesta del Comité</div>
                         </div>
                     </div>
@@ -645,7 +652,7 @@
                         <div class="mockup-diploma">
                             <div class="diploma-header">
                                 <div class="diploma-logo">
-                                    <i data-lucide="fingerprint" id="mockup-diploma-logo-icon" class="w-6 h-6" style="color: var(--wl-secondary);"></i>
+                                    <i data-lucide="fingerprint" id="mockup-diploma-logo-icon" class="w-6 h-6" style="color: rgb(var(--wl-secondary));"></i>
                                     <img id="mockup-diploma-logo-img" src="" class="hidden" alt="Logo">
                                 </div>
                                 <div class="diploma-brand">
@@ -681,7 +688,7 @@
                         <div class="mockup-credencial">
                             <div class="cred-header">
                                 <div class="cred-logo">
-                                    <i data-lucide="fingerprint" id="mockup-credencial-logo-icon" class="w-4 h-4" style="color: var(--wl-primary);"></i>
+                                    <i data-lucide="fingerprint" id="mockup-credencial-logo-icon" class="w-4 h-4" style="color: rgb(var(--wl-primary));"></i>
                                     <img id="mockup-credencial-logo-img" src="" class="hidden" alt="Logo">
                                 </div>
                                 <div class="cred-brand">
@@ -702,7 +709,7 @@
                                     <p class="cred-row"><i data-lucide="hash" class="w-2.5 h-2.5"></i> RN-2026-XXXX</p>
                                 </div>
                                 <div class="cred-qr">
-                                    <i data-lucide="qr-code" class="w-8 h-8" style="color: var(--wl-primary);"></i>
+                                    <i data-lucide="qr-code" class="w-8 h-8" style="color: rgb(var(--wl-primary));"></i>
                                 </div>
                             </div>
 
@@ -729,7 +736,7 @@
         <div class="relative max-w-7xl mx-auto px-4 md:px-6">
             <div class="text-center mb-16 max-w-3xl mx-auto" data-aos="fade-up">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-5"
-                     style="background: rgba(var(--wl-secondary), 0.1); color: var(--wl-secondary); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                     style="background: rgba(var(--wl-secondary), 0.1); color: rgb(var(--wl-secondary)); border: 1px solid rgba(var(--wl-secondary), 0.25);">
                     <i data-lucide="megaphone" class="w-3.5 h-3.5"></i> Servicio 01
                 </div>
                 <h2 class="font-title text-3xl md:text-5xl font-black text-white mb-4 tracking-tight leading-tight">
@@ -745,7 +752,7 @@
                 <div data-aos="fade-right">
                     <h3 class="font-title text-2xl md:text-3xl font-black text-white mb-6 leading-tight">
                         Deje de ser un instituto más.<br>
-                        <span style="color: var(--wl-secondary);">Conviértase en referente nacional.</span>
+                        <span style="color: rgb(var(--wl-secondary));">Conviértase en referente nacional.</span>
                     </h3>
                     <p class="text-slate-300 leading-relaxed mb-6">
                         Al adherirse, su logo, teléfono, dirección web y cursos verificados aparecen en <strong class="text-white">la página principal del Registro</strong>, en la sección de instituciones auditadas y en el <strong class="text-white">mapa geográfico nacional</strong>.
@@ -755,19 +762,19 @@
                     </p>
                     <ul class="space-y-3">
                         <li class="flex items-start gap-3 text-sm text-slate-200">
-                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: rgb(var(--wl-secondary));"></i>
                             <span>Perfil institucional con logo, web, teléfono y descripción</span>
                         </li>
                         <li class="flex items-start gap-3 text-sm text-slate-200">
-                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: rgb(var(--wl-secondary));"></i>
                             <span>Presencia en el mapa geográfico nacional por provincia</span>
                         </li>
                         <li class="flex items-start gap-3 text-sm text-slate-200">
-                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: rgb(var(--wl-secondary));"></i>
                             <span>Sello digital "Entidad Auditada" verificable</span>
                         </li>
                         <li class="flex items-start gap-3 text-sm text-slate-200">
-                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5" style="color: rgb(var(--wl-secondary));"></i>
                             <span>Derivación directa de consultas a sus canales de contacto</span>
                         </li>
                     </ul>
@@ -776,7 +783,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" data-aos="fade-left">
                     <div class="price-card p-7">
                         <div class="text-center mb-5">
-                            <div class="text-[10px] font-black uppercase tracking-[0.3em] mb-3" style="color: var(--wl-secondary);">Plan Semestral</div>
+                            <div class="text-[10px] font-black uppercase tracking-[0.3em] mb-3" style="color: rgb(var(--wl-secondary));">Plan Semestral</div>
                             <h4 class="font-title text-3xl font-black text-white mb-1">6 Meses</h4>
                             <p class="text-[11px] text-slate-400 uppercase tracking-widest">Publicación activa</p>
                         </div>
@@ -785,9 +792,9 @@
                             <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">ARS / período</div>
                         </div>
                         <ul class="space-y-2 text-xs text-slate-300 mb-6">
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Perfil institucional completo</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Presencia en mapa nacional</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Derivación de consultas</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: rgb(var(--wl-secondary));"></i> Perfil institucional completo</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: rgb(var(--wl-secondary));"></i> Presencia en mapa nacional</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: rgb(var(--wl-secondary));"></i> Derivación de consultas</li>
                         </ul>
                         <a href="#solicitud" class="btn-outline w-full py-3 rounded-lg text-xs inline-flex items-center justify-center gap-2">
                             <i data-lucide="arrow-right" class="w-4 h-4"></i> Quiero este plan
@@ -796,18 +803,18 @@
 
                     <div class="price-card featured p-7">
                         <div class="text-center mb-5">
-                            <div class="text-[10px] font-black uppercase tracking-[0.3em] mb-3" style="color: var(--wl-secondary);">Plan Anual</div>
+                            <div class="text-[10px] font-black uppercase tracking-[0.3em] mb-3" style="color: rgb(var(--wl-secondary));">Plan Anual</div>
                             <h4 class="font-title text-3xl font-black text-white mb-1">12 Meses</h4>
-                            <p class="text-[11px] uppercase tracking-widest font-bold" style="color: var(--wl-secondary);">Ahorro 17%</p>
+                            <p class="text-[11px] uppercase tracking-widest font-bold" style="color: rgb(var(--wl-secondary));">Ahorro 17%</p>
                         </div>
                         <div class="text-center py-6 border-y mb-5" style="border-color: rgba(var(--wl-secondary), 0.25);">
-                            <div class="font-mono font-black text-3xl md:text-4xl mb-1" style="color: var(--wl-secondary);">$2.500.000</div>
+                            <div class="font-mono font-black text-3xl md:text-4xl mb-1" style="color: rgb(var(--wl-secondary));">$2.500.000</div>
                             <div class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">ARS / período</div>
                         </div>
                         <ul class="space-y-2 text-xs text-slate-200 mb-6">
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Todo lo del plan semestral</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Prioridad en búsquedas</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: var(--wl-secondary);"></i> Publicación de cursos sin cargo</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: rgb(var(--wl-secondary));"></i> Todo lo del plan semestral</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: rgb(var(--wl-secondary));"></i> Prioridad en búsquedas</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5" style="color: rgb(var(--wl-secondary));"></i> Publicación de cursos sin cargo</li>
                         </ul>
                         <a href="#solicitud" class="btn-gold w-full py-3 rounded-lg text-xs inline-flex items-center justify-center gap-2">
                             <i data-lucide="arrow-right" class="w-4 h-4"></i> Quiero este plan
@@ -819,13 +826,13 @@
     </section>
 
     <!-- SERVICIO 2: EMISIÓN DE DIPLOMAS -->
-    <section id="precios" class="relative py-20 md:py-28 border-b overflow-hidden" style="background: linear-gradient(to bottom, var(--wl-background), var(--wl-primary), var(--wl-background)); border-color: rgba(var(--wl-secondary), 0.1);">
+    <section id="precios" class="relative py-20 md:py-28 border-b overflow-hidden" style="background: linear-gradient(to bottom, rgb(var(--wl-background)), rgb(var(--wl-primary)), rgb(var(--wl-background))); border-color: rgba(var(--wl-secondary), 0.1);">
         <div class="absolute inset-0 bg-grid-subtle opacity-30 pointer-events-none"></div>
 
         <div class="relative max-w-7xl mx-auto px-4 md:px-6">
             <div class="text-center mb-16 max-w-3xl mx-auto" data-aos="fade-up">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-5"
-                     style="background: rgba(var(--wl-secondary), 0.1); color: var(--wl-secondary); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                     style="background: rgba(var(--wl-secondary), 0.1); color: rgb(var(--wl-secondary)); border: 1px solid rgba(var(--wl-secondary), 0.25);">
                     <i data-lucide="stamp" class="w-3.5 h-3.5"></i> Servicio 02
                 </div>
                 <h2 class="font-title text-3xl md:text-5xl font-black text-white mb-4 tracking-tight leading-tight">
@@ -840,21 +847,21 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14" data-aos="fade-up" data-aos-delay="100">
                 <div class="card-premium p-7">
                     <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
-                        <i data-lucide="palette" class="w-6 h-6" style="color: var(--wl-secondary);"></i>
+                        <i data-lucide="palette" class="w-6 h-6" style="color: rgb(var(--wl-secondary));"></i>
                     </div>
                     <h4 class="font-black text-sm text-white uppercase tracking-widest mb-2">Su Diseño Intacto</h4>
                     <p class="text-xs text-slate-400 leading-relaxed">Utiliza su plantilla, sus logos y sus firmas. La identidad visual de su institución se preserva al 100%.</p>
                 </div>
                 <div class="card-premium p-7">
                     <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
-                        <i data-lucide="qr-code" class="w-6 h-6" style="color: var(--wl-secondary);"></i>
+                        <i data-lucide="qr-code" class="w-6 h-6" style="color: rgb(var(--wl-secondary));"></i>
                     </div>
                     <h4 class="font-black text-sm text-white uppercase tracking-widest mb-2">Valor Agregado ASARI</h4>
                     <p class="text-xs text-slate-400 leading-relaxed">QR verificable, sello institucional, horas de acreditación, analítico, programa de estudio y CV del docente.</p>
                 </div>
                 <div class="card-premium p-7">
                     <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
-                        <i data-lucide="shield-check" class="w-6 h-6" style="color: var(--wl-secondary);"></i>
+                        <i data-lucide="shield-check" class="w-6 h-6" style="color: rgb(var(--wl-secondary));"></i>
                     </div>
                     <h4 class="font-black text-sm text-white uppercase tracking-widest mb-2">Seriedad Absoluta</h4>
                     <p class="text-xs text-slate-400 leading-relaxed">Quien verifique el diploma notará la absoluta seriedad de su instituto. Confianza que se traduce en reputación.</p>
@@ -863,7 +870,7 @@
 
             <div class="max-w-5xl mx-auto mb-16" data-aos="fade-up" data-aos-delay="200">
                 <div class="rounded-2xl p-6 md:p-8" style="background: rgba(var(--wl-background), 0.5); border: 1px solid rgba(var(--wl-secondary), 0.15);">
-                    <p class="text-center text-[10px] font-black uppercase tracking-[0.25em] mb-6" style="color: var(--wl-secondary);">
+                    <p class="text-center text-[10px] font-black uppercase tracking-[0.25em] mb-6" style="color: rgb(var(--wl-secondary));">
                         <i data-lucide="route" class="inline w-3.5 h-3.5 mr-1"></i> Trazabilidad del Certificado
                     </p>
                     <div class="flex flex-wrap items-center justify-center gap-3">
@@ -889,76 +896,76 @@
                 <div class="price-card p-6">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
-                            <i data-lucide="presentation" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                            <i data-lucide="presentation" class="w-5 h-5" style="color: rgb(var(--wl-secondary));"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-secondary);">Seminarios</p>
+                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: rgb(var(--wl-secondary));">Seminarios</p>
                             <p class="text-[9px] text-slate-500 uppercase tracking-wider">1 día a 8 horas</p>
                         </div>
                     </div>
                     <div class="font-mono font-black text-2xl text-white mb-1">$3.000</div>
                     <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">ARS / certificado</div>
                     <ul class="space-y-1.5 text-[11px] text-slate-400">
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Certificado digital</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> QR verificable</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Sello institucional</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Certificado digital</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> QR verificable</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Sello institucional</li>
                     </ul>
                 </div>
 
                 <div class="price-card p-6">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
-                            <i data-lucide="book-open" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                            <i data-lucide="book-open" class="w-5 h-5" style="color: rgb(var(--wl-secondary));"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-secondary);">Cursos</p>
+                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: rgb(var(--wl-secondary));">Cursos</p>
                             <p class="text-[9px] text-slate-500 uppercase tracking-wider">2 a 4 meses</p>
                         </div>
                     </div>
                     <div class="font-mono font-black text-2xl text-white mb-1">$25.000</div>
                     <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">ARS / certificado</div>
                     <ul class="space-y-1.5 text-[11px] text-slate-400">
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Todo lo anterior</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Analítico digital</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Programa de estudio</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Todo lo anterior</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Analítico digital</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Programa de estudio</li>
                     </ul>
                 </div>
 
                 <div class="price-card featured p-6">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: rgba(var(--wl-secondary), 0.2); border: 1px solid rgba(var(--wl-secondary), 0.4);">
-                            <i data-lucide="graduation-cap" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                            <i data-lucide="graduation-cap" class="w-5 h-5" style="color: rgb(var(--wl-secondary));"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-secondary);">Diplomaturas</p>
+                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: rgb(var(--wl-secondary));">Diplomaturas</p>
                             <p class="text-[9px] text-slate-400 uppercase tracking-wider">2 a 8 meses</p>
                         </div>
                     </div>
-                    <div class="font-mono font-black text-2xl mb-1" style="color: var(--wl-secondary);">$40.000</div>
+                    <div class="font-mono font-black text-2xl mb-1" style="color: rgb(var(--wl-secondary));">$40.000</div>
                     <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">ARS / certificado</div>
                     <ul class="space-y-1.5 text-[11px] text-slate-300">
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Todo lo anterior</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> CV del docente</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Doble sello verificado</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Todo lo anterior</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> CV del docente</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Doble sello verificado</li>
                     </ul>
                 </div>
 
                 <div class="price-card p-6">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: rgba(var(--wl-secondary), 0.1); border: 1px solid rgba(var(--wl-secondary), 0.25);">
-                            <i data-lucide="medal" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                            <i data-lucide="medal" class="w-5 h-5" style="color: rgb(var(--wl-secondary));"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-secondary);">Tecnicaturas</p>
+                            <p class="text-[10px] font-black uppercase tracking-widest" style="color: rgb(var(--wl-secondary));">Tecnicaturas</p>
                             <p class="text-[9px] text-slate-500 uppercase tracking-wider">12 a 24 meses</p>
                         </div>
                     </div>
                     <div class="font-mono font-black text-2xl text-white mb-1">$80.000</div>
                     <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-4">ARS / certificado</div>
                     <ul class="space-y-1.5 text-[11px] text-slate-400">
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Todo lo anterior</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Verificación ampliada</li>
-                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: var(--wl-secondary);"></i> Trazabilidad extendida</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Todo lo anterior</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Verificación ampliada</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3" style="color: rgb(var(--wl-secondary));"></i> Trazabilidad extendida</li>
                     </ul>
                 </div>
             </div>
@@ -983,7 +990,7 @@
             <div id="bloque-formulario" data-aos="fade-up">
                 <div class="text-center mb-12">
                     <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-5"
-                         style="background: rgba(var(--wl-secondary), 0.1); color: var(--wl-secondary); border: 1px solid rgba(var(--wl-secondary), 0.25);">
+                         style="background: rgba(var(--wl-secondary), 0.1); color: rgb(var(--wl-secondary)); border: 1px solid rgba(var(--wl-secondary), 0.25);">
                         <i data-lucide="file-signature" class="w-3.5 h-3.5"></i> Solicitud de Alianza
                     </div>
                     <h2 class="font-title text-3xl md:text-5xl font-black text-white mb-4 tracking-tight leading-tight">
@@ -991,7 +998,7 @@
                     </h2>
                     <div class="divider-gold mb-6"></div>
                     <p class="text-slate-400 text-base leading-relaxed max-w-2xl mx-auto">
-                        Complete los datos de su institución. Le mostraremos un <strong style="color: var(--wl-secondary);">Pre-Acuerdo de Vinculación</strong> y luego podrá enviarlo directamente a nuestra Mesa Directiva.
+                        Complete los datos de su institución. Le mostraremos un <strong style="color: rgb(var(--wl-secondary));">Pre-Acuerdo de Vinculación</strong> y luego podrá enviarlo directamente a nuestra Mesa Directiva.
                     </p>
                 </div>
 
@@ -999,21 +1006,21 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div class="md:col-span-2">
                             <label class="form-label" for="inst-nombre">
-                                <i data-lucide="building-2" class="inline w-3.5 h-3.5 mr-1" style="color: var(--wl-secondary);"></i>
+                                <i data-lucide="building-2" class="inline w-3.5 h-3.5 mr-1" style="color: rgb(var(--wl-secondary));"></i>
                                 Nombre del Instituto o Centro de Capacitación
                             </label>
                             <input type="text" id="inst-nombre" class="form-input" placeholder="Ej: Instituto Superior de Capacitación Aplicada" required>
                         </div>
                         <div>
                             <label class="form-label" for="inst-director">
-                                <i data-lucide="user-tie" class="inline w-3.5 h-3.5 mr-1" style="color: var(--wl-secondary);"></i>
+                                <i data-lucide="user-tie" class="inline w-3.5 h-3.5 mr-1" style="color: rgb(var(--wl-secondary));"></i>
                                 Nombre del Director
                             </label>
                             <input type="text" id="inst-director" class="form-input" placeholder="Ej: Dr. Juan Pérez" required>
                         </div>
                         <div>
                             <label class="form-label" for="inst-provincia">
-                                <i data-lucide="map-pin" class="inline w-3.5 h-3.5 mr-1" style="color: var(--wl-secondary);"></i>
+                                <i data-lucide="map-pin" class="inline w-3.5 h-3.5 mr-1" style="color: rgb(var(--wl-secondary));"></i>
                                 Provincia
                             </label>
                             <input type="text" id="inst-provincia" class="form-input" placeholder="Ej: Córdoba" required>
@@ -1022,9 +1029,9 @@
 
                     <div class="rounded-xl p-5 mb-8" style="background: rgba(var(--wl-primary), 0.5); border: 1px solid rgba(var(--wl-secondary), 0.15);">
                         <div class="flex items-start gap-3">
-                            <i data-lucide="info" class="w-5 h-5 shrink-0 mt-0.5" style="color: var(--wl-secondary);"></i>
+                            <i data-lucide="info" class="w-5 h-5 shrink-0 mt-0.5" style="color: rgb(var(--wl-secondary));"></i>
                             <div class="text-xs text-slate-300 leading-relaxed space-y-1">
-                                <p class="font-bold" style="color: var(--wl-secondary);">Al continuar, se generará un Pre-Acuerdo vinculante de forma digital.</p>
+                                <p class="font-bold" style="color: rgb(var(--wl-secondary));">Al continuar, se generará un Pre-Acuerdo vinculante de forma digital.</p>
                                 <p class="text-slate-400">El documento resume los términos generales del Convenio y lo envía directamente a la Mesa Directiva para su evaluación final.</p>
                             </div>
                         </div>
@@ -1054,15 +1061,15 @@
                 </div>
 
                 <div class="contrato-doc p-8 md:p-12 relative">
-                    <i data-lucide="shield-check" class="contrato-watermark w-72 h-72" style="color: var(--wl-primary);"></i>
+                    <i data-lucide="shield-check" class="contrato-watermark w-72 h-72" style="color: rgb(var(--wl-primary));"></i>
 
                     <div class="relative z-10">
                         <div class="text-center mb-8 pb-6" style="border-bottom: 2px solid rgba(var(--wl-primary), 0.15);">
-                            <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3 shadow-md overflow-hidden" style="background: var(--wl-primary);">
-                                <i data-lucide="fingerprint" id="doc-logo-icon" class="w-8 h-8" style="color: var(--wl-secondary);"></i>
+                            <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3 shadow-md overflow-hidden" style="background: rgb(var(--wl-primary));">
+                                <i data-lucide="fingerprint" id="doc-logo-icon" class="w-8 h-8" style="color: rgb(var(--wl-secondary));"></i>
                                 <img id="doc-logo-img" src="" class="w-full h-full object-contain p-2 hidden" alt="Logo">
                             </div>
-                            <h3 class="font-title text-xl md:text-2xl font-black uppercase tracking-wider mb-1" style="color: var(--wl-primary);">
+                            <h3 class="font-title text-xl md:text-2xl font-black uppercase tracking-wider mb-1" style="color: rgb(var(--wl-primary));">
                                 Pre-Acuerdo de Vinculación Institucional
                             </h3>
                             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em]" id="doc-institucion-subtitulo">
@@ -1074,25 +1081,25 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 pb-6" style="border-bottom: 1px dashed rgba(var(--wl-primary), 0.15);">
                             <div>
                                 <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Institución Solicitante</p>
-                                <p class="font-title font-black text-lg leading-tight" style="color: var(--wl-primary);" id="doc-instituto">—</p>
+                                <p class="font-title font-black text-lg leading-tight" style="color: rgb(var(--wl-primary));" id="doc-instituto">—</p>
                                 <p class="text-xs text-slate-500 mt-1">Representada por su Director</p>
                             </div>
                             <div class="md:text-right">
                                 <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Autoridad Solicitante</p>
-                                <p class="font-title font-black text-lg leading-tight" style="color: var(--wl-primary);" id="doc-director">—</p>
+                                <p class="font-title font-black text-lg leading-tight" style="color: rgb(var(--wl-primary));" id="doc-director">—</p>
                                 <p class="text-xs text-slate-500 mt-1">Provincia de <span id="doc-provincia" class="font-bold">—</span></p>
                             </div>
                         </div>
 
                         <div class="mb-8">
-                            <p class="text-[10px] font-black uppercase tracking-[0.25em] mb-4" style="color: var(--wl-primary);">
+                            <p class="text-[10px] font-black uppercase tracking-[0.25em] mb-4" style="color: rgb(var(--wl-primary));">
                                 <i data-lucide="scroll-text" class="inline w-3.5 h-3.5 mr-1"></i> Cláusulas del Acuerdo
                             </p>
 
                             <div class="clausula">
                                 <div class="clausula-num">I</div>
                                 <div>
-                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: var(--wl-primary);">Aceptación de Tarifas</p>
+                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: rgb(var(--wl-primary));">Aceptación de Tarifas</p>
                                     <p class="text-xs text-slate-600 leading-relaxed">La institución solicitante declara conocer y aceptar las tarifas vigentes de Visibilidad Institucional (Plan Semestral: $1.500.000 ARS / Plan Anual: $2.500.000 ARS) y las tarifas por Emisión de Certificados (Seminarios: $3.000 / Cursos: $25.000 / Diplomaturas: $40.000 / Tecnicaturas: $80.000 ARS), sujetas a modificación según IPC.</p>
                                 </div>
                             </div>
@@ -1100,7 +1107,7 @@
                             <div class="clausula">
                                 <div class="clausula-num">II</div>
                                 <div>
-                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: var(--wl-primary);">Preservación de Identidad</p>
+                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: rgb(var(--wl-primary));">Preservación de Identidad</p>
                                     <p class="text-xs text-slate-600 leading-relaxed">El Registro se compromete a preservar íntegramente la marca, logos, firmas y propuesta académica de la institución. La tecnología se integra de forma silenciosa, potenciando la verificabilidad sin intervenir en la identidad institucional.</p>
                                 </div>
                             </div>
@@ -1108,7 +1115,7 @@
                             <div class="clausula">
                                 <div class="clausula-num">III</div>
                                 <div>
-                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: var(--wl-primary);">Infraestructura y Trazabilidad</p>
+                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: rgb(var(--wl-primary));">Infraestructura y Trazabilidad</p>
                                     <p class="text-xs text-slate-600 leading-relaxed">La institución obtiene acceso a la plataforma ASARI Core para la emisión de certificados con código QR único, Hash de trazabilidad inmutable, analítico digital, programa de estudio y CV del docente.</p>
                                 </div>
                             </div>
@@ -1116,7 +1123,7 @@
                             <div class="clausula">
                                 <div class="clausula-num">IV</div>
                                 <div>
-                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: var(--wl-primary);">Auditoría y Adhesión</p>
+                                    <p class="font-black text-sm uppercase tracking-wider mb-1" style="color: rgb(var(--wl-primary));">Auditoría y Adhesión</p>
                                     <p class="text-xs text-slate-600 leading-relaxed">Toda institución adherida queda sujeta a auditoría documental por parte del Comité Evaluador. El presente Pre-Acuerdo constituye una manifestación formal de intención y será ratificado por ambas partes mediante la firma del Convenio definitivo.</p>
                                 </div>
                             </div>
@@ -1125,20 +1132,20 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6" style="border-top: 1px solid rgba(var(--wl-primary), 0.15);">
                             <div class="text-center">
                                 <div class="h-16 mb-2" style="border-bottom: 2px solid rgba(var(--wl-primary), 0.3);"></div>
-                                <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-primary);">Dirección Solicitante</p>
+                                <p class="text-[10px] font-black uppercase tracking-widest" style="color: rgb(var(--wl-primary));">Dirección Solicitante</p>
                                 <p class="text-[10px] text-slate-500 mt-0.5" id="firma-director">—</p>
                             </div>
                             <div class="text-center">
                                 <div class="h-16 mb-2" style="border-bottom: 2px solid rgba(var(--wl-primary), 0.3);"></div>
-                                <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--wl-primary);">Mesa Directiva</p>
+                                <p class="text-[10px] font-black uppercase tracking-widest" style="color: rgb(var(--wl-primary));">Mesa Directiva</p>
                                 <p class="text-[10px] text-slate-500 mt-0.5">Pendiente de contrafirma</p>
                             </div>
                         </div>
 
                         <div class="sello-asari">
                             <div class="sello-asari-inner">
-                                <i data-lucide="shield-check" class="w-6 h-6 mb-1" style="color: var(--wl-secondary);"></i>
-                                <p class="text-[7px] font-black uppercase tracking-widest leading-tight text-center px-2" style="color: var(--wl-primary);">Sello Digital<br>ASARI Core</p>
+                                <i data-lucide="shield-check" class="w-6 h-6 mb-1" style="color: rgb(var(--wl-secondary));"></i>
+                                <p class="text-[7px] font-black uppercase tracking-widest leading-tight text-center px-2" style="color: rgb(var(--wl-primary));">Sello Digital<br>ASARI Core</p>
                             </div>
                         </div>
                     </div>
@@ -1164,13 +1171,13 @@
     </section>
 
     <!-- FOOTER -->
-    <footer class="py-12 border-t" style="background-color: var(--wl-primary); border-color: rgba(var(--wl-secondary), 0.15);">
+    <footer class="py-12 border-t" style="background-color: rgb(var(--wl-primary)); border-color: rgba(var(--wl-secondary), 0.15);">
         <div class="max-w-7xl mx-auto px-4 md:px-6">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden"
-                         style="background-color: var(--wl-primary); border: 1px solid rgba(var(--wl-secondary), 0.3);">
-                        <i data-lucide="fingerprint" id="footer-logo-icon" class="w-5 h-5" style="color: var(--wl-secondary);"></i>
+                         style="background-color: rgb(var(--wl-primary)); border: 1px solid rgba(var(--wl-secondary), 0.3);">
+                        <i data-lucide="fingerprint" id="footer-logo-icon" class="w-5 h-5" style="color: rgb(var(--wl-secondary));"></i>
                         <img id="footer-logo-img" src="" class="w-full h-full object-contain p-1 hidden" alt="Logo">
                     </div>
                     <div class="leading-tight">
