@@ -3116,7 +3116,11 @@
                         return;
                     }
 
-                    throw new Error(data?.provider_message || data?.error || error?.message || 'Mercado Pago no devolvió el enlace de pago.');
+                    let detalle = data;
+                    if (error?.context && typeof error.context.json === 'function') {
+                        try { detalle = await error.context.json(); } catch (_) {}
+                    }
+                    throw new Error(detalle?.provider_message || detalle?.error || error?.message || 'Mercado Pago no devolvió el enlace de pago.');
                 }
 
                 window.location.href = data.init_point;
