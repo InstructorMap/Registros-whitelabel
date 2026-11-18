@@ -135,9 +135,9 @@
                 <div class="grid grid-cols-2 gap-4 bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-inner">
                     <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Titular</p><p class="font-black text-lg text-wlPrimary" id="dos-nombre">---</p></div>
                     <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">DNI</p><p class="font-black text-lg font-mono text-wlPrimary" id="dos-dni">---</p></div>
-                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Año Nacimiento</p><p class="font-black text-lg text-wlPrimary" id="dos-ano-nac">---</p></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Grupo sanguíneo</p><p class="font-black text-lg text-wlPrimary" id="dos-ano-nac">---</p></div>
                     <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Teléfono</p><p class="font-black text-lg text-wlPrimary" id="dos-tel">---</p></div>
-                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Profesión</p><p class="font-black text-lg text-wlPrimary" id="dos-profesion">---</p></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Profesión</p><p class="font-black text-lg text-wlPrimary" id="dos-profesion">---</p><button type="button" id="btn-editar-titulo-acreditar" onclick="editarTituloAcreditar()" class="hidden mt-2 text-xs font-bold text-blue-600 underline">Editar título a acreditar</button></div>
                     <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Categoría</p><span class="bg-wlPrimary text-wlSecondary px-3 py-1 rounded font-black text-lg" id="dos-cat">---</span></div>
                     <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Provincia/Ciudad Laboral</p><p class="font-black text-lg text-wlPrimary" id="dos-provincia">---</p></div>
                     <div><p class="text-xs text-slate-500 uppercase font-bold mb-1">Directorio Público</p><span class="badge-aceptado px-2 py-1 rounded font-black text-sm" id="dos-directorio">OFF</span></div>
@@ -219,7 +219,7 @@
                     <div><label>Nombres</label><input type="text" id="edit-nombres" required></div>
                     <div><label>Apellidos</label><input type="text" id="edit-apellidos" required></div>
                     <div><label>DNI</label><input type="text" id="edit-dni" required></div>
-                    <div><label>Año Nacimiento</label><input type="number" id="edit-ano"></div>
+                    <div><label>Grupo sanguíneo</label><select id="edit-ano"><option value="">No informado</option><option value="O+">O+</option><option value="O-">O-</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="NO INFORMAR">NO INFORMAR</option></select></div>
                     <div><label>Teléfono</label><input type="tel" id="edit-tel"></div>
                     <div><label>Email</label><input type="email" id="edit-email"></div>
                     <div><label>Provincia Laboral</label><input type="text" id="edit-provincia"></div>
@@ -1386,7 +1386,7 @@
                     'Nombres': p.nombres || '',
                     'Apellidos': p.apellidos || '',
                     'DNI': p.dni || '',
-                    'Año Nac.': p.ano_nacimiento || '',
+                    'Grupo sanguíneo': p.grupo_sanguineo || '',
                     'Profesión': p.profesion || '',
                     'Categoría': p.categoria || 'A3',
                     'Arancel': aranceles[p.categoria] || 0,
@@ -1739,9 +1739,10 @@
             document.getElementById('dos-fecha').innerText = (item.fecha_alta || item.created_at) ? new Date(item.fecha_alta || item.created_at).toLocaleDateString('es-AR') : 'S/D';
             document.getElementById('dos-nombre').innerText = `${item.nombres} ${item.apellidos}`;
             document.getElementById('dos-dni').innerText = item.dni;
-            document.getElementById('dos-ano-nac').innerText = item.ano_nacimiento || '---';
+            document.getElementById('dos-ano-nac').innerText = item.grupo_sanguineo || '---';
             document.getElementById('dos-tel').innerText = item.telefono || '---';
             document.getElementById('dos-profesion').innerText = item.profesion || 'No declarada';
+            document.getElementById('btn-editar-titulo-acreditar').classList.toggle('hidden', !['PENDIENTE', 'EN AUDITORIA', 'OBSERVADO'].includes(item.estado));
             document.getElementById('dos-cat').innerText = item.categoria;
             document.getElementById('dos-provincia').innerText = item.provincia_laboral || 'No declarada';
             
@@ -1955,6 +1956,31 @@
             } catch (err) { alert("Error: " + err.message); }
         }
 
+        async function editarTituloAcreditar() {
+            if (!itemDossierActual || !['PENDIENTE', 'EN AUDITORIA', 'OBSERVADO'].includes(itemDossierActual.estado)) return;
+            const anterior = (itemDossierActual.profesion || '').trim();
+            const respuesta = prompt('Corregir el título o formación que solicita acreditar:', anterior);
+            if (respuesta === null) return;
+            const nuevo = respuesta.trim().replace(/\s+/g, ' ');
+            if (!nuevo || nuevo.length > 200) { alert('Ingrese un título válido (máximo 200 caracteres).'); return; }
+            if (nuevo === anterior) return;
+            if (!confirm('Confirmar corrección:\nAnterior: ' + anterior + '\nNuevo: ' + nuevo)) return;
+            try {
+                const { data, error } = await window.db.from('renmcycf_solicitudes')
+                    .update({ profesion: nuevo })
+                    .eq('id', itemDossierActual.id)
+                    .eq('tenant_id', window.currentTenantId)
+                    .in('estado', ['PENDIENTE', 'EN AUDITORIA', 'OBSERVADO'])
+                    .select('id, profesion');
+                if (error) throw error;
+                if (!data || data.length !== 1) throw new Error('No se confirmó la actualización.');
+                itemDossierActual.profesion = data[0].profesion;
+                document.getElementById('dos-profesion').innerText = data[0].profesion;
+                cargarSolicitudes(); cargarAuditoria();
+                alert('Título a acreditar actualizado.');
+            } catch (err) { alert('Error: ' + err.message); }
+        }
+
         async function aprobarMatricula() {
             if (!itemDossierActual) return;
             
@@ -2022,7 +2048,7 @@
                     nombres: itemDossierActual.nombres,
                     apellidos: itemDossierActual.apellidos,
                     dni: itemDossierActual.dni,
-                    ano_nacimiento: itemDossierActual.ano_nacimiento,
+                    grupo_sanguineo: itemDossierActual.grupo_sanguineo || null,
                     profesion: itemDossierActual.profesion,
                     categoria: itemDossierActual.categoria,
                     foto_perfil_url: itemDossierActual.foto_perfil_url,
@@ -2236,7 +2262,7 @@
                 document.getElementById('edit-nombres').value = p.nombres || '';
                 document.getElementById('edit-apellidos').value = p.apellidos || '';
                 document.getElementById('edit-dni').value = p.dni || '';
-                document.getElementById('edit-ano').value = p.ano_nacimiento || '';
+                document.getElementById('edit-ano').value = p.grupo_sanguineo || '';
                 document.getElementById('edit-tel').value = p.telefono || '';
                 document.getElementById('edit-email').value = p.email || '';
                 document.getElementById('edit-provincia').value = p.provincia_laboral || '';
@@ -2287,7 +2313,7 @@
                     nombres: document.getElementById('edit-nombres').value,
                     apellidos: document.getElementById('edit-apellidos').value,
                     dni: document.getElementById('edit-dni').value,
-                    ano_nacimiento: document.getElementById('edit-ano').value,
+                    grupo_sanguineo: document.getElementById('edit-ano').value || null,
                     telefono: document.getElementById('edit-tel').value,
                     email: document.getElementById('edit-email').value,
                     provincia_laboral: document.getElementById('edit-provincia').value,
@@ -2303,10 +2329,11 @@
                 };
                 if (fotoUrl) payload.foto_perfil_url = fotoUrl;
                 
-                await window.db.from('renmcycf_padron')
+                const { error: updateError } = await window.db.from('renmcycf_padron')
                     .update(payload)
                     .eq('id', id)
                     .eq('tenant_id', window.currentTenantId);
+                if (updateError) throw updateError;
                     
                 alert("✅ Datos actualizados con éxito.");
                 cerrarModalEdicion(); cargarPadron();
