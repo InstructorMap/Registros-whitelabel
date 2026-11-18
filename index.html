@@ -3091,6 +3091,7 @@
                 const { data, error } = await window.db.functions.invoke('crear-pago-mp', {
                     body: {
                         titulo: tituloPago,
+                        tenant: window.tenantSlugActivo || new URLSearchParams(window.location.search).get("tenant") || "renmcycf",
                         categoria,
                         cantidad,
                         dni: String(dni),
