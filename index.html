@@ -3043,17 +3043,27 @@
             const input = document.getElementById('ins-profesion');
             const select = document.getElementById('ins-categoria');
             if (!input || !select) return;
-            // No inferir categorías mediante palabras clave cuando la
-            // institución definió una taxonomía propia desde administración.
-            if (window.__categoriasPersonalizadas) return;
-            const txt = input.value.toLowerCase();
+
+            // Clasificación sugerida (no sustituye la revisión documental).
+            // Prioridad: formador > estudiante > curso/diplomatura > título técnico/universitario.
+            // El orden impide clasificar como A1 un "curso de técnico".
+            const txt = (input.value || '').toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, ' ').trim();
             if (txt.length < 4) return;
+
             let sugerida = '';
-            if (/licenciad|grado|universitari|abogad|m[eé]dic|doctor/.test(txt)) sugerida = 'A1';
-            else if (/t[eé]cnic[oa] superior|tecnicatura/.test(txt)) sugerida = 'A2';
-            else if (/auxiliar|diplomad|perito/.test(txt)) sugerida = 'A3';
-            else if (/estudiante|consultor|cursante/.test(txt)) sugerida = 'A4';
-            if (sugerida && select.value !== sugerida) {
+            if (/\b(instructor(?:a|es|as)?|formador(?:a|es|as)?|docente(?:s)?|capacitador(?:a|es|as)?|profesor(?:a|es|as)?|consultor(?:a|es|as)?|facilitador(?:a|es|as)?)\b/.test(txt)) {
+                sugerida = 'A4';
+            } else if (/\b(estudiante(?:s)?|alumn[oa]s?|cursante(?:s)?|en formacion|en curso|estudiando)\b/.test(txt)) {
+                sugerida = 'A3';
+            } else if (/\b(curso(?:s)?|diplomatura(?:s)?|diplomado(?:s|as)?|certificacion(?:es)?|certificado(?:s)?|taller(?:es)?|seminario(?:s)?|capacitacion(?:es)?|auxiliar(?:es)?)\b/.test(txt)) {
+                sugerida = 'A2';
+            } else if (/\b(tecnic[oa]s?|tecnico(?:s)? superior(?:es)?|tecnicatura(?:s)?|universitari[oa]s?|licenciad[oa]s?|licenciatura(?:s)?|titulo de grado|grado universitario|profesional(?:es)? universitari[oa]s?)\b/.test(txt)) {
+                sugerida = 'A1';
+            }
+
+            if (sugerida && [...select.options].some(o => o.value === sugerida) && select.value !== sugerida) {
                 select.value = sugerida;
                 actualizarLinkYPrecio();
             }
