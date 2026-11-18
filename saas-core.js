@@ -211,6 +211,11 @@
                 }
             }
 
+            // Un tenant solicitado expresamente nunca debe resolverse como otra institución.
+            if (slugParam && !tenantConfig) {
+                throw new Error('La institución solicitada no existe o no está activa.');
+            }
+
             // ─────────────────────────────────────────────────────────
             // P2: Dominio personalizado (BLOQUEA a P3 si se activa)
             // ─────────────────────────────────────────────────────────
@@ -236,6 +241,11 @@
                     // P2 activa y fallida → NO caemos a P3, saltamos a P4
                     origen = 'P2_DOMAIN_FALLIDO';
                 }
+            }
+
+            // Un dominio institucional no reconocido no debe mostrar otro registro.
+            if (origen === 'P2_DOMAIN_FALLIDO') {
+                throw new Error('Este dominio no está vinculado a una institución activa.');
             }
 
             // ─────────────────────────────────────────────────────────
