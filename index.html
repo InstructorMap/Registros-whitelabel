@@ -3091,8 +3091,10 @@
                 const { data, error } = await window.db.functions.invoke('crear-pago-mp', {
                     body: {
                         titulo: tituloPago,
-                        precio: precioFinal,
-                        dni: String(dni)
+                        categoria,
+                        cantidad,
+                        dni: String(dni),
+                        promo_hash: descuentoB2CActivo ? (new URLSearchParams(window.location.search).get('promo_hash') || '') : ''
                     }
                 });
 
@@ -3114,7 +3116,7 @@
                         return;
                     }
 
-                    throw new Error(error?.message || 'Mercado Pago no devolvió init_point y no hay link de respaldo.');
+                    throw new Error(data?.provider_message || data?.error || error?.message || 'Mercado Pago no devolvió el enlace de pago.');
                 }
 
                 window.location.href = data.init_point;
