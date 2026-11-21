@@ -981,7 +981,13 @@
         function descripcionCategoriaLegajo(categoria) {
             const codigo = String(categoria || '').trim().toUpperCase();
             // Sin configuración, nunca presentar una definición de otra institución.
-            return descripcionesCategoriasLegajo[codigo] || (codigo ? 'Categoría ' + codigo : 'Categoría no informada');
+            const titulos = {
+                A1: 'Profesionales y Técnicos',
+                A2: 'Diplomaturas y Capacitaciones',
+                A3: 'Estudiantes en Formación',
+                A4: 'Instructores y Formadores'
+            };
+            return titulos[codigo] ? codigo + ': ' + titulos[codigo] : (codigo ? 'Categoría ' + codigo : 'Categoría no informada');
         }
         function escaparHtmlCategoriaLegajo(valor) {
             return String(valor).replace(/[&<>"']/g, c => ({
