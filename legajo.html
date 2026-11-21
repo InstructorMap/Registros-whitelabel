@@ -947,6 +947,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             await window.initTenant();
             await cargarConfiguracionInicial();
+            await cargarDescripcionesCategoriasLegajo();
             const savedDni = localStorage.getItem('session_dni');
             if (savedDni && el('input-dni')) {
                 el('input-dni').value = savedDni;
@@ -955,6 +956,38 @@
             // INYECCIÓN: recuperar diploma post-pago si volvimos con ?pago=success
             try { await procesarDiplomaPendientePostPago(); } catch(e) { console.warn(e); }
         });
+
+        // Las descripciones institucionales pertenecen a cada tenant y se administran
+        // en renmcycf_contenido (cat_a1_desc ... cat_a4_desc).
+        let descripcionesCategoriasLegajo = {};
+        async function cargarDescripcionesCategoriasLegajo() {
+            descripcionesCategoriasLegajo = {};
+            try {
+                const { data, error } = await window.db.from('renmcycf_contenido')
+                    .select('clave, valor')
+                    .eq('tenant_id', window.currentTenantId)
+                    .in('clave', ['cat_a1_desc', 'cat_a2_desc', 'cat_a3_desc', 'cat_a4_desc']);
+                if (error) throw error;
+                (data || []).forEach(item => {
+                    const match = /^cat_(a[1-4])_desc$/i.exec(item.clave || '');
+                    if (match && typeof item.valor === 'string' && item.valor.trim()) {
+                        descripcionesCategoriasLegajo[match[1].toUpperCase()] = item.valor.trim();
+                    }
+                });
+            } catch (error) {
+                console.warn('No se pudieron cargar las descripciones institucionales del legajo:', error);
+            }
+        }
+        function descripcionCategoriaLegajo(categoria) {
+            const codigo = String(categoria || '').trim().toUpperCase();
+            // Sin configuración, nunca presentar una definición de otra institución.
+            return descripcionesCategoriasLegajo[codigo] || (codigo ? 'Categoría ' + codigo : 'Categoría no informada');
+        }
+        function escaparHtmlCategoriaLegajo(valor) {
+            return String(valor).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
 
         async function cargarConfiguracionInicial() {
             try {
@@ -1672,11 +1705,7 @@
                 const matParaQR = matricula || alumnoActual.dni;
                 const urlValidador = `${baseUrl}/validador.html?mat=${encodeURIComponent(matParaQR)}`;
                 
-                let textoCat = '';
-                if(alumnoActual.categoria === 'A1') textoCat = 'A.1 Título de Grado otorgado por Univ. pública o privada.';
-                else if(alumnoActual.categoria === 'A2') textoCat = 'A.2 Técnicos Superiores y Terciarios especializados.';
-                else if(alumnoActual.categoria === 'A3') textoCat = 'A.3 Auxiliares y Diplomados en disciplinas afines.';
-                else textoCat = 'Consultor/Estudiante inscripto.';
+                const textoCat = escaparHtmlCategoriaLegajo(descripcionCategoriaLegajo(alumnoActual.categoria));
                 
                 container.innerHTML = `
                     <div style="position: relative; width: 1000px; height: 630px; border-radius: 30px; overflow: hidden; background-color: #fff; box-shadow: 0 5px 20px rgba(0,0,0,0.15);">
@@ -1963,11 +1992,7 @@
                         <div style="${getSafeStyle('vence')} z-index:10;">${vence}</div>
                     </div>`;
                 
-                let textoCat = '';
-                if(alumnoActual.categoria === 'A1') textoCat = 'A.1 Título de Grado otorgado por Univ. pública o privada.';
-                else if(alumnoActual.categoria === 'A2') textoCat = 'A.2 Técnicos Superiores y Terciarios especializados.';
-                else if(alumnoActual.categoria === 'A3') textoCat = 'A.3 Auxiliares y Diplomados en disciplinas afines.';
-                else textoCat = 'Consultor/Estudiante inscripto.';
+                const textoCat = escaparHtmlCategoriaLegajo(descripcionCategoriaLegajo(alumnoActual.categoria));
                 
                 const backHtml = bgCredencialDorso ? `
                     <div id="export-back" style="position:relative;width:1000px;height:630px;overflow:hidden;background:#fff;border-radius:30px;">
