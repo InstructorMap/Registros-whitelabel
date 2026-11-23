@@ -2551,7 +2551,18 @@
                                 ${btnContacto}
                             </div>
 
-                            <div id="tab-verificador-${inst.id}" class="inst-content-${inst.id} hidden animate-fade-up">
+                            ${inst.id === 'fbeb2a0b-b96a-44ea-8bda-6e19ec134ad8' ? `<div id="tab-verificador-${inst.id}" class="inst-content-${inst.id} hidden animate-fade-up">
+                                <h4 class="text-lg font-black text-slate-800 mb-3 uppercase">Consulta pública de matrículas · Instituto Colbert</h4>
+                                <p class="text-sm text-slate-600 mb-6">Ingresá el DNI sin puntos. La vigencia anual se calcula desde la fecha de inicio de cada matrícula.</p>
+                                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                                    <label for="colbert-input-dni" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Documento Nacional de Identidad</label>
+                                    <form onsubmit="buscarMatriculaColbert(event)" class="flex flex-col sm:flex-row gap-3">
+                                        <input id="colbert-input-dni" type="text" inputmode="numeric" maxlength="9" pattern="[0-9]{6,9}" required autocomplete="off" placeholder="DNI sin puntos" class="flex-1 bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-800">
+                                        <button type="submit" class="bg-wlSecondary text-wlPrimary font-black uppercase text-xs px-8 py-3 rounded-lg">Buscar matrícula</button>
+                                    </form>
+                                    <div id="colbert-resultado" class="mt-4 space-y-3" aria-live="polite"></div>
+                                </div>
+                            </div>` : `<div id="tab-verificador-${inst.id}" class="inst-content-${inst.id} hidden animate-fade-up">
                                 <h4 class="text-lg font-black text-slate-800 mb-3 uppercase">Validación de Certificados B2B</h4>
                                 <p class="text-sm text-slate-600 mb-6">Si realizó una capacitación en esta institución adherida, valide la autenticidad de su certificado o descargue una copia digital ingresando el <strong>Código Hash Inmutable (TxID)</strong> impreso en su diploma:</p>
                                 <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
@@ -2564,7 +2575,7 @@
                                     </div>
                                 </div>
                             </div>
-
+`}
                             <div id="tab-cursos-${inst.id}" class="inst-content-${inst.id} hidden animate-fade-up">
                                 <h4 class="text-lg font-black text-slate-800 mb-3 uppercase">Oferta Académica Verificada</h4>
                                 ${htmlCursos}
@@ -2577,6 +2588,54 @@
             gridContainer.innerHTML = html;
             lucide.createIcons();
         }
+
+        window.buscarMatriculaColbert = async function(event) {
+            event.preventDefault();
+            const input = document.getElementById('colbert-input-dni');
+            const cont = document.getElementById('colbert-resultado');
+            if (!input || !cont) return;
+            const dni = input.value.trim();
+            cont.replaceChildren();
+            const mensaje = (msg) => { const p = document.createElement('p'); p.className = 'text-sm text-slate-600'; p.textContent = msg; cont.appendChild(p); };
+            if (!/^\\d{6,9}$/.test(dni)) { mensaje('Ingresá un DNI válido de 6 a 9 dígitos.'); return; }
+            mensaje('Consultando matrículas...');
+            try {
+                const db = window.supabase.createClient(
+                    'https://vxggatcfrywyodovjwxj.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg',
+                    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+                );
+                const { data, error } = await db.from('matriculas')
+                    .select('apellido,nombre,curso,registro_id,estado,fecha_inicio')
+                    .eq('institution_id', 'cfa8addf-9d36-41e1-83b1-6501e5178ba7')
+                    .eq('dni_alumno', dni).limit(30);
+                if (error) throw error;
+                cont.replaceChildren();
+                if (!data || !data.length) { mensaje('No se encontraron matrículas para ese DNI en Instituto Colbert.'); return; }
+                const today = new Date(); today.setHours(0,0,0,0);
+                for (const m of data) {
+                    const card = document.createElement('div');
+                    card.className = 'p-4 bg-white border border-slate-200 rounded-xl';
+                    const title = document.createElement('p'); title.className = 'font-bold text-slate-800 text-sm';
+                    title.textContent = [m.apellido, m.nombre].filter(Boolean).join(', ');
+                    const course = document.createElement('p'); course.className = 'text-sm text-slate-600';
+                    course.textContent = m.curso || 'Formación no especificada';
+                    const status = document.createElement('p'); status.className = 'text-xs font-black mt-2';
+                    const original = String(m.estado || '').toUpperCase();
+                    let vigencia = 'SIN FECHA DE ALTA';
+                    if (m.fecha_inicio) {
+                        const parts = m.fecha_inicio.split('-').map(Number);
+                        const vence = new Date(parts[0] + 1, parts[1] - 1, parts[2]);
+                        vigencia = today >= vence ? 'VENCIDA' : 'ACTIVA';
+                    }
+                    if (original.includes('SUSPEND') || original.includes('REVOC') || original.includes('BAJA')) vigencia = original;
+                    else if (original.includes('PENDIENT')) vigencia = 'PENDIENTE';
+                    status.textContent = 'Estado: ' + vigencia;
+                    status.classList.add(vigencia === 'ACTIVA' ? 'text-emerald-700' : 'text-amber-700');
+                    card.append(title,course,status); cont.appendChild(card);
+                }
+            } catch (error) { console.error('[Colbert] Consulta fallida', error); cont.replaceChildren(); mensaje('No se pudo completar la consulta. Intentá nuevamente.'); }
+        };
 
         window.filtrarDirectorio = function() {
             const input = document.getElementById('dir-search-input');
