@@ -2492,16 +2492,21 @@
                     return;
                 }
 
+                const esColbert = inst.id === 'fbeb2a0b-b96a-44ea-8bda-6e19ec134ad8';
                 const logoRender = inst.logo_url
-                    ? `<img src="${inst.logo_url}" alt="${inst.nombre}" class="w-full h-full object-contain p-2">`
+                    ? `<img src="${inst.logo_url}" alt="${inst.nombre}" class="w-full h-full object-contain ${esColbert ? 'scale-[1.35]' : 'p-2'}">`
                     : `<i data-lucide="landmark" class="w-12 h-12 text-slate-300"></i>`;
 
                 const btnContacto = inst.web_url
                     ? `<a href="${inst.web_url}" target="_blank" rel="noopener" class="mt-4 bg-wlPrimary hover:bg-slate-800 text-white py-3 px-6 rounded-lg text-xs font-bold uppercase tracking-widest transition-all inline-flex items-center justify-center gap-2 shadow-md">Visitar Sitio Web <i data-lucide="external-link" class="w-4 h-4"></i></a>`
                     : `<p class="mt-4 text-xs text-slate-500 italic">Contacto directo a través de la entidad.</p>`;
 
-                const cursosInst = cursosAprobadosPorAliado[inst.id] || [];
+                const cursosInst = (cursosAprobadosPorAliado[inst.id] || []).filter(c => !esColbert || /salud|enferm|emergen|param[eé]d|socorr|reanim|rcp|primeros auxilios|odont|terap[eé]ut|geront|farmacolog|psicolog|bioseguridad|sanitari|cuidados paliativos|trauma|rescate|soporte vital|ambulancia/i.test(c.nombre_curso || ''));
+                
                 let htmlCursos = '<p class="text-sm text-slate-500 italic">El instituto se encuentra en proceso de carga de sus programas verificados.</p>';
+                if (esColbert && cursosInst.length === 0) {
+                    htmlCursos = '<p class="text-sm text-slate-600 mb-3">Áreas de formación sanitaria publicadas por Instituto Colbert:</p><div class="grid gap-2 text-sm text-slate-700"><p>• Emergentología y atención prehospitalaria</p><p>• Enfermería y asistencia sanitaria</p><p>• Asistencia odontológica</p><p>• Salud y psicología social</p><p>• Primeros auxilios aplicados al deporte</p></div><p class="text-xs text-amber-700 mt-4">Oferta informativa de la institución. Los programas individuales aún no figuran como auditados por REMAEP.</p>';
+                }
                 if (cursosInst.length > 0) {
                     const lista = cursosInst.map(c => `
                         <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-lg mb-2">
@@ -2521,7 +2526,7 @@
                         <div class="absolute top-4 left-4 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
                             <i data-lucide="shield-check" class="w-3 h-3"></i> Entidad Auditada
                         </div>
-                        <div class="w-32 h-32 bg-white rounded-full border-4 border-wlSecondary flex items-center justify-center p-1 shadow-lg mb-5 overflow-hidden mt-6">
+                        <div class="${esColbert ? 'w-44 h-44 md:w-52 md:h-52 rounded-3xl border-2 p-2' : 'w-32 h-32 rounded-full border-4 p-1'} bg-white border-wlSecondary flex items-center justify-center shadow-lg mb-5 overflow-hidden mt-6">
                             ${logoRender}
                         </div>
                         <h3 class="font-title font-black text-xl text-wlPrimary text-center uppercase leading-tight mb-2">${inst.nombre}</h3>
@@ -2544,7 +2549,7 @@
                         <div class="p-6 md:p-8 flex-1">
                             <div id="tab-contacto-${inst.id}" class="inst-content-${inst.id} block animate-fade-up">
                                 <h4 class="text-lg font-black text-slate-800 mb-3 uppercase">Información Institucional</h4>
-                                <p class="text-sm text-slate-600 mb-6">Comuníquese directamente con <strong>${inst.nombre}</strong> para conocer fechas de inscripción, aranceles y modalidad de cursado de los programas acreditados.</p>
+                                ${esColbert ? `<p class="text-sm text-slate-600 mb-4">Grupo Colbert, trayectoria educativa desde 1986, formación presencial y virtual. Sede central: Av. General Paz 67, Galería Italia (PB), Córdoba Capital.</p><div class="text-sm text-slate-700 space-y-1 mb-5"><p><strong>Teléfono:</strong> 351-2126189</p><p><strong>Correo:</strong> <a href="mailto:institutocolbert@hotmail.com" class="underline">institutocolbert@hotmail.com</a></p><p><strong>Web:</strong> <a href="https://institutocolbert.net/" target="_blank" rel="noopener" class="underline">institutocolbert.net</a></p></div>` : `Comuníquese directamente con <strong>${inst.nombre}</strong> para conocer fechas de inscripción, aranceles y modalidad de cursado de los programas acreditados.`}
                                 <div class="space-y-2 mb-6">
                                     <p class="text-sm text-slate-700 flex items-center gap-2"><i data-lucide="building-2" class="w-4 h-4 text-wlSecondary"></i> <strong class="uppercase text-[10px] tracking-widest text-slate-400">Tipo:</strong> ${inst.tipo_formacion || 'Academia'}</p>
                                 </div>
