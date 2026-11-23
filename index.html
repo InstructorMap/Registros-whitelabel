@@ -3818,13 +3818,31 @@
                     .eq('estado_legal', 'ACTIVO')
                     .eq('tenant_id', window.currentTenantId);
                 if (error) throw error;
-
                 const dniUnicos = new Set();
                 (data || []).forEach(r => { if (r.dni) dniUnicos.add(String(r.dni)); });
-                const count = dniUnicos.size;
+                const propios = dniUnicos.size;
 
+                // Indicador agregado de aliados: solo lectura y conteo.
+                // No se importan ni se crean matriculados en el padrón REMAEP.
+                let colbert = 0;
+                try {
+                    const colbertDb = window.supabase.createClient(
+                        'https://vxggatcfrywyodovjwxj.supabase.co',
+                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4Z2dhdGNmcnl3eW9kb3Zqd3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzM5MjgsImV4cCI6MjA4MzgwOTkyOH0.RZ9jhEASO6nCV8EnzrHQBhglP4G1nik9Z5osPXysGNg',
+                        { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+                    );
+                    const { count, error: colbertError } = await colbertDb
+                        .from('matriculas')
+                        .select('id', { count: 'exact', head: true })
+                        .eq('institution_id', 'cfa8addf-9d36-41e1-83b1-6501e5178ba7');
+                    if (colbertError) throw colbertError;
+                    colbert = count || 0;
+                } catch (e) {
+                    console.warn('[Contador aliados] No se pudo consultar Colbert:', e);
+                }
+
+                const count = propios + colbert;
                 if (count === 0) { el.innerText = '0'; return; }
-
                 let start = 0;
                 const duration = 1500;
                 const increment = count / (duration / 16);
