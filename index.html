@@ -2597,7 +2597,7 @@
             const dni = input.value.trim();
             cont.replaceChildren();
             const mensaje = (msg) => { const p = document.createElement('p'); p.className = 'text-sm text-slate-600'; p.textContent = msg; cont.appendChild(p); };
-            if (!/^\\d{6,9}$/.test(dni)) { mensaje('Ingresá un DNI válido de 6 a 9 dígitos.'); return; }
+            if (!/^[0-9]{6,9}$/.test(dni)) { mensaje('Ingresá un DNI válido de 6 a 9 dígitos.'); return; }
             mensaje('Consultando matrículas...');
             try {
                 const db = window.supabase.createClient(
