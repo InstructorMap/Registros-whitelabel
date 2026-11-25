@@ -462,7 +462,8 @@
                 'A4': 'Formadores e Instructores' 
             };
             
-            document.getElementById('val-cat-desc').innerText = catDescMap[padron.categoria] || 'Profesional Habilitado';
+            const categoriaCodigo = String(padron.categoria || '').trim().toUpperCase();
+            document.getElementById('val-cat-desc').innerText = catDescMap[categoriaCodigo] ? `${categoriaCodigo}: ${catDescMap[categoriaCodigo]}` : (categoriaCodigo ? `${categoriaCodigo}: Profesional Habilitado` : 'Profesional Habilitado');
             document.getElementById('val-matricula').innerText = padron.matricula_oficial || 'EN TRÁMITE';
             document.getElementById('val-vencimiento').innerText = vence ? vence.toLocaleDateString('es-AR') : 'N/D';
             
