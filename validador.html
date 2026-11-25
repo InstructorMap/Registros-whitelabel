@@ -456,9 +456,10 @@
             document.getElementById('val-cat-badge').innerText = padron.categoria || '—';
             
             const catDescMap = { 
-                'A1': 'Profesionales Universitarios de Grado', 
-                'A2': 'Técnicos Superiores y Terciarios', 
-                'A3': 'Auxiliares y Diplomados' 
+                'A1': 'Profesionales y Técnicos',
+                'A2': 'Diplomaturas y Capacitaciones',
+                'A3': 'Estudiantes',
+                'A4': 'Formadores e Instructores' 
             };
             
             document.getElementById('val-cat-desc').innerText = catDescMap[padron.categoria] || 'Profesional Habilitado';
